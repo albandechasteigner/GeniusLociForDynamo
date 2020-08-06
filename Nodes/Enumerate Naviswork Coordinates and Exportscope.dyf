@@ -1,0 +1,38 @@
+<Workspace Version="1.3.4.6666" X="-189.1357904647" Y="90.9349164895497" zoom="0.646865613092414" ScaleFactor="1" Name="Enumerate Naviswork Coordinates and Exportscope" Description="Use with the &quot;Export NWC in Document&quot; node." ID="628ff474-46f6-4059-b24e-42e4d3523218" Category="GeniusLoci.Export">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="20702571-abb3-432b-8783-a9037d1d9005" type="PythonNodeModels.PythonNode" nickname="Python Script" x="388.98653536411" y="246.407877211888" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+import System
+
+OUT = System.Enum.GetValues(Autodesk.Revit.DB.NavisworksExportScope), System.Enum.GetValues(Autodesk.Revit.DB.NavisworksCoordinates)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="e4723daa-b9c8-4c9d-b9e7-00d10d6a690a" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="533.419778849263" y="244" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="ExportScope[0];&#xA;ExportCoordinates[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="46f0c783-2d78-42be-8a63-480a4101188c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="933.671687809751" y="242.180027999822" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ExportScope" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="ac8908ea-7798-49a0-ac7e-52b379a1c00c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="928.771301785202" y="316.405384937174" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ChooseCoordinates" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="20702571-abb3-432b-8783-a9037d1d9005" start_index="0" end="e4723daa-b9c8-4c9d-b9e7-00d10d6a690a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="20702571-abb3-432b-8783-a9037d1d9005" start_index="0" end="e4723daa-b9c8-4c9d-b9e7-00d10d6a690a" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e4723daa-b9c8-4c9d-b9e7-00d10d6a690a" start_index="0" end="46f0c783-2d78-42be-8a63-480a4101188c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e4723daa-b9c8-4c9d-b9e7-00d10d6a690a" start_index="1" end="ac8908ea-7798-49a0-ac7e-52b379a1c00c" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

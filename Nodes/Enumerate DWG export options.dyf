@@ -1,0 +1,39 @@
+<Workspace Version="1.3.4.6666" X="-256" Y="-44" zoom="1" ScaleFactor="1" Name="Enumerate DWG export options" Description="Enumerate Color mode, Autocad Version and Type of Units." ID="9d05cb3a-d91a-4a85-818a-7827fa937ff1" Category="GeniusLoci.CAD Export">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="d89d0a5e-ef1b-42dd-be69-4880797a346c" type="PythonNodeModels.PythonNode" nickname="Get Export Options" x="353.6" y="212.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+import System
+
+OUT = System.Enum.GetValues(Autodesk.Revit.DB.ExportColorMode),System.Enum.GetValues(Autodesk.Revit.DB.ACADVersion),System.Enum.GetValues(Autodesk.Revit.DB.ExportUnit)
+</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="11877268-5264-45b5-803a-8601bda0683b" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="573.6" y="210.847849781637" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="Option[0];&#xA;Option[1];&#xA;Option[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8663e927-5650-4756-a74c-b45decd1d05c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="813.335488078642" y="203.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Colormode" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="42f0cfbd-5f2e-41ce-99d0-4a82f826831a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="807.6" y="273.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Autocad Version" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4c8bd736-49b3-4f9c-bc6a-90f556f30ee8" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="822.4" y="371.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Unit" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="d89d0a5e-ef1b-42dd-be69-4880797a346c" start_index="0" end="11877268-5264-45b5-803a-8601bda0683b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="11877268-5264-45b5-803a-8601bda0683b" start_index="0" end="8663e927-5650-4756-a74c-b45decd1d05c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="11877268-5264-45b5-803a-8601bda0683b" start_index="1" end="42f0cfbd-5f2e-41ce-99d0-4a82f826831a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="11877268-5264-45b5-803a-8601bda0683b" start_index="2" end="4c8bd736-49b3-4f9c-bc6a-90f556f30ee8" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

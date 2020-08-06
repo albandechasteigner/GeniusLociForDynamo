@@ -1,0 +1,61 @@
+<Workspace Version="1.3.4.6666" X="-187.171669447205" Y="-31.2268598546998" zoom="0.662759780568406" ScaleFactor="1" Name="FamilyDocument Parameters" Description="Retrieves all family parameters from the given or active family document." ID="a0799d0d-619d-48bd-95ef-571ab0ad7c94" Category="GeniusLoci.Parameter">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b2bcdeed-95fa-4d50-ae44-6a606cc36389" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="73.380610187859" y="269.979280219255" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Use only to query a Family Document&#xD;&#xA;familydocument : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="2f8f0c6c-05a1-43fd-9471-c99fcfdcae7d" type="PythonNodeModels.PythonNode" nickname="FamilyDocument.FamilyParameters" x="509.380610187859" y="269.979280219255" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Based on a Clockwork node
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+inputdocs = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+paramlist,paramName=[],[]
+
+for inputdoc in inputdocs :
+	pList,pName = [],[]
+	if inputdoc == None:
+		doc = DocumentManager.Instance.CurrentDBDocument
+	elif isinstance (inputdoc,Autodesk.Revit.DB.Document):
+		doc = inputdoc
+	else: doc = DocumentManager.Instance.CurrentDBDocument
+	if doc.IsFamilyDocument:
+		for param in doc.FamilyManager.Parameters:
+			pList.append(param)
+			pName.append(param.Definition.Name)
+		paramlist.append(pList)
+		paramName.append(pName)
+OUT = paramlist,paramName</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="02c1c7fd-1d1c-4a8a-b95d-155208558d35" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="843.780610187859" y="274.192613552588" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="cff38ab0-7780-445b-a526-d6d42c5484d1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1034.98061018786" y="236.765946885921" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FamilyParameters" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8b239aa7-1e80-472f-bea9-6ae037e1fbeb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1034.98061018786" y="320.765946885921" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ParameterNames" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="b2bcdeed-95fa-4d50-ae44-6a606cc36389" start_index="0" end="2f8f0c6c-05a1-43fd-9471-c99fcfdcae7d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2f8f0c6c-05a1-43fd-9471-c99fcfdcae7d" start_index="0" end="02c1c7fd-1d1c-4a8a-b95d-155208558d35" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="02c1c7fd-1d1c-4a8a-b95d-155208558d35" start_index="0" end="cff38ab0-7780-445b-a526-d6d42c5484d1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="02c1c7fd-1d1c-4a8a-b95d-155208558d35" start_index="1" end="8b239aa7-1e80-472f-bea9-6ae037e1fbeb" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

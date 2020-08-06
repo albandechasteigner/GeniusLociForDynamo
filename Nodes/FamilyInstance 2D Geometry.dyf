@@ -1,0 +1,67 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="FamilyInstance 2D Geometry" Description="Gets the curves of the family instance.&#xD;&#xA;Works only with the family categories : Generic Annotation and Detail Item." ID="1894ea38-2400-4567-82ce-3227744c435a" Category="GeniusLoci.Family">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="7df823e7-85bf-4937-a4c3-3339157cd1b1" type="PythonNodeModels.PythonNode" nickname="Python Script" x="301.2" y="275.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+families = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+curveList=[]
+
+opt = Options()
+#opt.IncludeNonVisibleObjects = True
+#opt.View = doc.ActiveView
+#opt.ComputeReferences = True
+opt.DetailLevel = ViewDetailLevel.Fine
+
+for fam in families:
+	geoEle=fam.GetOriginalGeometry(opt)
+	lines=[]
+	for geoInstance in geoEle:
+		if isinstance(geoInstance, Curve):
+			transformCurve=geoInstance.CreateTransformed(fam.GetTransform())
+			#Instead of importing : clr.ImportExtensions(Revit.GeometryConversion)
+			lines.append(Revit.GeometryConversion.RevitToProtoCurve.ToProtoType(transformCurve, True))
+		else:
+			if isinstance(geoInstance, Solid) and geoInstance.Volume == 0:
+				edges=[]
+				edgesArray=geoInstance.Edges
+				for edge in edgesArray :
+					transformCurve=edge.AsCurve().CreateTransformed(fam.GetTransform())
+					edges.append(Revit.GeometryConversion.RevitToProtoCurve.ToProtoType(transformCurve, True))
+				curveList.append(edges)
+	curveList.append(lines)
+	
+OUT = filter(None,curveList)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="c1a85acf-49c0-4562-860a-3d600662aada" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="466.434951391194" y="274.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Curve" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0aa56536-1cf8-4070-a3a9-5ea5939ad78f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="185.6" y="275.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="7df823e7-85bf-4937-a4c3-3339157cd1b1" start_index="0" end="c1a85acf-49c0-4562-860a-3d600662aada" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0aa56536-1cf8-4070-a3a9-5ea5939ad78f" start_index="0" end="7df823e7-85bf-4937-a4c3-3339157cd1b1" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

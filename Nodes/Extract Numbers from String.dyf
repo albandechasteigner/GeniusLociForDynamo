@@ -1,0 +1,40 @@
+<Workspace Version="1.3.4.6666" X="57.42009" Y="50.88447" zoom="0.70823125" ScaleFactor="1" Name="Extract Numbers from String" Description="Extracts a number or a list of numbers from a string and converts it to double." ID="d437fb9a-44fc-4b3b-8123-7f897d33f1f3" Category="GeniusLoci.Utilities">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="31f848ae-fb7a-487d-aff6-da448062f615" type="PythonNodeModels.PythonNode" nickname="Python Script" x="286.792668355145" y="303.171499421976" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#https://www.geeksforgeeks.org/find-all-the-numbers-in-a-string-using-regular-expression-in-python/
+
+import re 
+# Function to extract all the numbers from the given string 
+def getNumbers(str): 
+    array = re.findall(r'[-+]\d*\.\d+|\d+', str)
+    double=[float(x) for x in array]
+    return double
+
+strings = IN[0] if isinstance(IN[0],list) else [IN[0]]
+
+array=[getNumbers(x) for x in strings]
+
+if isinstance(IN[0], list): OUT = array 
+else: OUT = array[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="64d148a4-a9b5-46d4-8db3-725f363c6980" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="511.592668355145" y="303.171499421976" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="double" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="67b2faae-f075-40c9-a0f0-ba85590f2c1c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="106.792668355145" y="303.171499421976" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="String" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="31f848ae-fb7a-487d-aff6-da448062f615" start_index="0" end="64d148a4-a9b5-46d4-8db3-725f363c6980" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="67b2faae-f075-40c9-a0f0-ba85590f2c1c" start_index="0" end="31f848ae-fb7a-487d-aff6-da448062f615" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

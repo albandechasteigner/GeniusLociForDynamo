@@ -1,0 +1,113 @@
+<Workspace Version="1.3.4.6666" X="-160.030252128437" Y="-0.357513082198409" zoom="0.765829392851552" ScaleFactor="1" Name="Export DXF" Description="Exports views to DXF file." ID="b2b52fb9-e84e-4748-9370-11470161bf61" Category="GeniusLoci.CAD Export">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3188c3f5-d02c-440f-9c1a-520e8b4d7245" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="386.744450782195" y="313.765358838194" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="DirectoryPath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1c0bd181-61b8-4eba-b107-9e73b59e9089" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="386.744450782195" y="396.765358838194" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="24d6c766-f18d-4c63-8899-f840df420901" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="386.744450782195" y="480.765358838194" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Filename" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="05191c80-698a-47ad-b235-9b3718b7ed26" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="386.744450782195" y="563.765358838194" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RunIt:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="cab56714-7bdc-4f2d-8fec-10d16b4a130a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="874.744450782195" y="399.765358838194" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Succeed" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="0119b294-0a80-4dbd-8f52-a22556b34198" type="PythonNodeModels.PythonNode" nickname="Export Dxf" x="649.944450782195" y="399.765358838194" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="4">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <Script>##Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+# Import Element wrapper extension methods
+import clr
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+import System
+from System.Collections.Generic import *
+
+import sys
+pyt_path = r'C:\Program Files (x86)\IronPython 2.7\Lib'
+sys.path.append(pyt_path)
+
+#ProcessParallelLists borrowed from Konrad K Sobon
+def ProcessList(_func, _list):
+    return map( lambda x: ProcessList(_func, x) if type(x)==list else _func(x), _list )
+
+def ProcessParallelLists(_func, *lists):
+	return map( lambda *xs: ProcessParallelLists(_func, *xs) if all(type(x) is list for x in xs) else _func(*xs), *lists )
+
+def Unwrap(item):
+	return UnwrapElement(item)
+
+folderPath = IN[0]
+
+if isinstance(IN[1], list):
+	views = ProcessList(Unwrap, IN[1])
+else:
+	views = [Unwrap(IN[1])]
+
+if isinstance(IN[2], list):
+	names = IN[2]
+else:
+	names = [IN[2]]
+
+RunIt = IN[3]
+
+def ExportDxf(name, view, folder = folderPath):
+	options = DXFExportOptions()
+	views = List[ElementId]()
+	views.Add(view.Id)
+	result = doc.Export(folder, name, views, options)
+	return result
+
+if RunIt:
+	try:
+		errorReport = None
+		# run export
+		ProcessParallelLists(ExportDxf, names, views)
+		
+	except:
+		# if error accurs anywhere in the process catch it
+		import traceback
+		errorReport = traceback.format_exc()
+else:
+	errorReport = "Please set the RunIt to True!"
+
+#Assign your output to the OUT variable
+if errorReport == None:
+	OUT = "Success"
+else:
+	OUT = errorReport</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="3188c3f5-d02c-440f-9c1a-520e8b4d7245" start_index="0" end="0119b294-0a80-4dbd-8f52-a22556b34198" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1c0bd181-61b8-4eba-b107-9e73b59e9089" start_index="0" end="0119b294-0a80-4dbd-8f52-a22556b34198" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="24d6c766-f18d-4c63-8899-f840df420901" start_index="0" end="0119b294-0a80-4dbd-8f52-a22556b34198" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="05191c80-698a-47ad-b235-9b3718b7ed26" start_index="0" end="0119b294-0a80-4dbd-8f52-a22556b34198" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0119b294-0a80-4dbd-8f52-a22556b34198" start_index="0" end="cab56714-7bdc-4f2d-8fec-10d16b4a130a" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,200 @@
+<Workspace Version="1.3.4.6666" X="-555.117965304875" Y="-490.162758796267" zoom="0.552324359524568" ScaleFactor="1" Name="Export IFC" Description="Export View to IFC file.&#xD;&#xA;For use with the Select Phase node.&#xD;&#xA;Some other IFC options are embedded inside the python script." ID="b6f62bca-c938-4d9d-91fd-71b0352fff3b" Category="GeniusLoci.Export">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="DSCore.List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <PythonNodeModels.PythonNode guid="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" type="PythonNodeModels.PythonNode" nickname="Export IFC" x="1868.51498098202" y="939.893950198465" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="10">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <PortInfo index="8" default="False" />
+      <PortInfo index="9" default="False" />
+      <Script>#Based on a Nicklas Verdier Østergaard's script, nvo@niras.dk
+#https://github.com/Autodesk/revit-ifc/tree/2810c479e27819da97656759a1dda28cbdde0538/Source
+#Revised by Alban de Chasteigner
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+uidoc=DocumentManager.Instance.CurrentUIApplication.ActiveUIDocument
+
+folder=UnwrapElement(IN[0])
+view = tolist(UnwrapElement(IN[1]))
+name=tolist(UnwrapElement(IN[2]))
+fileversion = IN[3]
+Projectorigin = IN[4]
+inputPhase = UnwrapElement(IN[5])
+userDefinedPset = IN[6]
+revitInternalPset = IN[7]
+wallandcolumnsplitting = IN[8]
+exportbasequantities = IN[9]
+
+if inputPhase != None:
+	phaseString=str(inputPhase.Id)
+else:
+	pass
+
+if userDefinedPset != "":
+	userDefPsetBool= "true"
+else:
+	userDefPsetBool= "false"
+
+if revitInternalPset ==True:
+	revitInternalPset= "true"
+else:
+	revitInternalPset= "false"
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+result = []
+
+for i,v in enumerate(view):
+	options=IFCExportOptions()
+	
+	#if fileversion != None:
+	#	options.FileVersion = fileversion
+	if fileversion == "IFC4":
+		options.FileVersion = IFCVersion.IFC4
+	if fileversion == "IFC2x2":
+		options.FileVersion = IFCVersion.IFC2x2
+	if fileversion == "IFC2x3":
+		options.FileVersion = IFCVersion.IFC2x3
+	if fileversion == "IFC2x3":
+		options.FileVersion = IFCVersion.IFC2x3CV2
+	if fileversion == "IFCBCA":
+		options.FileVersion = IFCVersion.IFCBCA
+	if fileversion == "IFCCOBIE":
+		options.FileVersion = IFCVersion.IFCCOBIE
+	if fileversion == "":
+		options.FileVersion = IFCVersion.Default
+		
+	options.WallAndColumnSplitting = wallandcolumnsplitting
+	options.ExportBaseQuantities = exportbasequantities
+	options.FilterViewId = v.Id
+	options.AddOption("ExportInternalRevitPropertySets",revitInternalPset)
+	options.AddOption("ExportIFCCommonPropertySets","true")	
+	options.AddOption("ExportAnnotations ","true")
+	options.AddOption("SpaceBoundaries ", "0")
+	options.AddOption("ExportRoomsInView", "false")	
+	options.AddOption("Use2DRoomBoundaryForVolume ", "true")
+	options.AddOption("UseFamilyAndTypeNameForReference ", "true")
+	options.AddOption("Export2DElements", "false")
+	options.AddOption("ExportPartsAsBuildingElements", "false")
+	options.AddOption("ExportBoundingBox", "false")
+	options.AddOption("ExportSolidModelRep", "true")
+	options.AddOption("ExportSchedulesAsPsets", "false")
+	options.AddOption("ExportSpecificSchedules", "false")
+	
+	#True doesn't work. It would be necessary to use OpenInBackground method.
+	options.AddOption("ExportLinkedFiles", "false")
+	
+	options.AddOption("IncludeSiteElevation","true")
+	options.AddOption("StoreIFCGUID", "true")
+	options.AddOption("VisibleElementsOfCurrentView ", "true")
+	options.AddOption("UseActiveViewGeometry", "true")
+	options.AddOption("TessellationLevelOfDetail", "0,5")
+	options.AddOption("ExportUserDefinedPsets",userDefPsetBool)
+	if userDefinedPset != "":
+		options.AddOption("ExportUserDefinedPsetsFileName",userDefinedPset)	
+	else:
+		pass
+	if inputPhase != None:
+		options.AddOption("ActivePhase", phaseString)
+	else:
+		pass
+	options.AddOption("SitePlacement", IN[4])	
+#	options.AddOption("ClassificationName","x")
+#	options.AddOption("ClassificationFieldName","x")
+
+	c=doc.Export(folder, name[i], options)
+	result.append(c)
+
+# End Transaction
+TransactionManager.Instance.TransactionTaskDone()
+
+if fileversion == "":
+	OUT="Default settings used"
+else:
+	OUT='Success'</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b9148294-b88d-4c72-b4aa-62e53f5bb255" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="2093.31498098202" y="939.893950198465" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Succeed" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="dc542c10-cfbf-48cb-a53d-e3c88a795b64" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1350.91498098202" y="757.893950198465" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="DirectoryPath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d4ee07e5-aafd-4320-bb70-e254f3a1a18c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="971.497532393037" y="855.555533791974" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="95d7acbb-5dde-4a5a-a65e-f1911d7c90c1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="920.105290295159" y="941.652919097161" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Filename" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="3e68fc66-ecb1-43bb-a9bb-1fa643f72052" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1199.30529029516" y="945.866252430494" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="DSCore.List.Flatten(item,-1);" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e3529bb9-ae54-4d73-b068-5abb9ae5d4a9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1228.2402699771" y="1023.95003931307" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//IFC Version&#xD;&#xA;IFCversion : string = &quot;IFC2x3&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3c642313-f2bc-4c57-814c-d5eb51632452" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1141.87426785993" y="1137.25945756744" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//SharedCoordinates =&quot;0&quot;, SiteSurveyPoint =&quot;1&quot;,&#xD;&#xA;//ProjectBasePoint=&quot;2&quot;, InternalCoordinates=&quot;3&quot;&#xD;&#xA;ProjectOrigin : string = &quot;3&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="17425d4b-19a7-471a-8286-ed6514007576" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1141.17294710582" y="1270.59777246417" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//If no phase is connected, export Default phase&#xD;&#xA;Phase : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d9e9536c-e361-470b-b4ef-b9eb58917456" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1243.12200243156" y="1374.41813775612" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//FilePath&#xD;&#xA;UserDefinedPSet : var[]..[] = &quot;&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="af682963-e3db-4fb8-b2d0-d0786d1e330e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1267.15698787953" y="1473.38572489484" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RevitInternalPset : bool = true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d800e7c7-462f-4aa9-bab9-d70f7967eb8c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1221.64812110709" y="1542.6257236872" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="WallAndColumnSplitting : bool = false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6e905c1e-dac3-4b9e-8a4e-22f79e439116" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1228.40939581769" y="1627.09093973313" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ExportBaseQuantities : bool = false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" start_index="0" end="b9148294-b88d-4c72-b4aa-62e53f5bb255" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="dc542c10-cfbf-48cb-a53d-e3c88a795b64" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d4ee07e5-aafd-4320-bb70-e254f3a1a18c" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="95d7acbb-5dde-4a5a-a65e-f1911d7c90c1" start_index="0" end="3e68fc66-ecb1-43bb-a9bb-1fa643f72052" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3e68fc66-ecb1-43bb-a9bb-1fa643f72052" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e3529bb9-ae54-4d73-b068-5abb9ae5d4a9" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3c642313-f2bc-4c57-814c-d5eb51632452" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="17425d4b-19a7-471a-8286-ed6514007576" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d9e9536c-e361-470b-b4ef-b9eb58917456" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="af682963-e3db-4fb8-b2d0-d0786d1e330e" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="7" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d800e7c7-462f-4aa9-bab9-d70f7967eb8c" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="8" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6e905c1e-dac3-4b9e-8a4e-22f79e439116" start_index="0" end="acd35c2d-4b0b-4cb3-b2f7-884aaafbb740" end_index="9" portType="0" />
+  </Connectors>
+  <Notes>
+    <Dynamo.Graph.Notes.NoteModel guid="e53b16cf-960b-4d8b-bb62-8d271e0519f7" text="IFC Version :&#xD;&#xA;&quot;IFC2x2&quot;;&#xD;&#xA;&quot;IFC2x3&quot;;&#xD;&#xA;&quot;IFC2x3CV2&quot;;&#xD;&#xA;&quot;IFC2x2&quot;;&#xD;&#xA;&quot;IFC4&quot;;&#xD;&#xA;&quot;IFCBCA&quot;;&#xD;&#xA;&quot;IFCCOBIE&quot;;" x="1032.50079220327" y="620.335215533862" />
+  </Notes>
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
