@@ -1,0 +1,38 @@
+<Workspace Version="1.3.4.6666" X="-174.753" Y="-5.273" zoom="0.8425" ScaleFactor="1" Name="Fill Pattern HostOrientation" Description="Enumerates the types of orientations for fill patterns (OrientToView, KeepReadable, AlignWithHost).&#xD;&#xA;To use with the Create FillPattern node." ID="d2644363-6d75-456e-a33d-5b370df060ff" Category="GeniusLoci.FillPattern">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="bb795b25-65de-466b-b01d-da82373a1043" type="PythonNodeModels.PythonNode" nickname="Python Script" x="285.872997032641" y="316.780079129575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+import System
+
+OUT = System.Enum.GetValues(Autodesk.Revit.DB.FillPatternHostOrientation)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f25f85f1-8cc5-4793-9dd0-03d97c644a70" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="671.072997032641" y="251.353412462908" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="OrientToView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="30a1f4b8-c1cf-416b-9ea9-62f2df1fbbe5" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="479.872997032641" y="320.993412462908" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="38e530b2-d048-4938-84e4-e5c769632db6" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="671.072997032641" y="334.353412462908" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="KeepReadable" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3d2b0a8c-65a1-4dc1-9cad-fe9435f92911" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="671.072997032641" y="417.353412462908" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="AlignWithHost" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="bb795b25-65de-466b-b01d-da82373a1043" start_index="0" end="30a1f4b8-c1cf-416b-9ea9-62f2df1fbbe5" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="30a1f4b8-c1cf-416b-9ea9-62f2df1fbbe5" start_index="0" end="f25f85f1-8cc5-4793-9dd0-03d97c644a70" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="30a1f4b8-c1cf-416b-9ea9-62f2df1fbbe5" start_index="1" end="38e530b2-d048-4938-84e4-e5c769632db6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="30a1f4b8-c1cf-416b-9ea9-62f2df1fbbe5" start_index="2" end="3d2b0a8c-65a1-4dc1-9cad-fe9435f92911" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

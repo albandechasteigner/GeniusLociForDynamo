@@ -1,0 +1,74 @@
+<Workspace Version="1.3.4.6666" X="45.2732585125" Y="15.5927597999999" zoom="0.593767140625" ScaleFactor="1" Name="Material Create and Add AppearanceAssetElement" Description="Works only in Revit 2018.1 and later.&#xD;&#xA;Requires a material called Default.&#xD;&#xA;Duplicates the Appearance Asset Element of the &quot;Default&quot; material, give him a chosen name, and applies it to the given material." ID="a2675a41-1cc3-440a-bca5-fa8a48fcca20" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="ad194a26-688b-484a-85eb-ebf7da255c54" type="PythonNodeModels.PythonNode" nickname="Create Asset" x="447.953183424441" y="538.305340927204" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+import clr
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc =  DocumentManager.Instance.CurrentDBDocument
+app =  DocumentManager.Instance.CurrentUIApplication.Application
+
+def toList(obj):
+    if hasattr(obj, '__iter__'): return obj
+    else: return [obj]
+
+mats = toList(UnwrapElement(IN[0]))
+assetElemNames = toList(IN[1])
+
+duplicateAssetElements=[]
+collector = FilteredElementCollector(doc).OfClass(Material)
+for i in collector :
+	if i.Name == "Default":
+		default=i
+	else:
+		continue
+
+assetElem = doc.GetElement(default.AppearanceAssetId)
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for assetElemName in assetElemNames:
+	duplicateAssetElements.append(assetElem.Duplicate(assetElemName))
+	for mat,duplicateAssetElement in zip(mats,duplicateAssetElements):
+		mat.AppearanceAssetId = duplicateAssetElement.Id
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = mats
+else: OUT = mats[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ecdc6a6a-4ca5-41db-9757-7f1c67e29b66" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="278.8" y="525.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="fc878fba-bac5-413c-a9ff-1b1a2def1299" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="614" y="532.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="05cd5a26-7a75-42b2-9a2b-90cef8d5c865" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="60.544111991948" y="600.371653028542" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Name of the new Appearance Asset&#xD;&#xA;Name:string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="ad194a26-688b-484a-85eb-ebf7da255c54" start_index="0" end="fc878fba-bac5-413c-a9ff-1b1a2def1299" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ecdc6a6a-4ca5-41db-9757-7f1c67e29b66" start_index="0" end="ad194a26-688b-484a-85eb-ebf7da255c54" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="05cd5a26-7a75-42b2-9a2b-90cef8d5c865" start_index="0" end="ad194a26-688b-484a-85eb-ebf7da255c54" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

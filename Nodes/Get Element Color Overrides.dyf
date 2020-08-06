@@ -1,0 +1,110 @@
+<Workspace Version="1.3.4.6666" X="127.994688012253" Y="81.1637864325522" zoom="0.538046297688571" ScaleFactor="1" Name="Get Element Color Overrides" Description="Retrieves the color of the element with several methods (view-specific, view filter and material overrides)." ID="e0dc231a-7aaa-4278-a3ef-7540296b98c5" Category="GeniusLoci.Graphics">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="806c2c7c-e651-4d45-8e6d-b7ae81afb30d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="297.939755863902" y="335.585888668641" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1088d41a-4328-4657-8be4-1835cea5b7f9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="606.8" y="372.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Color" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e99fa0eb-4676-4701-950d-83c5df8f9c99" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-145.6" y="412.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="9edae239-ff12-4e47-a786-50e471a16c57" type="PythonNodeModels.PythonNode" nickname="Get color override" x="435.2" y="367.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Based on a Lukas Mikkelsen's script
+import clr
+clr.AddReference('DSCoreNodes')
+import DSCore
+from DSCore import Color
+
+#Import ToDSType(bool) extension method
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+
+elements = tolist(UnwrapElement(IN[0]))
+views = tolist(UnwrapElement(IN[1]))[0]
+
+output = []
+
+for element in elements :
+	#activeview = doc.ActiveView
+	override = views.GetElementOverrides(element.Id)
+	color = None
+	if override.ProjectionFillColor.IsValid:
+		color = DSCore.Color.ByARGB(255, override.ProjectionFillColor.Red, override.ProjectionFillColor.Green, override.ProjectionFillColor.Blue)
+	else:
+		filters = views.GetFilters() # Get all the filter ids
+		for f in filters:
+			filtercats = [x for x in doc.GetElement(f).GetCategories()]
+			# Check if element category corresponds to filter category
+			if element.Category.Id in filtercats:
+			 	filterrules = doc.GetElement(f).GetRules()
+			 	rulepassed = []
+			 	# Check if element passes all filter rules
+			 	for frule in filterrules:
+			 		rulepassed.append(frule.ElementPasses(element))
+			 	if all(rulepassed):
+		 			override = views.GetFilterOverrides(f)
+					# BEWARE: THIS PART ASSUMES THAT MULTIPLE FILTERS DOES NOT COLLIDE IN REGARDS TO COLOR DEFINITION OF THE ELEMENT
+		 			if override.ProjectionFillColor.IsValid:
+						color = DSCore.Color.ByARGB(255, override.ProjectionFillColor.Red, override.ProjectionFillColor.Green, override.ProjectionFillColor.Blue)
+			 		else:
+			 			pass
+			 	# Otherwise element does not satisfy the filter
+			 	else:
+			 		pass
+			# Otherwise the element category does not correspond to the filter category
+			else:
+				pass
+		# Check if color has been previously defined.
+		# If the color is retrieved based on material, our element may consist of multiple materials.
+		if not color:
+			color = []
+			mats = [doc.GetElement(x) for x in element.GetMaterialIds(False)]
+			for mat in mats:
+				color.append(DSCore.Color.ByARGB(255, mat.Color.Red, mat.Color.Green, mat.Color.Blue))
+		else:
+			pass
+	output.append(color)
+#Assign your output to the OUT variable
+if isinstance(IN[0], list): OUT = output
+else: OUT = output[0]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="806c2c7c-e651-4d45-8e6d-b7ae81afb30d" start_index="0" end="9edae239-ff12-4e47-a786-50e471a16c57" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e99fa0eb-4676-4701-950d-83c5df8f9c99" start_index="0" end="9edae239-ff12-4e47-a786-50e471a16c57" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9edae239-ff12-4e47-a786-50e471a16c57" start_index="0" end="1088d41a-4328-4657-8be4-1835cea5b7f9" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

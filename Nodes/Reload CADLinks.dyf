@@ -1,0 +1,64 @@
+<Workspace Version="1.3.4.6666" X="-319.49162340011" Y="-12.6969752262943" zoom="0.959788699581266" ScaleFactor="1" Name="Reload CADLinks" Description="Reload imported CAD from its current location.&#xD;&#xA;Works only in Revit 2018 and later." ID="e98eae5d-7238-4169-befe-f30d5e884566" Category="GeniusLoci.CAD Import">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="10f245d3-e6d2-4717-9f46-b5d382c1b652" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="612.718763535401" y="294.14" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="ebb5f759-ff14-44b1-9c92-61cd01fdb8c4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="803.918763535401" y="224.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4e0932f9-5ffa-4996-9969-dbbf3b6ed23d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="803.918763535401" y="307.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="CADLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="806f78e7-e28c-4d13-979d-cac52e95b6ae" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="803.918763535401" y="390.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ImportInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="1ca439b0-f99f-4e4b-8150-d111a036a788" type="PythonNodeModels.PythonNode" nickname="Reload CADLinks" x="397.518763535401" y="289.926666666667" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>#Alban de Chasteigner, 2018
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+doc = DocumentManager.Instance.CurrentDBDocument
+
+outName, CADlinktype, importinst = [], [], []
+
+importInstances = FilteredElementCollector(doc).OfClass(Autodesk.Revit.DB.ImportInstance).ToElements()
+
+#Start the transaction
+TransactionManager.Instance.EnsureInTransaction(doc)
+
+for importins in importInstances :
+	if importins.IsLinked:
+		CADLink = doc.GetElement(importins.GetTypeId())
+		CADLink.Reload()
+		importinst.append(importins)
+		CADlinktype.append(CADLink)
+		name = Element.Name.GetValue(CADLink)
+		outName.append(name)
+
+TransactionManager.Instance.TransactionTaskDone()
+#Assign your output to the OUT variable.
+OUT = outName,CADlinktype,importinst</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="10f245d3-e6d2-4717-9f46-b5d382c1b652" start_index="0" end="ebb5f759-ff14-44b1-9c92-61cd01fdb8c4" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="10f245d3-e6d2-4717-9f46-b5d382c1b652" start_index="1" end="4e0932f9-5ffa-4996-9969-dbbf3b6ed23d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="10f245d3-e6d2-4717-9f46-b5d382c1b652" start_index="2" end="806f78e7-e28c-4d13-979d-cac52e95b6ae" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1ca439b0-f99f-4e4b-8150-d111a036a788" start_index="0" end="10f245d3-e6d2-4717-9f46-b5d382c1b652" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

@@ -1,0 +1,81 @@
+<Workspace Version="1.3.4.6666" X="-140.672665266588" Y="-165.081007051635" zoom="0.635856709296404" ScaleFactor="1" Name="Repath CADLinks" Description="Reload imported CAD from an unique folder.&#xD;&#xA;Works only in Revit 2018 and above." ID="ceb284c9-807d-499f-84af-b78b22f56627" Category="GeniusLoci.CAD Import">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="e1f13815-a2c9-4a71-b6c7-534b8e693b82" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="866.895350875466" y="653.763241017094" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f07ec334-9550-4c48-b7d7-d91a94456d70" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="452.342858650561" y="646.370731418934" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RunIt : bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="491b37fb-2845-418c-9a7e-5602916b46d8" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1071.71793909492" y="643.436452386262" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="CADLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f1760cf7-263b-4251-959f-67df945ada3d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1069.47973757121" y="721.020688259771" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4c859344-f128-46f7-8312-27682bfffb70" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="447.773147829302" y="716.544588286947" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="DirectoryPath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b96c0d8a-2910-4fbd-b6c9-1dab035acaee" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1074.90692898951" y="796.427044774899" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FilePath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="b6d6b192-ed5e-4857-b2f0-41847abba88c" type="PythonNodeModels.PythonNode" nickname="Repath CADLinks" x="692.481465984236" y="656.880438154405" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Inspired by Thed Hogan and Nick_Boyts
+#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+linkInstances = FilteredElementCollector(doc).OfClass(CADLinkType)
+
+toggle = IN[0]
+folderpath = IN[1]
+outName,load,filepath = [],[], [] 
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+if toggle == True:
+	for link in sorted(linkInstances, key = lambda object: Element.Name.GetValue(object)):
+		if link.IsExternalFileReference():
+			name = Element.Name.GetValue(link)
+			outName.append(name)
+			path = folderpath + "\\" + name
+			paths = path.rsplit(' : ',2)[0]
+			link.LoadFrom(paths);
+			load.append(link);
+			filepath.append(paths)	
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT= load,outName,filepath</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="e1f13815-a2c9-4a71-b6c7-534b8e693b82" start_index="0" end="491b37fb-2845-418c-9a7e-5602916b46d8" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e1f13815-a2c9-4a71-b6c7-534b8e693b82" start_index="1" end="f1760cf7-263b-4251-959f-67df945ada3d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e1f13815-a2c9-4a71-b6c7-534b8e693b82" start_index="2" end="b96c0d8a-2910-4fbd-b6c9-1dab035acaee" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f07ec334-9550-4c48-b7d7-d91a94456d70" start_index="0" end="b6d6b192-ed5e-4857-b2f0-41847abba88c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4c859344-f128-46f7-8312-27682bfffb70" start_index="0" end="b6d6b192-ed5e-4857-b2f0-41847abba88c" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b6d6b192-ed5e-4857-b2f0-41847abba88c" start_index="0" end="e1f13815-a2c9-4a71-b6c7-534b8e693b82" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

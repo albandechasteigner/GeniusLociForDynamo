@@ -1,0 +1,65 @@
+<Workspace Version="1.3.4.6666" X="25.7585903441312" Y="17.2244399662094" zoom="0.631317243097572" ScaleFactor="1" Name="SelectByCategoryAndView" Description="Collects elements by Category and View in the active or given document." ID="64218d82-6e92-4d4d-90cb-05646d085ab4" Category="GeniusLoci.Select">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f60757a2-9a63-4ecc-874e-987a0f7c6a26" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="785.672172572062" y="286.627300467428" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Elements" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="e78b5845-516a-4259-b257-8a6861924251" type="PythonNodeModels.PythonNode" nickname="SelectByCategoryAndView" x="545.951714217637" y="285.661710069981" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+
+def tolist(x):
+    if hasattr(x,'__iter__'): return x
+    else : return [x]
+
+views = tolist(UnwrapElement(IN[0]))
+cats = tolist(UnwrapElement(IN[1]))
+
+linkedEl,elements = [],[]
+for view in views:
+	doc=view.Document
+	for cat in cats:
+		collector = FilteredElementCollector(doc,view.Id).OfCategoryId(cat.Id).ToElements()
+		linkedEl.append(collector)
+	elements.append(linkedEl)
+
+if not isinstance(IN[0], list) and not isinstance(IN[1], list): OUT = elements[0][0]
+else: OUT = elements[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="09c3e538-f09f-4e4f-af10-2560be6cea9e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-89.6139288655884" y="244.397035452525" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//View of current or given document&#xD;&#xA;view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="89ae866e-44b6-4484-bfdf-39db12b30624" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="318.90401038665" y="348.446625064029" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="category" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="e78b5845-516a-4259-b257-8a6861924251" start_index="0" end="f60757a2-9a63-4ecc-874e-987a0f7c6a26" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="09c3e538-f09f-4e4f-af10-2560be6cea9e" start_index="0" end="e78b5845-516a-4259-b257-8a6861924251" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="89ae866e-44b6-4484-bfdf-39db12b30624" start_index="0" end="e78b5845-516a-4259-b257-8a6861924251" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

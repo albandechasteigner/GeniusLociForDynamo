@@ -1,0 +1,142 @@
+<Workspace Version="1.3.4.6666" X="-325.476523828756" Y="-55.5789293773149" zoom="0.779970979395824" ScaleFactor="1" Name="Material Set Render Color" Description="Works only in Revit 2018.1 and later.&#xD;&#xA;Set the rendering color in the Appearance Asset of the given material with the provided color.&#xD;&#xA;If no color is provided, the node will use the shading color of the material." ID="d96d5937-3875-4da2-9a64-bf012f26d30d" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="DSCore.Color" resolvedName="DSCore.Color" assemblyName="DSCoreNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8a0205b7-563c-44d4-993b-c45380c2e60e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="526.152143558268" y="375.507761254826" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="9fce4799-81a8-4070-bb08-9a0ee51911cc" type="PythonNodeModels.PythonNode" nickname="Set Render Color" x="804" y="394.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def toList(obj):
+    if hasattr(obj, '__iter__'): return obj
+    else: return [obj]
+    
+mats = toList(UnwrapElement(IN[0]))
+colors = toList(IN[1])
+
+def ToRevitColor(dynamoColor):
+	return Color(dynamoColor.Red, dynamoColor.Green, dynamoColor.Blue)
+
+if colors[0] == None :
+	for mat in mats :
+		appearanceAssetId = mat.AppearanceAssetId
+		assetElem = doc.GetElement(appearanceAssetId)
+		TransactionManager.Instance.EnsureInTransaction(doc)
+		with Visual.AppearanceAssetEditScope(doc) as editScope:
+			editableAsset = editScope.Start(assetElem.Id)
+			if (editableAsset.FindByName("BaseSchema")).Value == "GenericSchema":
+				genericDiffuseProperty = editableAsset.FindByName("generic_diffuse")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "CeramicSchema":
+				genericDiffuseProperty = editableAsset.FindByName("ceramic_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "ConcreteSchema":
+				genericDiffuseProperty = editableAsset.FindByName("concrete_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "GlazingSchema":
+				genericDiffuseProperty = editableAsset.FindByName("glazing_transmittance_map")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "MetallicPaintSchema":
+				genericDiffuseProperty = editableAsset.FindByName("metallicpaint_base_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "MasonryCMUSchema":
+				genericDiffuseProperty = editableAsset.FindByName("masonrycmu_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "MirrorSchema":
+				genericDiffuseProperty = editableAsset.FindByName("mirror_tintcolor")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PlasticVinylSchema":
+				genericDiffuseProperty = editableAsset.FindByName("plasticvinyl_color")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismLayeredSchema":
+				genericDiffuseProperty = editableAsset.FindByName("layered_diffuse")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismMetalSchema":
+				genericDiffuseProperty = editableAsset.FindByName("metal_f0")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismOpaqueSchema":
+				genericDiffuseProperty = editableAsset.FindByName("opaque_albedo")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "SolidGlassSchema":
+				genericDiffuseProperty = editableAsset.FindByName("solidglass_transmittance_custom_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "WallPaintSchema":
+				genericDiffuseProperty = editableAsset.FindByName("wallpaint_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismTransparentSchema":
+				genericDiffuseProperty = editableAsset.FindByName("transparent_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "WaterSchema":
+				genericDiffuseProperty = editableAsset.FindByName("water_tint_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "HardwoodSchema":
+				genericDiffuseProperty = editableAsset.FindByName("hardwood_tint_color")
+			genericDiffuseProperty.SetValueAsColor(mat.Color)
+			editScope.Commit(True)
+		TransactionManager.Instance.TransactionTaskDone()
+
+else:
+	for mat, color in zip(mats, colors):
+		appearanceAssetId = mat.AppearanceAssetId
+		assetElem = doc.GetElement(appearanceAssetId)
+		TransactionManager.Instance.EnsureInTransaction(doc)
+		with Visual.AppearanceAssetEditScope(doc) as editScope:
+			editableAsset = editScope.Start(assetElem.Id)
+			if (editableAsset.FindByName("BaseSchema")).Value == "GenericSchema":
+				genericDiffuseProperty = editableAsset.FindByName("generic_diffuse")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "CeramicSchema":
+				genericDiffuseProperty = editableAsset.FindByName("ceramic_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "ConcreteSchema":
+				genericDiffuseProperty = editableAsset.FindByName("concrete_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "GlazingSchema":
+				genericDiffuseProperty = editableAsset.FindByName("glazing_transmittance_map")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "MetallicPaintSchema":
+				genericDiffuseProperty = editableAsset.FindByName("metallicpaint_base_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "MasonryCMUSchema":
+				genericDiffuseProperty = editableAsset.FindByName("masonrycmu_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "MirrorSchema":
+				genericDiffuseProperty = editableAsset.FindByName("mirror_tintcolor")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PlasticVinylSchema":
+				genericDiffuseProperty = editableAsset.FindByName("plasticvinyl_color")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismLayeredSchema":
+				genericDiffuseProperty = editableAsset.FindByName("layered_diffuse")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismMetalSchema":
+				genericDiffuseProperty = editableAsset.FindByName("metal_f0")			
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismOpaqueSchema":
+				genericDiffuseProperty = editableAsset.FindByName("opaque_albedo")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "SolidGlassSchema":
+				genericDiffuseProperty = editableAsset.FindByName("solidglass_transmittance_custom_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "WallPaintSchema":
+				genericDiffuseProperty = editableAsset.FindByName("wallpaint_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "PrismTransparentSchema":
+				genericDiffuseProperty = editableAsset.FindByName("transparent_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "WaterSchema":
+				genericDiffuseProperty = editableAsset.FindByName("water_tint_color")
+			elif (editableAsset.FindByName("BaseSchema")).Value == "HardwoodSchema":
+				genericDiffuseProperty = editableAsset.FindByName("hardwood_tint_color")
+			genericDiffuseProperty.SetValueAsColor(ToRevitColor(color))	
+			editScope.Commit(True)
+		TransactionManager.Instance.TransactionTaskDone()
+
+OUT = mats</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="29387eb4-8adb-4894-a7e6-4fd2c99785f5" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1056" y="392.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c393658b-5cc8-4ce0-96fa-30eae403badf" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="427.514263537704" y="450.661993648555" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Optional input (Dynamo Color)&#xD;&#xA;color:var[]..[]= null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="8a0205b7-563c-44d4-993b-c45380c2e60e" start_index="0" end="9fce4799-81a8-4070-bb08-9a0ee51911cc" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9fce4799-81a8-4070-bb08-9a0ee51911cc" start_index="0" end="29387eb4-8adb-4894-a7e6-4fd2c99785f5" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="c393658b-5cc8-4ce0-96fa-30eae403badf" start_index="0" end="9fce4799-81a8-4070-bb08-9a0ee51911cc" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

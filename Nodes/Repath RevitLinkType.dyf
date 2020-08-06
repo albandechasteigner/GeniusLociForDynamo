@@ -1,0 +1,63 @@
+<Workspace Version="1.3.4.6666" X="-12.2588775202245" Y="126.639091561111" zoom="0.597487094815786" ScaleFactor="1" Name="Repath RevitLinkType" Description="Reloads the linked Revit file(s) from a folder." ID="caf8a081-d29d-4dc2-8fa6-90640606245c" Category="GeniusLoci.Import">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f85b09be-01e8-44fc-86d8-76d144071326" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="247.369710821259" y="163.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RunIt : bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1dd6e055-de03-4772-9680-f922f1f44311" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="728.980330401701" y="189.774631712173" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="RevitLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ca021135-14af-46a1-a0c4-f6b8cdf60b16" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="267.840206418002" y="271.828658442349" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="DirectoryPath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="86e1df2f-20a6-4917-a486-791f03e0011d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="502.448203187067" y="193.022257119065" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Based on a Nick Boyts's script.
+import clr
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+linkInstances = Autodesk.Revit.DB.FilteredElementCollector(doc).OfClass(Autodesk.Revit.DB.RevitLinkInstance)
+toggle = IN[0]
+folderpath = IN[1]
+reloadedlinks= []
+
+if toggle == True:
+	for i in linkInstances:
+		name = i.Name
+		path = folderpath + "\\" + name
+		paths = path.rsplit(' : ',2)[0]
+		filepath = FilePath(paths)
+		RevitLinkType=doc.GetElement(i.GetTypeId())
+		try:
+			RevitLinkType.LoadFrom(filepath,None)
+		except:
+			pass
+		reloadedlinks.append(RevitLinkType)
+
+OUT= reloadedlinks</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="f85b09be-01e8-44fc-86d8-76d144071326" start_index="0" end="86e1df2f-20a6-4917-a486-791f03e0011d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ca021135-14af-46a1-a0c4-f6b8cdf60b16" start_index="0" end="86e1df2f-20a6-4917-a486-791f03e0011d" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="86e1df2f-20a6-4917-a486-791f03e0011d" start_index="0" end="1dd6e055-de03-4772-9680-f922f1f44311" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

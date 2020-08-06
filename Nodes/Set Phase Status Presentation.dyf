@@ -1,0 +1,79 @@
+<Workspace Version="1.3.4.6666" X="192.100545" Y="165.72465" zoom="0.70823125" ScaleFactor="1" Name="Set Phase Status Presentation" Description="Sets the phase status presentation. " ID="dddd5483-e40d-4ed2-8d9b-a5a71123c166" Category="GeniusLoci.Phase">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="979faaa8-b9fe-4094-bcfb-1538306495e9" type="PythonNodeModels.PythonNode" nickname="Python Script" x="513.4" y="387.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+import System
+
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+phasefilters = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+elementOnPhaseStatus = IN[1] if isinstance(IN[1],list) else [IN[1]]
+phaseStatusPresentations = IN[2] if isinstance(IN[2],list) else [IN[2]]
+
+OnPhaseStatus,StatusPresentations=[],[]
+for x in elementOnPhaseStatus :
+	if isinstance(x, basestring):
+		OnPhaseStatus.append(System.Enum.Parse(Autodesk.Revit.DB.ElementOnPhaseStatus, x))
+	else:
+		OnPhaseStatus=elementOnPhaseStatus
+
+for y in phaseStatusPresentations :
+	if isinstance(y, basestring):
+		StatusPresentations.append(System.Enum.Parse(Autodesk.Revit.DB.PhaseStatusPresentation, y))
+	else:
+		StatusPresentations=phaseStatusPresentations
+
+phasefil = []
+TransactionManager.Instance.EnsureInTransaction(doc)
+for phasefilter in phasefilters:
+	for elementOnPhase, phaseStatusPresentation in zip (OnPhaseStatus, StatusPresentations):
+		phasefilter.SetPhaseStatusPresentation(elementOnPhase, phaseStatusPresentation)
+	phasefil.append(phasefilter)
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = phasefil
+else: OUT = phasefil[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="37a045bf-d8e4-47af-a6bf-a9301e23d3bf" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="69.3999999999998" y="326.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="PhaseFilter" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="06708968-5c69-4e82-a767-5ef39c78422c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="69.3999999999998" y="410.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or DB.ElementOnPhaseStatus&#xD;&#xA;elementOnPhaseStatus" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="37840e02-421c-4cbc-83da-035685e7ee9d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="69.3999999999998" y="503.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or DB.PhaseStatusPresentation&#xD;&#xA;phaseStatusPresentation" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="23858a85-426b-4911-9c7a-b4fbc2fae279" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="738.2" y="387.5" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="PhaseFilter" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="979faaa8-b9fe-4094-bcfb-1538306495e9" start_index="0" end="23858a85-426b-4911-9c7a-b4fbc2fae279" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="37a045bf-d8e4-47af-a6bf-a9301e23d3bf" start_index="0" end="979faaa8-b9fe-4094-bcfb-1538306495e9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="06708968-5c69-4e82-a767-5ef39c78422c" start_index="0" end="979faaa8-b9fe-4094-bcfb-1538306495e9" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="37840e02-421c-4cbc-83da-035685e7ee9d" start_index="0" end="979faaa8-b9fe-4094-bcfb-1538306495e9" end_index="2" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

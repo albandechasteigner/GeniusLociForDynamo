@@ -1,0 +1,131 @@
+<Workspace Version="1.3.3.4651" X="-180.150929452169" Y="84.7236513383147" zoom="0.642869557405948" ScaleFactor="1" Name="ReportRevitLinks" Description="Inspired by Bimorph.&#xD;&#xA;Generates a report of all Revit links in the document. &#xD;&#xA;Revit links properties are output to facilitate the Revit link model management." ID="e8f7a020-3f6f-4329-aacb-d454156eecd4" Category="GeniusLoci.Import">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="229feaef-c982-44b9-9f38-02e077cb802d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="1122.27254763371" y="362.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#node inspired by Thomas Mahon @Thomas__Mahon info@bimorph.co.uk Package: bimorphNodes
+#Modification by Alban de Chasteigner, 2018
+
+import clr
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+#
+def convertToList(listToConvert):
+	if isinstance(listToConvert, list):
+		return listToConvert
+	else:
+		return [listToConvert]
+
+def rvtAuditReporter(doc):
+	rvtLinkCollector = FilteredElementCollector(doc).OfClass(RevitLinkInstance)
+	rvtLinks = rvtLinkCollector.ToElements()
+	
+	RVTLinkList = []
+	RVTLinkTypeList = []
+	report = []
+	for rvt in rvtLinks:
+		name = rvt.get_Parameter(BuiltInParameter.RVT_LINK_INSTANCE_NAME).AsString()
+		linkname = Element.Name.GetValue(rvt)
+		linkPinned = rvt.Pinned
+		workSetId = rvt.WorksetId
+		worksetNames = None
+		wSetsInDoc = FilteredWorksetCollector( doc )
+		for w in wSetsInDoc:
+			if w.Id == workSetId:
+				worksetNames = "Workset : " + w.Name
+		
+		try:
+			rvtType = doc.GetElement( rvt.GetTypeId() )
+			rvtExternalRef = rvtType.GetExternalFileReference()
+			path = ModelPathUtils.ConvertModelPathToUserVisiblePath( rvtExternalRef.GetAbsolutePath() )
+		
+		except:
+			path = "Path : N/A"
+		
+		rvtType = doc.GetElement( rvt.GetTypeId() )
+		exRef = rvtType.GetExternalFileReference()
+		linkStatus = exRef.GetLinkedFileStatus()
+		
+		RVTLinkList.Add( rvt)
+		RVTLinkTypeList.Add(rvtType)		
+		report.Add( [rvt, "Assigned Name : "+name,linkname,  "Status : "+ str(linkStatus),"Pinned : " + str(linkPinned), worksetNames, path] )
+			
+	return report, RVTLinkList,RVTLinkTypeList
+
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+
+processDocument = None
+if IN[0] == "" or IN[0] == []:
+	doc = DocumentManager.Instance.CurrentDBDocument
+	processDocument = rvtAuditReporter(doc)
+	report = processDocument[0]
+	RVTLinkList = processDocument[1]
+	RVTLinkTypeList=processDocument[2]
+	if report == []:
+		OUT = ["No Linked Revit files found"], [], []
+	else:
+		OUT = report, RVTLinkList,  RVTLinkTypeList
+		
+else:
+	report = []
+	RVTLinkList = []
+	RVTLinkTypeList = []
+	filePath = convertToList(IN[0])
+	for path in filePath:
+		doc = app.OpenDocumentFile(FilePath( str(path) ), OpenOptions())
+		processDocument = rvtAuditReporter(doc) 
+		report.Add(processDocument[0])
+		RVTLinkList.Add(processDocument[1])
+		RVTLinkTypeList.Add(processDocument[2])
+
+	if report == []:
+		OUT = ["No Linked Revit files found"], [], []
+	else:
+		OUT = report[0], [[]] if RVTLinkList == [] else RVTLinkList[0], [[]] if RVTLinkTypeList == [] else RVTLinkTypeList[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="54d14d0f-abf6-49bc-9faa-aa9efb73a87f" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1294.80399125231" y="370.183548290008" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="OUT[0];&#xA;OUT[1];&#xA;OUT[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="5bbdbc96-948b-4447-b0fd-9f6269a3069c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="301.299108413406" y="312.072315836986" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//To report the current document leave unconnected. To report an external Revit document&#xD;&#xA;//input a File Path and the file will be audited silently (without needing to open the file)&#xD;&#xA;filePath:string=&quot;&quot;;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c29dd21a-74cc-4783-b35b-f83ae20a44c1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="487.099589526775" y="467.056533928475" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//To refresh, switch a bool input to its opposing state&#xD;&#xA;refresh:bool=true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="62bfcede-8fcb-4834-998a-c2a6cff6bb5e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1468.13862690289" y="312.072315836986" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Report" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="da223c79-ca80-45e3-a79d-3881a30c993a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1472.17538714144" y="385.576245260453" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="RevitLinkInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e1fd915b-7804-4b5f-9e6b-c92e485d497e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1469.18324598838" y="458.318987805229" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="RevitLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="229feaef-c982-44b9-9f38-02e077cb802d" start_index="0" end="54d14d0f-abf6-49bc-9faa-aa9efb73a87f" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="54d14d0f-abf6-49bc-9faa-aa9efb73a87f" start_index="0" end="62bfcede-8fcb-4834-998a-c2a6cff6bb5e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="54d14d0f-abf6-49bc-9faa-aa9efb73a87f" start_index="1" end="da223c79-ca80-45e3-a79d-3881a30c993a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="54d14d0f-abf6-49bc-9faa-aa9efb73a87f" start_index="2" end="e1fd915b-7804-4b5f-9e6b-c92e485d497e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5bbdbc96-948b-4447-b0fd-9f6269a3069c" start_index="0" end="229feaef-c982-44b9-9f38-02e077cb802d" end_index="0" portType="0" />
+  </Connectors>
+  <Notes>
+    <Dynamo.Graph.Notes.NoteModel guid="88a9fa89-8cdf-47f2-8675-72e9a568f4f6" text="Inspired by Bimorph" x="1142.38953007091" y="254.37955321957" />
+  </Notes>
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

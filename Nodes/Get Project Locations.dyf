@@ -1,0 +1,101 @@
+<Workspace Version="1.3.4.6666" X="-94.6568683069707" Y="144.67178943958" zoom="0.511971324458202" ScaleFactor="1" Name="Get Project Locations" Description="Works only in Revit 2018 and later.&#xD;&#xA;Retrieves the project positions with the survey point as the origin. &#xD;&#xA;(Coordinates of Internal origin, project base point and survey point)" ID="d62a592b-955d-451a-b2ad-0b25d25dc655" Category="GeniusLoci.Document">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f0365078-e546-4b44-be6d-e86ce817203e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="276.8" y="364.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="99a95d78-781b-4004-8d07-1e2893597bb6" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1212.8" y="336.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Active Project Location" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="6a8efd51-e638-45a6-846e-8efb8c62c869" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1215.6" y="411.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Project Base Point" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4d2931a6-d55b-4ef1-9d4a-ec2e38eab203" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1224.8" y="494.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Project Survey Point" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="36875564-14a7-4703-8366-99e3f851e7ac" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1089" y="377" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <PythonNodeModels.PythonNode guid="8a55f24f-b264-4358-9680-0e5e63345cca" type="PythonNodeModels.PythonNode" nickname="Get Project Origin, BasePoint and SurveyPoint" x="755.6" y="368.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+import math
+# import Document Manager
+clr.AddReference("RevitServices")
+import RevitServices 
+from RevitServices.Persistence import DocumentManager
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+clr.AddReference("RevitAPI")
+from Autodesk.Revit.DB import *
+import Autodesk
+
+#Part of script from Clockwork
+if isinstance(IN[0], list) : inputdoc = UnwrapElement(IN[0])
+else : inputdoc = [UnwrapElement(IN[0])]
+
+#Inputdoc : Part of script by Andreas Dieckmann
+if inputdoc[0] == None:
+    doc = DocumentManager.Instance.CurrentDBDocument
+elif inputdoc[0].GetType().ToString() == "Autodesk.Revit.DB.Document":
+    doc = inputdoc[0]
+elif inputdoc[0].GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
+    doc = inputdoc[0].GetLinkDocument()
+else: doc = None
+
+#angleUnit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Angle).DisplayUnits
+
+outProjBasePt, outProjSurvPt, outProjLoc = [],[],[]
+
+pbp = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_ProjectBasePoint).ToElements()
+sbp = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_SharedBasePoint).ToElements()
+
+projPos = doc.ActiveProjectLocation.GetProjectPosition(XYZ(0,0,0))
+
+version=int(app.VersionNumber)
+if version &gt; 2019 and inputdoc != None :
+	#projPos.Angle doesn't work correctly
+	#outProjBasePt = [pbp[0].SharedPosition.ToPoint(),round(Autodesk.Revit.DB.UnitUtils.ConvertFromInternalUnits(projPos.Angle,angleUnit),6)]
+	outProjBasePt = [pbp[0].SharedPosition.ToPoint(),round(pbp[0].get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble()*180/math.pi,6)]
+	outProjSurvPt = sbp[0].SharedPosition.ToPoint()
+else :
+	pbpEW = pbp[0].get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble()
+	pbpNS = pbp[0].get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble()
+	pbpElev = pbp[0].get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble()
+	pbpAngle = pbp[0].get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble()*180/math.pi    
+	outProjBasePt=[(XYZ(pbpEW,pbpNS,pbpElev)).ToPoint(),round(pbpAngle,6)]
+
+	pspEW = sbp[0].get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble()
+	pspNS = sbp[0].get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble()
+	pspElev = sbp[0].get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble()
+	outProjSurvPt = XYZ(pspEW,pspNS,pspElev).ToPoint()
+    	
+if projPos == None:
+	outProjLoc.append("No Project Position at origin point")
+else:
+	outProjLoc =XYZ(projPos.EastWest,projPos.NorthSouth,0).ToPoint()
+	
+OUT = [outProjLoc, outProjBasePt, outProjSurvPt]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="f0365078-e546-4b44-be6d-e86ce817203e" start_index="0" end="8a55f24f-b264-4358-9680-0e5e63345cca" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="36875564-14a7-4703-8366-99e3f851e7ac" start_index="0" end="99a95d78-781b-4004-8d07-1e2893597bb6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="36875564-14a7-4703-8366-99e3f851e7ac" start_index="1" end="6a8efd51-e638-45a6-846e-8efb8c62c869" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="36875564-14a7-4703-8366-99e3f851e7ac" start_index="2" end="4d2931a6-d55b-4ef1-9d4a-ec2e38eab203" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8a55f24f-b264-4358-9680-0e5e63345cca" start_index="0" end="36875564-14a7-4703-8366-99e3f851e7ac" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

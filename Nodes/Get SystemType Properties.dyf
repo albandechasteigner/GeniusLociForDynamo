@@ -1,0 +1,116 @@
+<Workspace Version="1.3.4.6666" X="-268.829360451116" Y="-43.046272259854" zoom="0.863147625765325" ScaleFactor="1" Name="Get SystemType Properties" Description="Returns the Mechanical or Piping System Type, the classification, the abbreviation, the line pattern, line weight, line color and the material." ID="e6cd015c-0aea-43b3-9aaf-943ab214f82e" Category="GeniusLoci.MEP">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="3179e944-3b83-4f44-814f-cbff0ab02b9b" type="PythonNodeModels.PythonNode" nickname="SystemType Properties" x="539.763509015273" y="378.675043388908" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+
+clr.AddReference('DSCoreNodes')
+import DSCore
+from DSCore import Color
+
+elements = UnwrapElement(IN[0])
+if not hasattr(elements, '__iter__'):
+    elements = [elements]
+
+systype,name,classification,abbreviation,lineWeight,lineColor,linePattern,material=[],[],[],[],[],[],[],[]
+
+for elem in elements:
+	if isinstance(elem, Autodesk.Revit.DB.ElementType):
+		systype=elements
+	else:
+		try :
+			system = elem.get_Parameter(BuiltInParameter.RBS_PIPING_SYSTEM_TYPE_PARAM).AsElementId()
+		
+		except :
+			system = elem.get_Parameter(BuiltInParameter.RBS_DUCT_SYSTEM_TYPE_PARAM).AsElementId()
+		systype.append(doc.GetElement(system))
+
+for i in systype :
+	name.append(i.ToDSType(True).Name)
+	classification.append(i.SystemClassification)
+	abbreviation.append(i.Abbreviation)
+	linePattern.append(doc.GetElement(i.LinePatternId))
+	try:
+		lineColor.append(DSCore.Color.ByARGB(255, i.LineColor.Red, i.LineColor.Green, i.LineColor.Blue))
+	except:
+		lineColor.append(None)
+	lineWeight.append(i.LineWeight)
+	material.append(doc.GetElement(i.MaterialId))
+
+if isinstance(IN[0], (list)): OUT = systype,name,classification,abbreviation,linePattern,lineColor,lineWeight,material
+else: OUT = systype[0],name[0],classification[0],abbreviation[0],linePattern[0],lineColor[0],lineWeight[0],material[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="33070c4c-27cb-4e59-96e2-6d21385938d4" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="284.718564994464" y="377.438310466631" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ElementOrSystemType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="794.163509015273" y="382.888376722241" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];&#xA;x[5];&#xA;x[6];&#xA;x[7];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="cdc04ab8-43b2-46a1-a80b-a83be27fa515" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="149.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="SystemType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a06bc8eb-bff8-460c-8b26-9ed19be15bc0" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="232.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="SystemTypeName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1c4b69f7-eb25-48e5-89aa-1d5450c9271f" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="315.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Classification" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a5fc8d39-6c03-4197-8ba2-a12ae60210ee" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="398.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Abbreviation" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5e00225e-636c-4cbc-b664-d58191584f31" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="482.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="LinePattern" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e50fbd32-60d4-4980-88db-a65eaca707d1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="565.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="LineColor" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f32ad2ce-164e-4ff0-9e74-03dae27af861" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="648.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="LineWeight" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="edf17e60-2ab7-42bd-9c8c-570688b6c64b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="985.363509015273" y="731.181710055575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="3179e944-3b83-4f44-814f-cbff0ab02b9b" start_index="0" end="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="33070c4c-27cb-4e59-96e2-6d21385938d4" start_index="0" end="3179e944-3b83-4f44-814f-cbff0ab02b9b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="0" end="cdc04ab8-43b2-46a1-a80b-a83be27fa515" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="1" end="a06bc8eb-bff8-460c-8b26-9ed19be15bc0" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="2" end="1c4b69f7-eb25-48e5-89aa-1d5450c9271f" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="3" end="a5fc8d39-6c03-4197-8ba2-a12ae60210ee" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="4" end="5e00225e-636c-4cbc-b664-d58191584f31" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="5" end="e50fbd32-60d4-4980-88db-a65eaca707d1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="6" end="f32ad2ce-164e-4ff0-9e74-03dae27af861" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="29bfd0b5-ed13-4ea2-804f-75ca99f1175d" start_index="7" end="edf17e60-2ab7-42bd-9c8c-570688b6c64b" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

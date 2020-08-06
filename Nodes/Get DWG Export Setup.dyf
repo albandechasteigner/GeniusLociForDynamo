@@ -1,0 +1,50 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Get DWG Export Setup" Description="Collect the DWGExportOptions stored in the ExportDwgSettings." ID="f8c87913-71c4-4f97-8e1f-dfc3daeb1e4e" Category="GeniusLoci.CAD Export">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="0b2f58ea-b1bb-47ab-8221-48cffa960a88" type="PythonNodeModels.PythonNode" nickname="GetDWGExportOptions" x="464.8" y="249.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+settings = UnwrapElement(IN[0])
+if not hasattr(settings, '__iter__'):
+    settings = [settings]
+
+exportSettings = []
+for i in settings:
+	option = i.GetDWGExportOptions()
+	exportSettings.append(option)
+
+OUT = exportSettings</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="69e8d34f-4b91-41c2-b32c-08cd644e11ac" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="246.4" y="250" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ExportDwgSettings" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7d6d0f48-c66e-4177-8002-6d478e4e32d4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="678" y="250.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="DWGExportOptions" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="0b2f58ea-b1bb-47ab-8221-48cffa960a88" start_index="0" end="7d6d0f48-c66e-4177-8002-6d478e4e32d4" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69e8d34f-4b91-41c2-b32c-08cd644e11ac" start_index="0" end="0b2f58ea-b1bb-47ab-8221-48cffa960a88" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

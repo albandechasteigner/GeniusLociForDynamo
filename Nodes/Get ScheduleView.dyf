@@ -1,0 +1,40 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Get ScheduleView" Description="Get Schedule View from ScheduleSheetInstance." ID="e407fb6c-900c-4055-85fd-b1aeed32941b" Category="GeniusLoci.Schedule">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="0e32e4d8-4829-4b13-895f-491b66f24b56" type="PythonNodeModels.PythonNode" nickname="Get schedule view" x="592" y="220.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import ScheduleSheetInstance, Document
+
+instances = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+schedules = [s.Document.GetElement(s.ScheduleId) for s in instances]
+	
+if isinstance(IN[0], list): OUT = schedules
+else: OUT = schedules[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="99a20f62-6615-4d7b-b5d9-c24616ba6d6d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="322.4" y="225.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ScheduleSheetInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="bd2f9215-7b02-4e6d-96f4-eff8b47a3003" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="806.4" y="220.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Schedule View" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="0e32e4d8-4829-4b13-895f-491b66f24b56" start_index="0" end="bd2f9215-7b02-4e6d-96f4-eff8b47a3003" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="99a20f62-6615-4d7b-b5d9-c24616ba6d6d" start_index="0" end="0e32e4d8-4829-4b13-895f-491b66f24b56" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

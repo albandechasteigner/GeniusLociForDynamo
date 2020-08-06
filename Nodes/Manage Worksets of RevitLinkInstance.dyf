@@ -1,0 +1,80 @@
+<Workspace Version="1.3.4.6666" X="88.1440306221172" Y="145.265227114114" zoom="0.397494774040221" ScaleFactor="1" Name="Manage Worksets of RevitLinkInstance" Description="Indicates the worksets to close in the Revit link and reloads it." ID="8574b021-ab55-46ab-83e0-5e4d998305c2" Category="GeniusLoci.Workset">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="140c06cb-5a0a-4a24-a263-c99e3534f545" type="PythonNodeModels.PythonNode" nickname="Manage Worksets of RevitLinksInstance" x="436.07710317165" y="245.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>import clr
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+docu = DocumentManager.Instance.CurrentDBDocument
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+linkInstance = tolist(UnwrapElement(IN[0]))
+worksetNames = tolist(IN[1])
+
+doc = linkInstance[0].GetLinkDocument()
+
+closedWks,openWks = [],[]
+
+#Collect worksets
+userWorksets = FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset).ToWorksets()
+for userWks in userWorksets:
+	wName=userWks.Name
+	for wksName in worksetNames :
+		if wksName.lower() in wName.lower() :
+			closedWks.append(wName)
+	if wName not in closedWks :
+		openWks.append(userWks.Id)
+
+#WorksetConfig=WorksetConfiguration()
+WorksetConfig=WorksetConfiguration(WorksetConfigurationOption.CloseAllWorksets)
+WorksetConfig.Open(openWks)
+
+TransactionManager.Instance.ForceCloseTransaction()
+RevitLinkType = docu.GetElement(linkInstance[0].GetTypeId())
+filepath = RevitLinkType.GetExternalFileReference().GetAbsolutePath()
+RevitLinkType.LoadFrom(filepath,WorksetConfig)
+
+OUT = RevitLinkType,closedWks</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="53a049eb-36c8-468f-9914-6e6b3d2cfa77" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="158.4" y="232" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RevitLinkInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="109957b1-fe78-4b9a-8376-0c44c0c65564" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="915.633620027918" y="260.455171199733" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="RevitLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="73e0aec6-65d8-4215-9c68-c274ef71492b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-108.489426916812" y="327.825209501358" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//UserWorksetName or part of UserWorksetName to close&#xD;&#xA;WorksetName : string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="33cfe9dd-6f7c-47a3-aad8-3e3b5ee343bf" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="753.051701285171" y="266.775339701283" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8d1d9f2d-c7fc-4837-bd62-e898a73a946f" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="918.695249009266" y="342.395412642243" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ClosedWorkset" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="140c06cb-5a0a-4a24-a263-c99e3534f545" start_index="0" end="33cfe9dd-6f7c-47a3-aad8-3e3b5ee343bf" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="53a049eb-36c8-468f-9914-6e6b3d2cfa77" start_index="0" end="140c06cb-5a0a-4a24-a263-c99e3534f545" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="73e0aec6-65d8-4215-9c68-c274ef71492b" start_index="0" end="140c06cb-5a0a-4a24-a263-c99e3534f545" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="33cfe9dd-6f7c-47a3-aad8-3e3b5ee343bf" start_index="0" end="109957b1-fe78-4b9a-8376-0c44c0c65564" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="33cfe9dd-6f7c-47a3-aad8-3e3b5ee343bf" start_index="1" end="8d1d9f2d-c7fc-4837-bd62-e898a73a946f" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

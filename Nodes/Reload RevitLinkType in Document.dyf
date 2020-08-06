@@ -1,0 +1,65 @@
+<Workspace Version="1.3.4.6666" X="101.839660775" Y="99.6198852375" zoom="0.593767140625" ScaleFactor="1" Name="Reload RevitLinkType in Document" Description="Reloads all Revit links in a document Revit." ID="2afe3a43-5f70-45da-8d51-a5cc08cfcc7d" Category="GeniusLoci.Import">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="a15a5fd2-f86c-437c-ad59-054dd33ff3c0" type="PythonNodeModels.PythonNode" nickname="Python Script" x="301.2" y="275.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+if isinstance(IN[0], list) : inputdoc = UnwrapElement(IN[0])
+else : inputdoc = [UnwrapElement(IN[0])]
+
+#Inputdoc : Part of script by Andreas Dieckmann
+if inputdoc[0] == None:
+    doc = DocumentManager.Instance.CurrentDBDocument
+elif inputdoc[0].GetType().ToString() == "Autodesk.Revit.DB.Document":
+    doc = inputdoc[0]
+elif inputdoc[0].GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
+    doc = inputdoc[0].GetLinkDocument()
+else: doc = DocumentManager.Instance.CurrentDBDocument
+
+revitLinkTypes=[]
+linkcollector=FilteredElementCollector(doc).OfClass(RevitLinkInstance)
+
+TransactionManager.Instance.ForceCloseTransaction()
+for link in linkcollector:
+	linkType=doc.GetElement(link.GetTypeId())
+	revitLinkTypes.append(linkType)
+	linkType.Reload()
+
+OUT = doc,revitLinkTypes</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f42a651d-8d04-412a-9eec-0686f241f994" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-138.4" y="272" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Use only if you want to query other document&#xD;&#xA;document : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="aa3a21e8-9bfd-45e2-9178-88036a9cf617" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="571.6" y="267.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Document" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="94b9665d-0fa5-47c7-8b36-d2ce8f648905" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="571.6" y="342.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="RevitLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="3dfd0640-0a4d-42fa-9292-d9a7d127871f" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="460" y="279.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a15a5fd2-f86c-437c-ad59-054dd33ff3c0" start_index="0" end="3dfd0640-0a4d-42fa-9292-d9a7d127871f" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f42a651d-8d04-412a-9eec-0686f241f994" start_index="0" end="a15a5fd2-f86c-437c-ad59-054dd33ff3c0" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3dfd0640-0a4d-42fa-9292-d9a7d127871f" start_index="0" end="aa3a21e8-9bfd-45e2-9178-88036a9cf617" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3dfd0640-0a4d-42fa-9292-d9a7d127871f" start_index="1" end="94b9665d-0fa5-47c7-8b36-d2ce8f648905" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,61 @@
+<Workspace Version="1.3.4.6666" X="-11.6551944933435" Y="114.694628064387" zoom="0.642869557405948" ScaleFactor="1" Name="FilledRegion LineStyle Change" Description="Change the linestyle of the boundaries of a Filled Region to another given linestyle." ID="dddbbf6c-63e8-40c3-975b-1412a230cba4" Category="GeniusLoci.Graphics">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2d825896-c538-46af-b675-421d6a77ab14" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="676.269595009395" y="356.03778667993" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="filledRegion" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="ec3d1841-a173-42d6-9995-0eb5ec68c1e3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1154.66959500939" y="385.03778667993" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FilledRegion" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="094126d1-819b-487c-9893-af5e1ad5c110" type="PythonNodeModels.PythonNode" nickname="Python Script" x="929.869595009395" y="385.03778667993" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner, 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+
+filledRegion = tolist(UnwrapElement(IN[0]))
+lineStyle = tolist(UnwrapElement(IN[1]))
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for fillR, lineS in zip(filledRegion, lineStyle):
+	if FilledRegion.IsValidLineStyleIdForFilledRegion(doc,lineS.Id):
+		boundaries=fillR.SetLineStyleId(lineS.Id)
+	else :
+		pass
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = filledRegion</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a85b4525-b363-40d2-9f11-4f55872bb761" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="676.269595009395" y="440.03778667993" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//GraphicsStyle&#xD;&#xA;lineStyle" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="2d825896-c538-46af-b675-421d6a77ab14" start_index="0" end="094126d1-819b-487c-9893-af5e1ad5c110" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="094126d1-819b-487c-9893-af5e1ad5c110" start_index="0" end="ec3d1841-a173-42d6-9995-0eb5ec68c1e3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="a85b4525-b363-40d2-9f11-4f55872bb761" start_index="0" end="094126d1-819b-487c-9893-af5e1ad5c110" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

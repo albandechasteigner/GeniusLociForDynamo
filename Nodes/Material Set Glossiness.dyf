@@ -1,0 +1,66 @@
+<Workspace Version="1.3.4.6666" X="-5.82645250000002" Y="128.97678" zoom="0.70823125" ScaleFactor="1" Name="Material Set Glossiness" Description="Set the glossiness of the Appearance asset of the material. (Available only for the Generic schema)&#xD;&#xA;Please note : There must be a valid texture or no texture in the Appareance Asset otherwise an error will occur." ID="14810b1d-e26b-402a-845a-afea519265a2" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="39bceb44-04fc-4825-81b5-36d1c0f4c08d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="396.4" y="319.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def toList(obj):
+    if hasattr(obj, '__iter__'): return obj
+    else: return [obj]
+    
+mats = toList(UnwrapElement(IN[0]))
+values = toList(IN[1])
+
+for mat, value in zip(mats, values):
+	appearanceAssetId = mat.AppearanceAssetId
+	assetElem = doc.GetElement(appearanceAssetId)
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	with Visual.AppearanceAssetEditScope(assetElem.Document) as editScope:
+		editableAsset = editScope.Start(assetElem.Id)
+		if (editableAsset.FindByName("BaseSchema")).Value == "GenericSchema":
+			glossiness = editableAsset["generic_glossiness"]
+			if glossiness.IsValidValue(value/100):
+				glossiness.Value = value/100
+		editScope.Commit(True)
+	TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = mats
+else: OUT = mats[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="01115f47-84c2-4d7b-b56e-287ba0d1b88b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="568.8" y="324" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a566c9ab-59e1-4dcf-90fb-4c31d7b9216c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="244" y="318.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0006acc4-ccad-43f8-af09-f3b6c81a82bc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="72.1058446658488" y="386.846489052834" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//As many values as materials&#xD;&#xA;glossiness:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="39bceb44-04fc-4825-81b5-36d1c0f4c08d" start_index="0" end="01115f47-84c2-4d7b-b56e-287ba0d1b88b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="a566c9ab-59e1-4dcf-90fb-4c31d7b9216c" start_index="0" end="39bceb44-04fc-4825-81b5-36d1c0f4c08d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0006acc4-ccad-43f8-af09-f3b6c81a82bc" start_index="0" end="39bceb44-04fc-4825-81b5-36d1c0f4c08d" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,146 @@
+<Workspace Version="1.3.4.6666" X="139.073790717898" Y="181.444706989973" zoom="0.299710647855984" ScaleFactor="1" Name="SelectByCategoryAndByLevel" Description="Select Elements by Category and Level.&#xD;&#xA;With a document input, use the Collector of Levels node to get the level input." ID="69e069bb-d610-4fb8-b578-700d9b9ea643" Category="GeniusLoci.Select">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.ZeroTouch.DSFunction guid="49040943-1795-4ef5-af1a-ed5381db1fad" type="Dynamo.Graph.Nodes.ZeroTouch.DSFunction" nickname="Equals" x="778.627665203616" y="598.420371884587" isVisible="true" isUpstreamVisible="true" lacing="Shortest" isSelectedInput="False" IsFrozen="false" isPinned="false" assembly="BuiltIn" function="Equals@var,var">
+      <PortInfo index="0" default="False" useLevels="True" level="1" shouldKeepListStructure="True" />
+      <PortInfo index="1" default="False" />
+    </Dynamo.Graph.Nodes.ZeroTouch.DSFunction>
+    <Dynamo.Graph.Nodes.ZeroTouch.DSFunction guid="26365793-72c0-46f0-b227-1a49e547a031" type="Dynamo.Graph.Nodes.ZeroTouch.DSFunction" nickname="List.FilterByBoolMask" x="1187.69373935218" y="482.669538934922" isVisible="true" isUpstreamVisible="true" lacing="Shortest" isSelectedInput="False" IsFrozen="false" isPinned="false" assembly="DSCoreNodes.dll" function="DSCore.List.FilterByBoolMask@var[]..[],var[]..[]">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+    </Dynamo.Graph.Nodes.ZeroTouch.DSFunction>
+    <PythonNodeModels.PythonNode guid="024e7e56-3ea3-4a4c-82ce-85bf48b323f2" type="PythonNodeModels.PythonNode" nickname="SelectByCategory" x="344" y="401.84592644861" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Copyright(c) 2014, Konrad K Sobon
+# Grimshaw Architects, http://grimshaw-architects.com/
+# Archi-lab, http://wwww.archi-lab.net
+
+# Default imports
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+#Import Collections
+from System.Collections.Generic import *
+import System
+
+def tolist(x):
+    if hasattr(x,'__iter__'): return x
+    else : return [x]
+		
+cats = tolist(IN[0])
+inputdocs = tolist(UnwrapElement(IN[1]))
+items = []
+
+#Part of script from Clockwork
+for inputdoc in inputdocs :
+	if inputdoc == None:
+		doc = DocumentManager.Instance.CurrentDBDocument
+	elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.Document":
+		doc = inputdoc
+	elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
+		doc = inputdoc.GetLinkDocument()
+	else: doc = None
+
+for cat in cats:
+	bic = System.Enum.ToObject(BuiltInCategory, cat.Id)
+	items.append(FilteredElementCollector(doc).WhereElementIsNotElementType().OfCategory(bic).ToElements())
+
+if isinstance(IN[0], list) or isinstance(IN[1], list): OUT = items
+else: OUT = items[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <PythonNodeModels.PythonNode guid="5bbe0037-56f2-4b53-b45d-018bf3fbca37" type="PythonNodeModels.PythonNode" nickname="Python Script" x="597.324742481994" y="540.201345998557" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+#Inspired by Clockwork
+def GetLevel(item):
+	val = None
+	if hasattr(item, "LevelId"): 
+		val = item.Document.GetElement(item.LevelId)
+		if val: return val
+	if hasattr(item, "Level"):
+		val = item.Level
+		if val: return val
+	if hasattr(item, "GenLevel"):
+		val = item.GenLevel
+		if val: return val
+	if (item.GetType().ToString() in ("Autodesk.Revit.DB.Architecture.StairsRun", "Autodesk.Revit.DB.Architecture.StairsLanding")):
+		item = item.GetStairs()
+	if (item.GetType().ToString() == "Autodesk.Revit.DB.Architecture.Stairs") or item.Category.Id == ElementId(BuiltInCategory.OST_Ramps):
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.STAIRS_BASE_LEVEL_PARAM).AsElementId())
+		except: pass
+	if (item.GetType().ToString() == "Autodesk.Revit.DB.ExtrusionRoof"):
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM).AsElementId())
+		except: pass
+	if (item.GetType().ToString() == "Autodesk.Revit.DB.Mechanical.Duct" or "Autodesk.Revit.DB.Electrical.Conduit"):
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.RBS_START_LEVEL_PARAM).AsElementId())
+		except: pass
+	if not val:
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM).AsElementId())
+		except: 
+			try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId())
+			except: 
+				try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.SCHEDULE_LEVEL_PARAM).AsElementId())
+				except: return None
+
+ProcessLists = lambda function, lists: [ProcessLists(function, item) if isinstance(item, list) else function(item) for item in lists]
+ApplyFunction = lambda func, objs: ProcessLists(func, objs) if isinstance(objs, list) else [func(objs)]
+
+def Unwrap(item):
+    return UnwrapElement(item)
+    
+if isinstance(IN[0], list):
+	items = ProcessLists(Unwrap, IN[0])
+else:
+	items = Unwrap(IN[0])
+
+OUT=ApplyFunction(GetLevel,items)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="48cafe86-5a00-4a6c-a01c-6921c269138d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-117.088646168154" y="594.411390773007" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Collected level in active or linked document&#xD;&#xA;//List Level @L1 for several levels&#xD;&#xA;level" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8d4d0025-ce81-47a0-9da8-079c7fe6957b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="124.780039462572" y="375.412335749503" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="category" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="30a497ae-5bb4-4a24-a427-aeee4000db57" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1390.76418933315" y="481.206764820514" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Elements" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="37c6e481-1c6b-4a50-98d2-1bb8179ab8f5" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-164.410513029803" y="458.556296897841" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="082d8dbf-739e-4c99-a0ee-da2503549189" type="PythonNodeModels.PythonNode" nickname="Python Script" x="1013.79919493126" y="599.507436991217" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>OUT = [[] if item is None else item for item in IN[0]]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="49040943-1795-4ef5-af1a-ed5381db1fad" start_index="0" end="082d8dbf-739e-4c99-a0ee-da2503549189" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="26365793-72c0-46f0-b227-1a49e547a031" start_index="0" end="30a497ae-5bb4-4a24-a427-aeee4000db57" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="024e7e56-3ea3-4a4c-82ce-85bf48b323f2" start_index="0" end="26365793-72c0-46f0-b227-1a49e547a031" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="024e7e56-3ea3-4a4c-82ce-85bf48b323f2" start_index="0" end="5bbe0037-56f2-4b53-b45d-018bf3fbca37" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5bbe0037-56f2-4b53-b45d-018bf3fbca37" start_index="0" end="49040943-1795-4ef5-af1a-ed5381db1fad" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="48cafe86-5a00-4a6c-a01c-6921c269138d" start_index="0" end="49040943-1795-4ef5-af1a-ed5381db1fad" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8d4d0025-ce81-47a0-9da8-079c7fe6957b" start_index="0" end="024e7e56-3ea3-4a4c-82ce-85bf48b323f2" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="37c6e481-1c6b-4a50-98d2-1bb8179ab8f5" start_index="0" end="024e7e56-3ea3-4a4c-82ce-85bf48b323f2" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="082d8dbf-739e-4c99-a0ee-da2503549189" start_index="0" end="26365793-72c0-46f0-b227-1a49e547a031" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

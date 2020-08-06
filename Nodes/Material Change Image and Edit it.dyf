@@ -1,0 +1,136 @@
+<Workspace Version="1.3.4.6666" X="-6.47626987168414" Y="-235.249363331233" zoom="0.954484945633592" ScaleFactor="1" Name="Material Change Image and Edit it" Description="Works only in Revit 2018.1 and later.&#xD;&#xA;The material must already have an assigned texture.&#xD;&#xA;Changes the image and edit its properties.&#xD;&#xA;(All inputs are optional)" ID="5342de5a-22b0-4899-bd62-0340009c6c06" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="a602f507-9f26-43c4-8d54-974aa4de8d48" type="PythonNodeModels.PythonNode" nickname="Material Change Image and Edit" x="657.966719800343" y="528.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="8">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <Script>#Inspired by Boris Shafiro from Autodesk
+#https://apidocs.co/apps/revit/2019/2e09391a-6aec-f47f-a4e6-bf354bb8629f.htm
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+from Autodesk.Revit.DB.Visual import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def toList(obj):
+    if hasattr(obj, '__iter__'): return obj
+    else: return [obj]
+    
+mats = toList(UnwrapElement(IN[0]))
+paths = toList(IN[1])
+offsetX = IN[2]
+offsetY = IN[3]
+angle = IN[4]
+scaleWidht = IN[5]
+scaleHeight = IN[6]
+scaleLock = IN[7]
+
+UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
+
+for mat, path in zip(mats, paths):
+	assetElem = doc.GetElement(mat.AppearanceAssetId)
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	with Visual.AppearanceAssetEditScope(assetElem.Document) as editScope:
+		editableAsset = editScope.Start(assetElem.Id)
+		
+		if path == None:
+			pass
+		else:	
+			BitMapLocation = editableAsset[UnifiedBitmap.UnifiedbitmapBitmap] 
+			#AssetProperty String Object
+			BitMapLocation.Value = path
+		if offsetX == None:
+			pass
+		else:
+			BitmapOffsetX = editableAsset[UnifiedBitmap.TextureRealWorldOffsetX]
+			BitmapOffsetX.Value = UnitUtils.Convert(offsetX, UIunit, DisplayUnitType.DUT_DECIMAL_INCHES)
+		if offsetY == None:
+			pass
+		else:
+			BitmapOffsetY = editableAsset[UnifiedBitmap.TextureRealWorldOffsetY]
+			BitmapOffsetY.Value = UnitUtils.Convert(offsetY, UIunit, DisplayUnitType.DUT_DECIMAL_INCHES)
+		if angle == None:
+			pass
+		else:
+			TextureWAngle = editableAsset[UnifiedBitmap.TextureWAngle]
+			TextureWAngle.Value = angle
+		if scaleWidht == None:
+			pass
+		else:		
+			BitmapScaleX = editableAsset[UnifiedBitmap.TextureRealWorldScaleX]
+			BitmapScaleX.Value = UnitUtils.Convert(scaleWidht, UIunit, DisplayUnitType.DUT_CENTIMETERS)
+		if scaleHeight == None:
+			pass
+		else:
+			BitmapScaleY = editableAsset[UnifiedBitmap.TextureRealWorldScaleY]
+			BitmapScaleY.Value = UnitUtils.Convert(scaleHeight, UIunit, DisplayUnitType.DUT_CENTIMETERS)
+		if scaleLock == None:
+			pass
+		else:		
+			Scalelock = editableAsset[UnifiedBitmap.TextureScaleLock]
+			Scalelock.Value = scaleLock
+
+		editScope.Commit(IFailuresPreprocessor)
+	TransactionManager.Instance.TransactionTaskDone()
+
+OUT = mats</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ced1d949-eb84-430f-9e38-f0221d8ca92e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="309.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a6c70c35-0bdb-46ad-8ce8-abb918dda172" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="967.566719800343" y="528.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3d732c72-5d7a-445b-898d-5846e5b2ced0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="392.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="filePath:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="65c734e4-fea4-4858-99a2-1aeb86fae9da" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="476.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number&#xD;&#xA;Offset_X:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ae7355fd-6bfe-4dfb-8c83-0cc2146dae35" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="569.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number&#xD;&#xA;Offset_Y:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f6bbca92-e9d2-492e-9e79-c007971c0840" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="662.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number within the range of 0..360&#xD;&#xA;Rotation:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ac79e2aa-f228-40b4-bd9e-0c62244445b3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="755.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number. Minimum of &quot;0.01&#xD;&#xA;Scale_Widht:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="988da496-b7e4-49d6-9ef1-77ff4c98fb31" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="848.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number. Minimum of &quot;0.01&#xD;&#xA;Scale_Height:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="281c8d5c-a3ba-49f5-a70a-e9b78c7c80c5" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.966719800343" y="941.32776363196" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Boolean&#xD;&#xA;Scale_Lock:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a602f507-9f26-43c4-8d54-974aa4de8d48" start_index="0" end="a6c70c35-0bdb-46ad-8ce8-abb918dda172" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ced1d949-eb84-430f-9e38-f0221d8ca92e" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3d732c72-5d7a-445b-898d-5846e5b2ced0" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="65c734e4-fea4-4858-99a2-1aeb86fae9da" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ae7355fd-6bfe-4dfb-8c83-0cc2146dae35" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f6bbca92-e9d2-492e-9e79-c007971c0840" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ac79e2aa-f228-40b4-bd9e-0c62244445b3" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="988da496-b7e4-49d6-9ef1-77ff4c98fb31" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="281c8d5c-a3ba-49f5-a70a-e9b78c7c80c5" start_index="0" end="a602f507-9f26-43c4-8d54-974aa4de8d48" end_index="7" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

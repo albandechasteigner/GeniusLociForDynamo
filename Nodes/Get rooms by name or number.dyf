@@ -1,0 +1,68 @@
+<Workspace Version="1.3.4.6666" X="36.0386024847576" Y="-130.286594320235" zoom="1.12465551558663" ScaleFactor="1" Name="Get rooms by name or number" Description="Enter the room name or number to get the room.&#xD;&#xA;Inspired by jeremy@learndynamo.com" ID="f21bbfb6-2679-4e23-a562-e4dc3c413316" Category="GeniusLoci.Room">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="a5b91244-38d7-4e04-9a36-36695240f7a0" type="PythonNodeModels.PythonNode" nickname="Get rooms by name or number" x="390.4" y="290.4" isVisible="false" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Node Inspired by jeremy@learndynamo.com
+#www.Learndynamo.com 
+
+import clr
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+# Import RevitAPI Classes
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+namnums = IN[0] if isinstance(IN[0],list) else [IN[0]]
+toggle = IN[1]
+
+rooms,roomLevels = [], []
+	
+if toggle == True:
+	collector = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Rooms)
+	for i in collector:
+		for namnum in namnums:
+			if namnum in i.get_Parameter(BuiltInParameter.ROOM_NAME).AsString() or namnum in i.get_Parameter(BuiltInParameter.ROOM_NUMBER).AsString():
+				if i.Location != None:	
+					rooms.append(i)
+					roomLevels.append(i.Level)
+										
+	if isinstance(IN[0], list): OUT = rooms, roomLevels 
+	else: OUT = rooms[0], roomLevels[0]
+else:
+	OUT = "Set toggle to True"</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4ab92ae6-af72-4400-849e-3342d9fa0f32" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="76.1422043428661" y="274.223021088945" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="NameOrNumber : string" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a2ebf38f-0a13-4a1e-8821-e06490dda4c3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="845.798044500621" y="283.079417852222" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Rooms" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="3e3ad201-f238-4b03-aceb-63c40bea26b7" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="637.128551221865" y="305.011393716492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="ce409360-094d-4592-abd5-9131b3c46cdf" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="829.417808661988" y="353.429720660074" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Levels" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6f17efd7-9179-4efb-ad46-2990d6024b36" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="119.468935734653" y="383.305455177868" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Refresh :bool=true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a5b91244-38d7-4e04-9a36-36695240f7a0" start_index="0" end="3e3ad201-f238-4b03-aceb-63c40bea26b7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4ab92ae6-af72-4400-849e-3342d9fa0f32" start_index="0" end="a5b91244-38d7-4e04-9a36-36695240f7a0" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3e3ad201-f238-4b03-aceb-63c40bea26b7" start_index="0" end="a2ebf38f-0a13-4a1e-8821-e06490dda4c3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3e3ad201-f238-4b03-aceb-63c40bea26b7" start_index="1" end="ce409360-094d-4592-abd5-9131b3c46cdf" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6f17efd7-9179-4efb-ad46-2990d6024b36" start_index="0" end="a5b91244-38d7-4e04-9a36-36695240f7a0" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

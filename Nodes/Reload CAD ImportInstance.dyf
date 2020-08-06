@@ -1,0 +1,48 @@
+<Workspace Version="1.3.4.6666" X="-19.2" Y="7.99999999999997" zoom="1" ScaleFactor="1" Name="Reload CAD ImportInstance" Description="Reloads the CAD link instance provided." ID="fba82e29-d96b-41b2-afd9-3c742d1062df" Category="GeniusLoci.CAD Import">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="af82d4f3-4466-4e41-a32d-22bfb2af58a1" type="PythonNodeModels.PythonNode" nickname="Python Script" x="252.4" y="209.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+linkInst = UnwrapElement(IN[0])
+if not hasattr(linkInst, '__iter__'):
+    linkInst = [linkInst]
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for link in linkInst:
+	linkType = doc.GetElement(link.GetTypeId())
+	linkType.Reload()
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = linkInst
+else: OUT = linkInst[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="89560d77-ddcb-434c-99b3-b31a8e795e44" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="60.4" y="209.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="importInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="d5d8d16a-186c-4a92-ba96-ee7bc8a718b6" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="412.4" y="207.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="CAD importInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="af82d4f3-4466-4e41-a32d-22bfb2af58a1" start_index="0" end="d5d8d16a-186c-4a92-ba96-ee7bc8a718b6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="89560d77-ddcb-434c-99b3-b31a8e795e44" start_index="0" end="af82d4f3-4466-4e41-a32d-22bfb2af58a1" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

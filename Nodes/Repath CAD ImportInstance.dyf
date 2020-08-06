@@ -1,0 +1,54 @@
+<Workspace Version="1.3.4.6666" X="-278.303757346287" Y="-122.657363688219" zoom="1.00600419002725" ScaleFactor="1" Name="Repath CAD ImportInstance" Description="Reloads the CAD link from the input path. " ID="017c5a25-7689-429a-aa37-2cdd87b3e593" Category="GeniusLoci.CAD Import">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3aec3618-efa7-451a-8693-0e5fdf465faf" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="330.4" y="322" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="importInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="126ab763-ac54-41a9-b96c-8403be15bbc3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="736.4" y="342" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="CADLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7bf23887-b3fc-4b1f-87fe-27dcf766c73d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="339.558932002401" y="441.511051031986" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="FilePath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="10dd5ae6-4c28-4b2a-b326-d456fff49fd9" type="PythonNodeModels.PythonNode" nickname="Python Script" x="544.650883209434" y="347.774674804655" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+linkInstances = tolist(UnwrapElement(IN[0]))
+paths = tolist(IN[1])
+reloadedlinks = []
+
+TransactionManager.Instance.EnsureInTransaction(doc)	
+for i,j in zip(linkInstances,paths):
+	RevitLinkType  = doc.GetElement(i.GetTypeId())
+	RevitLinkType.LoadFrom(j)
+	reloadedlinks.append(RevitLinkType)
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT= reloadedlinks</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="3aec3618-efa7-451a-8693-0e5fdf465faf" start_index="0" end="10dd5ae6-4c28-4b2a-b326-d456fff49fd9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7bf23887-b3fc-4b1f-87fe-27dcf766c73d" start_index="0" end="10dd5ae6-4c28-4b2a-b326-d456fff49fd9" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="10dd5ae6-4c28-4b2a-b326-d456fff49fd9" start_index="0" end="126ab763-ac54-41a9-b96c-8403be15bbc3" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

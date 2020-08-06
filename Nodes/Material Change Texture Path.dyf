@@ -1,0 +1,89 @@
+<Workspace Version="1.3.4.6666" X="84.735" Y="72.891" zoom="0.8425" ScaleFactor="1" Name="Material Change Texture Path" Description="Works only in Revit 2018.1 and later.&#xD;&#xA;The material must already have an assigned texture." ID="4bd02371-a62f-4863-b968-3e8d758d9240" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="80bf08a7-e78e-4ae9-9d63-b00115a4549f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="151.315865627462" y="209.749554896142" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0f53346b-583f-40bc-8cf4-1e049efb2d0c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="572.115865627462" y="238.749554896143" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a050e1e0-0adb-4eed-bbf9-fff99e47bf15" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="151.315865627462" y="293.749554896143" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="FilePath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="b40a5a50-39c2-48be-a749-41549bd8bfa9" type="PythonNodeModels.PythonNode" nickname="Python Script" x="347.715865627462" y="238.749554896143" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def toList(obj):
+    if hasattr(obj, '__iter__'): return obj
+    else: return [obj]
+    
+mats = toList(UnwrapElement(IN[0]))
+paths = toList(IN[1])
+
+for mat, path in zip(mats, paths):
+	appearanceAssetId = mat.AppearanceAssetId
+	assetElem = doc.GetElement(appearanceAssetId)
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	with Visual.AppearanceAssetEditScope(doc) as editScope:
+		editableAsset = editScope.Start(assetElem.Id)
+		if (editableAsset.FindByName("BaseSchema")).Value == "GenericSchema":
+			property = editableAsset.FindByName("generic_diffuse")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "CeramicSchema":
+			property = editableAsset.FindByName("ceramic_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "ConcreteSchema":
+			property = editableAsset.FindByName("concrete_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "MetallicPaintSchema":
+			property = editableAsset.FindByName("metallicpaint_base_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "MasonryCMUSchema":
+			property = editableAsset.FindByName("masonrycmu_color")	
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PlasticVinylSchema":
+			property = editableAsset.FindByName("plasticvinyl_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "HardwoodSchema":
+			property = editableAsset.FindByName("hardwood_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "StoneSchema":
+			property = editableAsset.FindByName("stone_color")	
+		elif (editableAsset.FindByName("BaseSchema")).Value == "SolidGlassSchema":
+			property = editableAsset.FindByName("solidglass_transmittance_custom_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismLayeredSchema":
+			property = editableAsset.FindByName("layered_diffuse")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismMetalSchema":
+			property = editableAsset.FindByName("surface_roughness")			
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismOpaqueSchema":
+			property = editableAsset.FindByName("opaque_albedo")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismTransparentSchema":
+			property = editableAsset.FindByName("surface_roughness")
+		connectedAsset = property.GetSingleConnectedAsset()
+		connectedAsset.FindByName("unifiedbitmap_Bitmap").Value = path
+		editScope.Commit(True)
+	TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = mats
+else: OUT = mats[0]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="80bf08a7-e78e-4ae9-9d63-b00115a4549f" start_index="0" end="b40a5a50-39c2-48be-a749-41549bd8bfa9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="a050e1e0-0adb-4eed-bbf9-fff99e47bf15" start_index="0" end="b40a5a50-39c2-48be-a749-41549bd8bfa9" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b40a5a50-39c2-48be-a749-41549bd8bfa9" start_index="0" end="0f53346b-583f-40bc-8cf4-1e049efb2d0c" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

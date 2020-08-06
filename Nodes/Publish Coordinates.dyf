@@ -1,0 +1,64 @@
+<Workspace Version="1.3.4.6666" X="209.886432271094" Y="105.855924170156" zoom="0.496186487382813" ScaleFactor="1" Name="Publish Coordinates" Description="Works only in Revit 2018 and later.&#xD;&#xA;Publish coordinates to the specified ProjectLocation of the Revit link instance.&#xD;&#xA;The geolocation information will be pulled from host model to the linked model." ID="4edfb425-776a-4ae0-bcb2-e32dcf8050ae" Category="GeniusLoci.Document">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="092b74ba-77c2-4c52-84cb-817b2d685501" type="PythonNodeModels.PythonNode" nickname="Python Script" x="277.2" y="251.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Inspired by https://forum.dynamobim.com/t/publish-coordinates-transactions/42213
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import*
+clr.AddReference('RevitServices')
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+if isinstance(IN[0], list) :rvtLinkInstances = UnwrapElement(IN[0])
+else : rvtLinkInstances = [UnwrapElement(IN[0])]
+linkProjLocName = IN[1]
+result=[]
+
+for rvtLinkInstance in rvtLinkInstances:
+	linkDoc = rvtLinkInstance.GetLinkDocument()
+	TransactionManager.Instance.ForceCloseTransaction()
+	linkLocations = linkDoc.ProjectLocations
+	for linkLocation in linkLocations:
+		if linkLocation.Name == linkProjLocName:
+			t = Transaction(doc, "Publish Project Location")
+			t.Start()
+			try: 
+				doc.PublishCoordinates(LinkElementId(rvtLinkInstance.Id, linkLocation.Id))
+				message = "Project Location successfully published"
+				t.Commit()
+			except Exception as e: 
+				message = "Could not publish project location due to: " + str(e)
+				t.RollBack() 
+		else: continue	
+	result.append(message)
+
+OUT = result</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="aa3fef16-f8d3-418e-97c3-0654d3395d11" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="72.3999999999999" y="217.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RevitLinkInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3c1f7671-5efd-4ee1-a5c3-80114734b112" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-138" y="300.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="LinkProjectLocationName:string=&quot;Internal&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9b47c67f-1b64-44ba-8937-6b661de37760" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="464.4" y="259.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Result" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="092b74ba-77c2-4c52-84cb-817b2d685501" start_index="0" end="9b47c67f-1b64-44ba-8937-6b661de37760" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="aa3fef16-f8d3-418e-97c3-0654d3395d11" start_index="0" end="092b74ba-77c2-4c52-84cb-817b2d685501" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3c1f7671-5efd-4ee1-a5c3-80114734b112" start_index="0" end="092b74ba-77c2-4c52-84cb-817b2d685501" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

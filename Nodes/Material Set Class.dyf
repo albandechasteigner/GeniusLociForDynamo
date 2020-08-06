@@ -1,0 +1,51 @@
+<Workspace Version="1.3.4.6666" X="96.506117593495" Y="79.3931255286844" zoom="0.784369328044827" ScaleFactor="1" Name="Material Set Class" Description="Set the material class name (Visible in the Identity tab)." ID="8e5227e1-8134-4cfa-af01-917b8a09feec" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="f3be1124-d82b-45ec-bb29-c4dd4aa8cccb" type="PythonNodeModels.PythonNode" nickname="Python Script" x="386" y="314.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import Material
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+materials = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+names = IN[1] if isinstance(IN[1],list) else [IN[1]]
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for mat, name in zip(materials,names):
+	mat.MaterialClass = name
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = materials
+else: OUT = materials[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ba8125a7-d8fa-4266-8774-f6f07c5e83b9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="232" y="300.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="eaf9c3a5-3c32-474e-9b84-4e72b5f47a98" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-3.90490242726139" y="377.059783082011" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String. The new material class name&#xD;&#xA;className" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5500d00c-8f25-4a17-b827-658a380d79bf" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="557.2" y="316" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="f3be1124-d82b-45ec-bb29-c4dd4aa8cccb" start_index="0" end="5500d00c-8f25-4a17-b827-658a380d79bf" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ba8125a7-d8fa-4266-8774-f6f07c5e83b9" start_index="0" end="f3be1124-d82b-45ec-bb29-c4dd4aa8cccb" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="eaf9c3a5-3c32-474e-9b84-4e72b5f47a98" start_index="0" end="f3be1124-d82b-45ec-bb29-c4dd4aa8cccb" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,66 @@
+<Workspace Version="1.3.4.6666" X="-25.8510862882046" Y="26.9274824003837" zoom="0.982642311367965" ScaleFactor="1" Name="Get Wall Member" Description="Returns the wall type, the sub walls of the stacked wall and the wall panel of the curtain wall." ID="07875609-9e62-4acd-a00f-20490ac4ddb4" Category="GeniusLoci.CompoundStructure">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="c6c7285e-7a6c-48bb-af4a-b2f20ec902a8" type="PythonNodeModels.PythonNode" nickname="Python Script" x="189.2" y="201.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+elements = UnwrapElement(IN[0])
+if not hasattr(elements, '__iter__'):
+	elements = [elements]
+
+famType,walls=[],[]
+for elem in elements :
+	doc=elem.Document
+	if elem.IsStackedWall== True:
+		for sub in elem.GetStackedWallMemberIds():
+			walls.append(doc.GetElement(sub))
+			famType.append(doc.GetElement(sub).WallType)
+	else: 
+		familyType = elem.WallType
+		if familyType.Kind == WallKind.Curtain :
+			panels=[doc.GetElement(x) for x in elem.CurtainGrid.GetPanelIds()]
+			hostpanelids=[panel.FindHostPanel() for panel in panels if hasattr(panel, "FindHostPanel")]
+			for id in hostpanelids:
+				walls.append(doc.GetElement(id))
+				#famType.append(doc.GetElement(id).WallType)
+			famType.append(doc.GetElement(familyType.get_Parameter(BuiltInParameter.AUTO_PANEL_WALL).AsElementId()))
+		else: 
+			famType.append(elem.WallType)
+			walls.append(elem)
+OUT = famType,walls</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9b3999cd-eaa1-4fc3-b6ed-a4bebe5ee354" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="67.3543026706232" y="201.19881305638" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="wall" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b6a99868-2240-4268-8063-1271633c277d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="531.321395076206" y="187.114154967174" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="WallType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="73bc69e8-5c5a-448d-9e95-76fe80c79c2a" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="367.053173338835" y="202.970602934112" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3f2a067d-b534-47bd-a62c-74e7cbf23ada" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="518.391003266549" y="267.097210399437" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Walls" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="c6c7285e-7a6c-48bb-af4a-b2f20ec902a8" start_index="0" end="73bc69e8-5c5a-448d-9e95-76fe80c79c2a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9b3999cd-eaa1-4fc3-b6ed-a4bebe5ee354" start_index="0" end="c6c7285e-7a6c-48bb-af4a-b2f20ec902a8" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="73bc69e8-5c5a-448d-9e95-76fe80c79c2a" start_index="0" end="b6a99868-2240-4268-8063-1271633c277d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="73bc69e8-5c5a-448d-9e95-76fe80c79c2a" start_index="1" end="3f2a067d-b534-47bd-a62c-74e7cbf23ada" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,120 @@
+<Workspace Version="1.3.4.6666" X="230.549072627689" Y="88.4546099694092" zoom="0.42157827766059" ScaleFactor="1" Name="Link DWG" Description="Link DWGs in views with options.&#xD;&#xA;Use with the Enumerate DWG import options node.&#xD;&#xA;Based on a archilab's script." ID="c32ac83b-a3f9-4e58-a26d-2ac2ca88a674" Category="GeniusLoci.CAD Import">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="DSCore.String" resolvedName="DSCore.String" assemblyName="DSCoreNodes.dll" />
+    <ClassMap partialName="DSCore.List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <PythonNodeModels.PythonNode guid="87645753-184f-4fe4-9d0a-7942a38ec4b2" type="PythonNodeModels.PythonNode" nickname="Python Script" x="237.594691234223" y="302.7" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="6">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <Script>#Based on a script by Konrad Sobon
+#Additions by Joseph_Peel
+#Additions by Alban de Chasteigner 2018
+
+import clr
+# Import DocumentManager and TransactionManager
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+# Import RevitAPI
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+filePaths = IN[0] if isinstance(IN[0],list) else [IN[0]]
+views = UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])]
+customscale = IN[2]
+colormode = IN[3]
+placement = IN[4]
+unit = IN[5]
+viewsplaced,outName,CADlinktype,importinstance = [],[],[],[]
+
+options = DWGImportOptions()
+options.AutoCorrectAlmostVHLines = True
+options.OrientToView = True
+options.ThisViewOnly = True
+options.VisibleLayersOnly = True
+options.CustomScale = customscale
+options.ColorMode = colormode
+options.Placement= placement
+options.Unit = unit
+
+# Create ElementId / .NET object
+linkedElem = clr.Reference[ElementId]()
+
+for view in range(len(views)):
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	doc.Link(filePaths[view], options, views[view], linkedElem)
+	TransactionManager.Instance.TransactionTaskDone()
+	viewsplaced.append(views[view])
+	importinst = doc.GetElement(linkedElem.Value)
+	importinstance.append(importinst)
+	CADLink = doc.GetElement(importinst.GetTypeId())
+	CADlinktype.append(CADLink)
+	outName.append(Element.Name.GetValue(CADLink))
+	
+if isinstance(IN[0], list): OUT = viewsplaced,outName,CADlinktype,importinstance
+else: OUT = viewsplaced[0],outName[0],CADlinktype[0],importinstance[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e9544445-3b86-47d4-8a49-e9336e4935df" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-70.456328576657" y="163.562709262836" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Filepaths" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="caff18e7-2eaa-4ef2-a9fd-bb5f94782763" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-226.369831309161" y="244.139678406525" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//As many Views as FilePaths&#xD;&#xA;views" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7cb7f25d-4cfe-4ba6-bd60-eaa19a1289a9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-498.138798318916" y="327.906413501356" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Attention : If this is defined, it takes preference over units&#xD;&#xA;CustomScale : double = 0" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="80518101-24c4-43aa-92b6-c41e86f6cd81" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-91.2053087657765" y="414.7" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Colormode" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4879d580-570e-42ac-8dd3-117fff7e896b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-91.2053087657765" y="497.7" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Placement" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="32ddb9f9-3158-451b-a13c-347defcc8cf6" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-91.2053087657765" y="580.7" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Unit" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="577160a6-6eb8-48d9-bddb-29bac89bb436" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="864.796766828571" y="169.921625337654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Views" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0870a82e-1412-4f77-8522-5b4f94f8b3d3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="864.796766828571" y="252.921625337654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="51d031a9-ec38-42d2-9229-da77ff916c82" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="864.796766828571" y="336.921625337654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="CADLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9a999cc7-a1d7-4b13-b198-24e483624f17" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="864.796766828571" y="419.921625337654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ImportInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="4191a461-af22-407d-97f9-7743084163aa" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="416.559239757769" y="305.854344309223" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="87645753-184f-4fe4-9d0a-7942a38ec4b2" start_index="0" end="4191a461-af22-407d-97f9-7743084163aa" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e9544445-3b86-47d4-8a49-e9336e4935df" start_index="0" end="87645753-184f-4fe4-9d0a-7942a38ec4b2" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="caff18e7-2eaa-4ef2-a9fd-bb5f94782763" start_index="0" end="87645753-184f-4fe4-9d0a-7942a38ec4b2" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7cb7f25d-4cfe-4ba6-bd60-eaa19a1289a9" start_index="0" end="87645753-184f-4fe4-9d0a-7942a38ec4b2" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="80518101-24c4-43aa-92b6-c41e86f6cd81" start_index="0" end="87645753-184f-4fe4-9d0a-7942a38ec4b2" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4879d580-570e-42ac-8dd3-117fff7e896b" start_index="0" end="87645753-184f-4fe4-9d0a-7942a38ec4b2" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="32ddb9f9-3158-451b-a13c-347defcc8cf6" start_index="0" end="87645753-184f-4fe4-9d0a-7942a38ec4b2" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4191a461-af22-407d-97f9-7743084163aa" start_index="0" end="577160a6-6eb8-48d9-bddb-29bac89bb436" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4191a461-af22-407d-97f9-7743084163aa" start_index="1" end="0870a82e-1412-4f77-8522-5b4f94f8b3d3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4191a461-af22-407d-97f9-7743084163aa" start_index="2" end="51d031a9-ec38-42d2-9229-da77ff916c82" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4191a461-af22-407d-97f9-7743084163aa" start_index="3" end="9a999cc7-a1d7-4b13-b198-24e483624f17" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

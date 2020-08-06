@@ -1,0 +1,104 @@
+<Workspace Version="1.3.4.6666" X="-243.480070635226" Y="-76.1477929333852" zoom="0.666867678415087" ScaleFactor="1" Name="Get SubCategories Properties" Description="Get the Line Patterns, weights, colors and materials for a given subcategory." ID="63079c4c-b49b-4a4d-9fa3-b0cdd3c21937" Category="GeniusLoci.Graphics">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a0efaf39-7248-42f6-910f-4dd47e3cd9c6" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="384.38365951834" y="549.151679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="subCategory" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="829.98365951834" y="553.365012997609" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];&#xA;x[5];&#xA;x[6];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f5a541c7-4529-46c5-bcfd-dff3c0d8da27" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.18365951834" y="352.871679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Graphic Style" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="2bb7e4a2-5a7f-4c05-b442-b98c6790b5d3" type="PythonNodeModels.PythonNode" nickname="Python Script" x="605.58365951834" y="549.151679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference('DSCoreNodes')
+import DSCore
+from DSCore import Color
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+subcat = UnwrapElement(IN[0])
+if not hasattr(subcat, '__iter__'):
+    subcat = [subcat]
+
+listGraph,listPattern,patname,listpatid,lineProjWeight,lineProjCut,listRGB,listMaterial = [],[],[],[],[],[],[],[]
+
+for i in subcat:
+	id = i.GetLinePatternId(GraphicsStyleType.Projection)
+	pat = LinePatternElement.GetLinePattern(doc,id)
+	projWeight = i.GetLineWeight(GraphicsStyleType.Projection)
+	cutWeight = i.GetLineWeight(GraphicsStyleType.Cut)
+	rgb = DSCore.Color.ByARGB(255,i.LineColor.Red, i.LineColor.Green, i.LineColor.Blue)
+	listMaterial.append(i.Material)
+	listRGB.append(rgb)
+	lineProjWeight.append(projWeight)
+	lineProjCut.append(cutWeight)
+	listPattern.append(pat)
+	listpatid.append(doc.GetElement(id))
+	try:
+		patname.append(pat.Name)
+	except:
+		patname.append("Solid")
+		
+	style = i.GetGraphicsStyle(GraphicsStyleType.Projection)
+	listGraph.append(style)
+
+OUT = listGraph, listpatid, patname, lineProjWeight, lineProjCut,listRGB,listMaterial</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3acc39ff-c496-488f-bbfa-bffcfae3c0d8" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.18365951834" y="435.871679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Line Pattern" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="86c0d48d-1d7f-4372-9927-cb5955074c8d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.18365951834" y="518.871679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Line Pattern Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="15036b9f-5328-46ae-b6c6-b17e514e6a4a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.18365951834" y="601.871679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Projection Line Weight" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="d6eb027d-bfdc-4ee7-90af-fa4698f89531" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.18365951834" y="684.871679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Cut Line Weight" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="60ad3f94-c032-4241-b434-b6c2ee95d591" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.18365951834" y="767.871679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Line Colors" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="40406e6e-c667-4a6a-80ef-5aa41e6303cf" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.18365951834" y="850.871679664276" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a0efaf39-7248-42f6-910f-4dd47e3cd9c6" start_index="0" end="2bb7e4a2-5a7f-4c05-b442-b98c6790b5d3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" start_index="0" end="f5a541c7-4529-46c5-bcfd-dff3c0d8da27" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" start_index="1" end="3acc39ff-c496-488f-bbfa-bffcfae3c0d8" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" start_index="2" end="86c0d48d-1d7f-4372-9927-cb5955074c8d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" start_index="3" end="15036b9f-5328-46ae-b6c6-b17e514e6a4a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" start_index="4" end="d6eb027d-bfdc-4ee7-90af-fa4698f89531" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" start_index="5" end="60ad3f94-c032-4241-b434-b6c2ee95d591" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" start_index="6" end="40406e6e-c667-4a6a-80ef-5aa41e6303cf" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2bb7e4a2-5a7f-4c05-b442-b98c6790b5d3" start_index="0" end="56467ad9-7dad-41bd-8b2f-f2bfd73e215c" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

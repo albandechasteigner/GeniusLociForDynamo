@@ -1,0 +1,50 @@
+<Workspace Version="1.3.3.4651" X="-16.8973496773396" Y="-30.2860641088308" zoom="0.954042924882813" ScaleFactor="1" Name="Purge Unused UI" Description="Using the Postable Command, run the Purge Unused function." ID="2ade91b9-c720-464d-b850-afeb5b3b2ab3" Category="GeniusLoci.Utilities">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="0d0a845e-4c46-490e-ab6c-d99aa0d02706" type="PythonNodeModels.PythonNode" nickname="Purge unused" x="379.51179124399" y="246.297894432706" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Postable Command by nathan.chapman
+import clr
+clr.AddReference('RevitAPI')
+clr.AddReference('RevitAPIUI')
+import Autodesk
+from Autodesk.Revit.UI import RevitCommandId
+from Autodesk.Revit.UI import UIApplication
+from Autodesk.Revit.UI import ExternalCommandData
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+
+RunIt = IN[0]
+
+if RunIt ==  True:
+	CmndID = RevitCommandId.LookupCommandId('ID_PURGE_UNUSED')
+	CmId = CmndID.Id
+	uiapp.PostCommand(CmndID)
+	errorReport = 'Success'
+else:
+	errorReport = 'Set IN[0] to true'
+
+#Assign your output to the OUT variable
+OUT = errorReport</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d9c97c57-2e7b-41ee-89d0-77266b5a1459" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="137.622056883308" y="250.603047172326" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RunIt : bool = false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="ec560d42-fe6a-4148-82fe-ab86f64975da" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="556.051867102837" y="243.056216927885" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Result" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="0d0a845e-4c46-490e-ab6c-d99aa0d02706" start_index="0" end="ec560d42-fe6a-4148-82fe-ab86f64975da" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d9c97c57-2e7b-41ee-89d0-77266b5a1459" start_index="0" end="0d0a845e-4c46-490e-ab6c-d99aa0d02706" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

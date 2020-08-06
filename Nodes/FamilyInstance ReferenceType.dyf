@@ -1,0 +1,29 @@
+<Workspace Version="1.3.4.6666" X="-230.065039600747" Y="34.6633594502513" zoom="0.931811528498331" ScaleFactor="1" Name="FamilyInstance ReferenceType" Description="Works only in Revit 2018.1 and later.&#xD;&#xA;Identifies references of family instances corresponding to reference planes and reference lines in the family." ID="86e54a80-1a2b-4f8d-b8c0-4c90030e01c2" Category="GeniusLoci.Reference">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="268f5278-3837-46cc-ae4d-f7ae9efecbf8" type="PythonNodeModels.PythonNode" nickname="FamilyInstanceReferenceType" x="444" y="268" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>import clr
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+import System
+
+#Assign your output to the OUT variable
+OUT = System.Enum.GetValues(Autodesk.Revit.DB.FamilyInstanceReferenceType)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="21928c92-fe37-4b4b-9da1-f98ca9981ec4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="699.6" y="268" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ReferenceType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="268f5278-3837-46cc-ae4d-f7ae9efecbf8" start_index="0" end="21928c92-fe37-4b4b-9da1-f98ca9981ec4" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

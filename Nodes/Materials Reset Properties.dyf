@@ -1,0 +1,192 @@
+<Workspace Version="1.3.4.6666" X="264.410152391607" Y="-51.4547012556015" zoom="0.675152899770123" ScaleFactor="1" Name="Materials Reset Properties" Description="Clear the pattern and color of a material using a boolean True.&#xD;&#xA;(All inputs are optional)" ID="ef66dce4-cdfd-4959-8d4c-619fe39c5ac1" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="d0fb5347-a393-40f2-af6c-7cf915c90a73" type="PythonNodeModels.PythonNode" nickname="Python Script" x="225.341054150413" y="351.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="10">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <PortInfo index="8" default="False" />
+      <PortInfo index="9" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
+
+materials = tolist(UnwrapElement(IN[0]))
+shadingColors=tolist(IN[1])
+surfaceForegroundPatterns=tolist(UnwrapElement(IN[2]))
+surfaceForegroundPatternColors=tolist(IN[3])
+surfaceBackgroundPatterns=tolist(UnwrapElement(IN[4]))
+surfaceBackgroundPatternColors=tolist(IN[5])
+cutForegroundPatterns=tolist(UnwrapElement(IN[6]))
+cutForegroundPatternColors=tolist(IN[7])
+cutBackgroundPatterns=tolist(UnwrapElement(IN[8]))
+cutBackgroundPatternColors=tolist(IN[9])
+# "Start" the transaction
+TransactionManager.Instance.EnsureInTransaction(doc)
+for material,shadingColor,surfaceForegroundPattern,surfaceForegroundPatternColor,surfaceBackgroundPattern, surfaceBackgroundPatternColor,cutForegroundPattern,cutForegroundPatternColor,cutBackgroundPattern,cutBackgroundPatternColor in zip(materials,shadingColors,surfaceForegroundPatterns,surfaceForegroundPatternColors,surfaceBackgroundPatterns,surfaceBackgroundPatternColors,cutForegroundPatterns,cutForegroundPatternColors,cutBackgroundPatterns,cutBackgroundPatternColors):
+	if version &lt; 2019 :
+		if shadingColor == False:
+			pass
+		else:
+			material.UseRenderAppearanceForShading = False
+			material.Color = Autodesk.Revit.DB.Color.InvalidColorValue
+		if surfaceForegroundPattern == False:
+			pass
+		else:	
+			material.SurfacePatternId = surfaceForegroundPattern.Id
+		if surfaceForegroundPatternColor == False:
+			pass
+		else:
+			material.SurfacePatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+		if surfaceBackgroundPattern == False:
+			pass
+		else:
+			material.SurfacePatternId = ElementId.InvalidElementId
+		if surfaceBackgroundPatternColor == False:
+			pass
+		else:
+			material.SurfacePatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+		if cutForegroundPattern == False:
+			pass
+		else:	
+			material.CutPatternId = ElementId.InvalidElementId
+		if cutForegroundPatternColor == False:
+			pass
+		else:
+			material.CutPatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+		if cutBackgroundPattern == False:
+			pass
+		else:
+			material.CutPatternId = ElementId.InvalidElementId
+		if cutBackgroundPatternColor == False:
+			pass
+		else:
+			material.CutPatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+
+	else:
+		if shadingColor == False:
+			pass
+		else:
+			material.UseRenderAppearanceForShading = False
+			material.Color = Autodesk.Revit.DB.Color.InvalidColorValue
+		if surfaceForegroundPattern == False:
+			pass
+		else:	
+			material.SurfaceForegroundPatternId = ElementId.InvalidElementId
+		if surfaceForegroundPatternColor == False:
+			pass
+		else:
+			material.SurfaceForegroundPatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+		if surfaceBackgroundPattern == False:
+			pass
+		else:
+			material.SurfaceBackgroundPatternId = ElementId.InvalidElementId
+		if surfaceBackgroundPatternColor == False:
+			pass
+		else:
+			material.SurfaceBackgroundPatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+		if cutForegroundPattern == False:
+			pass
+		else:	
+			material.CutForegroundPatternId = ElementId.InvalidElementId
+		if cutForegroundPatternColor == False:
+			pass
+		else:
+			material.CutForegroundPatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+		if cutBackgroundPattern == False:
+			pass
+		else:
+			material.CutBackgroundPatternId = ElementId.InvalidElementId
+		if cutBackgroundPatternColor == False:
+			pass
+		else:
+			material.CutBackgroundPatternColor = Autodesk.Revit.DB.Color.InvalidColorValue
+# "End" the transaction
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = materials
+else: OUT = materials[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ad5833bc-e726-4f47-9aa8-a6ea65340c9f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="29.3410541504126" y="94.8549906550413" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="6419ae72-9d17-4f39-b12c-2bb5a4c7d8a1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="450.141054150413" y="351.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9eb71581-f703-44a2-a27e-590078d0dc6e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-77.8589458495874" y="177.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="color:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="226bbd78-bf62-4c77-9325-2aa5ce5cefa6" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-234.658945849587" y="260.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="SurfaceForegroundPattern:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="274bcb74-2174-4bb7-8793-0737779a23d6" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-276.258945849587" y="343.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="SurfaceForegroundPatternColor:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6873ca8a-a516-4946-ad04-decbda703b94" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-234.658945849587" y="426.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="SurfaceBackgroundPattern:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="23a295c4-b95d-4275-be77-0bc39e4dc23a" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-276.258945849587" y="510.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="SurfaceBackgroundPatternColor:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="40c0ed44-af60-4048-ac59-7b60ff36f361" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-202.658945849587" y="593.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="CutForegroundPattern:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3433d9fa-3742-4f35-875d-dc5168cdc253" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-242.658945849587" y="676.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="CutForegroundPatternColor:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="61574c39-19f0-4a70-8cef-56e06b684fc1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-202.658945849587" y="759.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="CutBackgroundPattern:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6eec3705-3ede-4201-a8e6-158ab5ef87dd" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-242.658945849587" y="842.854990655041" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="CutBackgroundPatternColor:var[]..[]=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="d0fb5347-a393-40f2-af6c-7cf915c90a73" start_index="0" end="6419ae72-9d17-4f39-b12c-2bb5a4c7d8a1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ad5833bc-e726-4f47-9aa8-a6ea65340c9f" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9eb71581-f703-44a2-a27e-590078d0dc6e" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="226bbd78-bf62-4c77-9325-2aa5ce5cefa6" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="274bcb74-2174-4bb7-8793-0737779a23d6" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6873ca8a-a516-4946-ad04-decbda703b94" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="23a295c4-b95d-4275-be77-0bc39e4dc23a" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="40c0ed44-af60-4048-ac59-7b60ff36f361" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3433d9fa-3742-4f35-875d-dc5168cdc253" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="7" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="61574c39-19f0-4a70-8cef-56e06b684fc1" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="8" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6eec3705-3ede-4201-a8e6-158ab5ef87dd" start_index="0" end="d0fb5347-a393-40f2-af6c-7cf915c90a73" end_index="9" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

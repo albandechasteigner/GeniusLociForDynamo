@@ -1,0 +1,77 @@
+<Workspace Version="1.3.4.6666" X="-154.05911182203" Y="6.09569755382998" zoom="0.691676179653714" ScaleFactor="1" Name="Get Phase Map" Description="Works only in Revit 2019 and later.&#xD;&#xA;The node returns a mapping between phases in the host document and phases in the linked document." ID="67634417-9e0b-41e6-a16b-4b3a8927331a" Category="GeniusLoci.Phase">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3dbde12e-9c1e-4ebb-90d8-2ff2cae2d400" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="885.6" y="249.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="RevitLinkType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a49510ba-bedd-4170-8228-d824aa291ada" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="876.4" y="326.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Phase Map ID KeyValuePair" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="32383f63-398c-4dfd-9be4-77cd13fd3cfa" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="682.51359666386" y="374.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3b082b18-e6ad-4e74-ace8-7e63e9f266fc" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="884" y="404.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Phase Map" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4f8ccf1c-2fd1-4d61-91fc-cc73da0ebc1c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="892.4" y="479.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Phases in the host" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ab7a930c-d3d1-40bb-8b21-1d89db895c58" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="266.8" y="366" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RevitLinkInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="e0d456e5-aa7a-477b-a6bf-87b5207c5a85" type="PythonNodeModels.PythonNode" nickname="GetPhaseMap" x="483.818348212657" y="364.921750494743" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+revitlinkinstance = UnwrapElement(IN[0])
+if not hasattr(revitlinkinstance, '__iter__'):
+    revitlinkinstance = [revitlinkinstance]
+
+phasemaps, values, keys = [],[],[]
+
+linkedDoc = revitlinkinstance[0].GetLinkDocument()
+revitlinktype=doc.GetElement(revitlinkinstance[0].GetTypeId())
+phasemap=revitlinktype.GetPhaseMap()
+for phase in phasemap:
+	phasemaps.append(phase)
+	keys.append(doc.GetElement(phase.Key))
+	values.append(linkedDoc.GetElement(phase.Value))
+
+OUT = revitlinktype,phasemaps,[[a,b] for a,b in zip(keys,values)],keys,values</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5fa62901-b417-4374-80a8-1d708146d620" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="894.845586368646" y="559.464635378236" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Phases in the link" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="32383f63-398c-4dfd-9be4-77cd13fd3cfa" start_index="0" end="3dbde12e-9c1e-4ebb-90d8-2ff2cae2d400" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="32383f63-398c-4dfd-9be4-77cd13fd3cfa" start_index="1" end="a49510ba-bedd-4170-8228-d824aa291ada" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="32383f63-398c-4dfd-9be4-77cd13fd3cfa" start_index="2" end="3b082b18-e6ad-4e74-ace8-7e63e9f266fc" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="32383f63-398c-4dfd-9be4-77cd13fd3cfa" start_index="3" end="4f8ccf1c-2fd1-4d61-91fc-cc73da0ebc1c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="32383f63-398c-4dfd-9be4-77cd13fd3cfa" start_index="4" end="5fa62901-b417-4374-80a8-1d708146d620" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ab7a930c-d3d1-40bb-8b21-1d89db895c58" start_index="0" end="e0d456e5-aa7a-477b-a6bf-87b5207c5a85" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e0d456e5-aa7a-477b-a6bf-87b5207c5a85" start_index="0" end="32383f63-398c-4dfd-9be4-77cd13fd3cfa" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
