@@ -1,0 +1,112 @@
+<Workspace Version="1.3.4.6666" X="37.8383620786404" Y="194.061268711314" zoom="0.551520311464878" ScaleFactor="1" Name="Delete Compound Layer" Description="Removes a layer at the given index in the compound system family (wall, floor, roof or ceiling)." ID="4e69b1ed-965c-4c01-ba1d-27ebe5b39d7e" Category="GeniusLoci.CompoundStructure">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="93850ee4-56ad-4644-8603-e96e76072123" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="221.836111086598" y="165.906666666667" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ElementOrFamilyType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="005d310b-9d8a-41a7-a705-2b24d94065d3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="14.704474491675" y="249.328086676178" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The index of the layer (The first index is 0)&#xD;&#xA;//Counts from the exterior of the wall and from &#xD;&#xA;//the top of roof, floor and ceiling. &#xD;&#xA;index: int[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="1288386c-1081-4a59-841a-fe8300b520eb" type="PythonNodeModels.PythonNode" nickname="Python Script" x="550.236111086598" y="194.906666666667" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+import System
+from System.Collections.Generic import List
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+elements = tolist(UnwrapElement(IN[0]))
+index = tolist(IN[1])
+
+outList,boolList = [], []
+layersToKeep = List[CompoundStructureLayer]()
+
+for elem in elements :
+	if isinstance(elem, ElementType):
+		famType=elem
+	elif isinstance(elem, Wall):
+		famType = elem.WallType
+	elif isinstance(elem, Floor):
+		famType = elem.FloorType
+	elif isinstance(elem, Roof) or isinstance(elem, FootPrintRoof) or isinstance(elem, ExtrusionRoof) or isinstance(elem, RoofBase) :
+		famType = elem.RoofType
+	elif isinstance(elem, Ceiling) or isinstance(elem, FaceWall) :
+		famType = doc.GetElement(elem.GetTypeId())
+	else:
+		pass
+	compStr = famType.GetCompoundStructure()
+	layers=list(compStr.GetLayers())
+	structural=compStr.StructuralMaterialIndex
+	#index before the structural layer
+	count = sum(i &lt; structural for i in index) 
+	idx = 0
+	while idx &lt; compStr.LayerCount:
+		boolList.Add(compStr.ParticipatesInWrapping(idx))
+		idx = idx+1
+	firstCoreLayerIndex = compStr.GetFirstCoreLayerIndex()
+	lastCoreLayerIndex = compStr.GetLastCoreLayerIndex()
+	numberOfShellLayExt = compStr.GetNumberOfShellLayers(ShellLayerType.Exterior)
+	numberOfShellLayInt = compStr.GetNumberOfShellLayers(ShellLayerType.Interior)
+	
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	for idx in sorted(index, reverse=True):
+		del boolList[idx]
+		if (idx &lt; firstCoreLayerIndex) :
+			numberOfShellLayExt -= 1
+		if (idx &gt; lastCoreLayerIndex):
+			numberOfShellLayInt -= 1
+	layersToKeep=[l for l in layers if l.LayerId not in index]
+	try:
+		compStr.SetLayers(layersToKeep)
+		compStr.SetNumberOfShellLayers(ShellLayerType.Exterior, numberOfShellLayExt)
+		compStr.SetNumberOfShellLayers(ShellLayerType.Interior, numberOfShellLayInt)
+		if structural not in index :
+			compStr.StructuralMaterialIndex=structural-count 
+		idx = 0
+		while idx &lt; compStr.LayerCount:
+			if idx &lt; compStr.GetFirstCoreLayerIndex() or idx &gt; compStr.GetLastCoreLayerIndex() :
+				compStr.SetParticipatesInWrapping(idx, boolList[idx])
+			idx = idx+1
+		famType.SetCompoundStructure(compStr)
+		outList.append(famType)
+	except Exception, e:
+		outList.append("Failed:-\n" + e.message)
+	TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = outList
+else: OUT = outList[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b735771c-5628-43ec-b291-795e17595ee1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="781.153446726456" y="197.073154091981" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FamilyType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="93850ee4-56ad-4644-8603-e96e76072123" start_index="0" end="1288386c-1081-4a59-841a-fe8300b520eb" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="005d310b-9d8a-41a7-a705-2b24d94065d3" start_index="0" end="1288386c-1081-4a59-841a-fe8300b520eb" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1288386c-1081-4a59-841a-fe8300b520eb" start_index="0" end="b735771c-5628-43ec-b291-795e17595ee1" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

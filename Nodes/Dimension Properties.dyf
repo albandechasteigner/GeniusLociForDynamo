@@ -1,0 +1,146 @@
+<Workspace Version="1.3.4.6666" X="-199.495394881427" Y="-28.0756207468749" zoom="0.784737952486216" ScaleFactor="1" Name="Dimension Properties" Description="Returns the origin of the dimension, the dimension's curve, the value, the text position, the prefix, the suffix, the value override and all elements that are referenced by the given dimension" ID="d1f3ef32-f222-4ef5-b700-6c5d069e916b" Category="GeniusLoci.Dimension">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f24719ce-f23f-4aea-b12b-237f5951a58d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="237.028294077676" y="305.222552662001" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="dimension" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1b81b3c4-692a-4f56-a74b-385bb3b29082" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="762.163993667438" y="100.40460042687" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Origin" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="0a8b9576-5324-4a9d-94ae-39fae046d1ee" type="PythonNodeModels.PythonNode" nickname="Python Script" x="381.590871625617" y="307.154894675998" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+segment,origin,txtPosition,values,curve,prefix,suffix,override,refe,refElements,label=[],[],[],[],[],[],[],[],[],[],[]
+
+for elem in elements:
+	if elem.DimensionShape == DimensionShape.Linear:
+		direction = elem.Curve.Direction
+	refElements.append([elem.Document.GetElement(ref.ElementId) for ref in elem.References])
+	refe.append(elem.References)
+	if doc.IsFamilyDocument == True :
+		if elem.FamilyLabel != None:
+			label.append(elem.FamilyLabel.Definition.Name)
+		else:	
+			label.append(None)
+	else:
+		label.append(None)
+	if elem.NumberOfSegments ==0:
+		origin.append(elem.Origin.ToPoint())
+		if elem.DimensionShape == DimensionShape.Linear:
+			txtPosition.append(elem.TextPosition.ToPoint())
+			values.append(round(UnitUtils.ConvertFromInternalUnits(elem.Value,UIunit),10))
+			start = elem.Origin.Subtract(direction.Multiply(elem.Value/2))
+			end = elem.Origin.Subtract(direction.Multiply(-elem.Value/2))
+			curve.append(Line.CreateBound(start,end).ToProtoType())
+		prefix.append(elem.Prefix)
+		suffix.append(elem.Suffix)
+		if elem.ValueOverride !=None:
+			override.append(elem.ValueOverride)
+		else:
+			override.append(False)
+	else:
+		for segment in elem.Segments:
+			origin.append(segment.Origin.ToPoint())
+			txtPosition.append(segment.TextPosition.ToPoint())
+			value = round(UnitUtils.ConvertFromInternalUnits(segment.Value,UIunit),10)
+			values.append(value)
+			start = segment.Origin.Subtract(direction.Multiply(segment.Value/2))
+			end = segment.Origin.Subtract(direction.Multiply(-segment.Value/2))
+			if value != 0 :
+				curve.append(Line.CreateBound(start,end).ToProtoType())
+			else :
+				curve.append(None)
+			prefix.append(segment.Prefix)
+			suffix.append(segment.Suffix)
+			if segment.ValueOverride !=None:
+				override.append(segment.ValueOverride)
+			else:
+				override.append(False)
+			#leader.append(segment.LeaderEndPosition.ToPoint())
+
+if isinstance(IN[0], list): OUT = origin,curve,values,txtPosition,prefix,suffix,override,refElements,refe, label
+else: OUT = origin,curve,values,txtPosition,prefix,suffix,override,refElements[0],refe[0], label</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="6b380c8f-9b73-4e66-8eb7-8d23f0044036" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="539.218818432268" y="309.673128927142" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];&#xA;x[5];&#xA;x[6];&#xA;x[7];&#xA;x[8];&#xA;x[9];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7509e1ad-55f8-4fdb-b4dc-ba254503bc41" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="769.122631685173" y="172.094245972573" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Curve" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="2e52bd51-e3c4-4f9b-8fb9-f638b0ffa29e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="776.490819070733" y="242.650737093047" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Value" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="dc830613-34dd-425f-a168-ac145314c66a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="767.616571025397" y="315.254975052644" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="TextPosition" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5a0b142b-3c0c-4722-9249-12be40c15a84" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="766.403782028817" y="379.993834190131" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Prefix" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="6c587166-4702-43d6-9fea-5301253432d0" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="760.499275707062" y="455.202310109325" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Suffix" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="73e0f8de-004a-4653-803d-2809f45aebdd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="755.540577499018" y="538.007160327612" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ValueOverride" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="eff73364-22d2-4410-8367-9786ce398be6" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="749.260169004976" y="604.310478139789" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Returns all elements that are referenced by the dimension&#xD;&#xA;ReferencedElements" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="01fddb17-c45d-492c-978b-e4b16577823a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="744.438496133643" y="691.770590053635" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Returns the geometric references to which the dimension is attached. &#xD;&#xA;References" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="193be717-03f8-40fc-ae12-f83215a2a57e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="745.620590442987" y="769.018043541218" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Returns the associated family parameter of a dimension label (if any) in a family document&#xD;&#xA;Label" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="f24719ce-f23f-4aea-b12b-237f5951a58d" start_index="0" end="0a8b9576-5324-4a9d-94ae-39fae046d1ee" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0a8b9576-5324-4a9d-94ae-39fae046d1ee" start_index="0" end="6b380c8f-9b73-4e66-8eb7-8d23f0044036" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="0" end="1b81b3c4-692a-4f56-a74b-385bb3b29082" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="1" end="7509e1ad-55f8-4fdb-b4dc-ba254503bc41" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="2" end="2e52bd51-e3c4-4f9b-8fb9-f638b0ffa29e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="3" end="dc830613-34dd-425f-a168-ac145314c66a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="4" end="5a0b142b-3c0c-4722-9249-12be40c15a84" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="5" end="6c587166-4702-43d6-9fea-5301253432d0" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="6" end="73e0f8de-004a-4653-803d-2809f45aebdd" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="7" end="eff73364-22d2-4410-8367-9786ce398be6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="8" end="01fddb17-c45d-492c-978b-e4b16577823a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b380c8f-9b73-4e66-8eb7-8d23f0044036" start_index="9" end="193be717-03f8-40fc-ae12-f83215a2a57e" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,109 @@
+<Workspace Version="1.3.4.6666" X="-645.128893792511" Y="-66.6590400824689" zoom="0.559046655795481" ScaleFactor="1" Name="Document SaveAs" Description="Saves the given Revit document under the given name.&#xD;&#xA;Based on a Clockwork node" ID="4bd33d8c-6586-499f-af40-8004a8b6e78d" Category="GeniusLoci.Document">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="DSCore.String" resolvedName="DSCore.String" assemblyName="DSCoreNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="5e9dbc5b-ec23-4f6e-b5be-4a417aa38d9c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1067.77140405005" y="286.796261791297" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="// Delete filetype (if present in string)&#xA;// Filetype will automatically be added by Python script&#xA;path2 = DSCore.String.Replace(path1,&quot;.rvt&quot;,&quot;&quot;);&#xA;DSCore.String.Replace(path2,&quot;.rfa&quot;,&quot;&quot;);" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7c319eaf-2631-4214-980c-c594dd972f40" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="313.6" y="284.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// File path to save to. File extension (*.rvt/*.rfa) will be automatically added.&#xD;&#xA;filePath : string" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="327df28d-feed-4990-89db-dab0110ea1f6" type="PythonNodeModels.PythonNode" nickname="Python Script" x="1711.77140405005" y="418.302928457964" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="5">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+path = IN[0]
+compact = IN[1]
+newcentral = IN[2]
+isworkshared = IN[3]
+if isinstance(IN[4], list) : inputdoc = IN[4] 
+else : inputdoc = [IN[4]]
+
+#Inputdoc : Part of script by Andreas Dieckmann
+if inputdoc[0] == None:
+    doc = DocumentManager.Instance.CurrentDBDocument
+elif inputdoc[0].GetType().ToString() == "Autodesk.Revit.DB.Document":
+    doc = inputdoc[0]
+else: doc = DocumentManager.Instance.CurrentDBDocument
+
+TransactionManager.Instance.ForceCloseTransaction()
+if doc.IsFamilyDocument:
+	path += '.rfa'
+else:
+	path += '.rvt'
+opt = SaveAsOptions()
+opt.OverwriteExistingFile = True
+opt.Compact = compact
+if isworkshared and newcentral:
+	wsopt = WorksharingSaveAsOptions()
+	#Set workset configuration to All Worksets
+	#wsopt.OpenWorksetsDefault = SimpleWorksetConfiguration.AllWorksets
+	wsopt.ClearTransmitted = True
+	wsopt.SaveAsCentral = True
+	opt.SetWorksharingOptions(wsopt)
+try:
+	doc.SaveAs(path, opt)
+	OUT = True,doc
+except:
+	try:
+		wsopt.ClearTransmitted = False
+		opt.SetWorksharingOptions(wsopt)
+		doc.SaveAs(path, opt)
+		OUT = True,doc
+	except:
+		OUT = False,doc</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="189a8d0a-7f85-4033-b98b-43046fb36b21" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="2065.69686524746" y="414.576220514534" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Success" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="16ad8408-e2d4-434e-95ec-be901681fd64" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1308.06335962079" y="442.803398194508" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Should the file be compacted?&#xD;&#xA;compactFile : bool = false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="980b24eb-5dd7-4f93-b33e-57becbce5ca8" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="880.561989665756" y="541.702968855748" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Should the file be saved as a new central file? Will be ignored for non-workshared projects and families&#xD;&#xA;saveAsCentral : bool = false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="fbd3c04b-5952-41df-9a06-046960674ee1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1047.49219794787" y="673.636108022271" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Set true if the given project is workshared&#xD;&#xA;isWorkshared : bool = false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="cc663daa-13fb-41ce-b8b4-a28c8704e66a" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1132.78248054046" y="810.21820983249" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Use only if you want to query other document&#xD;&#xA;document : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="b7f2521c-4d3b-49c7-8a08-d805f2664ad7" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1888.93167381968" y="430.900623373011" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0ac93a0a-2163-4437-967a-73aeb11a02bb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="2070.09438442012" y="483.768765367805" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Document" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="5e9dbc5b-ec23-4f6e-b5be-4a417aa38d9c" start_index="1" end="327df28d-feed-4990-89db-dab0110ea1f6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7c319eaf-2631-4214-980c-c594dd972f40" start_index="0" end="5e9dbc5b-ec23-4f6e-b5be-4a417aa38d9c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="327df28d-feed-4990-89db-dab0110ea1f6" start_index="0" end="b7f2521c-4d3b-49c7-8a08-d805f2664ad7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="16ad8408-e2d4-434e-95ec-be901681fd64" start_index="0" end="327df28d-feed-4990-89db-dab0110ea1f6" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="980b24eb-5dd7-4f93-b33e-57becbce5ca8" start_index="0" end="327df28d-feed-4990-89db-dab0110ea1f6" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="fbd3c04b-5952-41df-9a06-046960674ee1" start_index="0" end="327df28d-feed-4990-89db-dab0110ea1f6" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="cc663daa-13fb-41ce-b8b4-a28c8704e66a" start_index="0" end="327df28d-feed-4990-89db-dab0110ea1f6" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b7f2521c-4d3b-49c7-8a08-d805f2664ad7" start_index="0" end="189a8d0a-7f85-4033-b98b-43046fb36b21" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b7f2521c-4d3b-49c7-8a08-d805f2664ad7" start_index="1" end="0ac93a0a-2163-4437-967a-73aeb11a02bb" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

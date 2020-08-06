@@ -1,0 +1,125 @@
+<Workspace Version="1.3.4.6666" X="-95.6328696606048" Y="31.5778623361883" zoom="0.784369328044827" ScaleFactor="1" Name="Element Change Level" Description="Change the element to the selected level without moving the element.&#xD;&#xA;Doesn't work with hosted family (Wall Based) and Work Plane based family (without Reference Level or with read-only Schedule Level)." ID="1ad046da-824d-44a1-b168-3fbe0c012b3f" Category="GeniusLoci.Level">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="51cf98c5-9d88-40d9-bde7-ce8734b1a19f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="311.2" y="232" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9551a4c8-6405-4b74-98f3-c4ec49ed6f19" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="306.4" y="311.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="level" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7d418a37-433a-4c3c-a1b6-2c03f54b4999" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="639.2" y="260" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Result" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="e6699aef-9072-415a-83b9-298b26c90097" type="PythonNodeModels.PythonNode" nickname="Python Script" x="433.6" y="252" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Inspired by https://forum.dynamobim.com/t/level-parameter-bug-read-only/5781/4
+#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+element = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+ref_level = UnwrapElement(IN[1])
+result = []
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for x in element:
+	ref_levelid = ref_level.Id
+	if x.ToString() == 'Autodesk.Revit.DB.Wall' or x.ToString() == "Autodesk.Revit.DB.Opening":
+		object_param_level =  x.get_Parameter(BuiltInParameter.WALL_BASE_CONSTRAINT)
+		object_param_offset = x.get_Parameter(BuiltInParameter.WALL_BASE_OFFSET)
+	elif x.ToString() == 'Autodesk.Revit.DB.Floor':
+		object_param_level =  x.get_Parameter(BuiltInParameter.LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM)
+	elif x.ToString() == 'Autodesk.Revit.DB.Roof' or x.ToString() == 'Autodesk.Revit.DB.FootPrintRoof':
+		object_param_level =  x.get_Parameter(BuiltInParameter.ROOF_BASE_LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.ROOF_LEVEL_OFFSET_PARAM)
+	elif x.ToString() == 'Autodesk.Revit.DB.ExtrusionRoof':
+		object_param_level =  x.get_Parameter(BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.ROOF_CONSTRAINT_OFFSET_PARAM)
+	elif x.ToString() == 'Autodesk.Revit.DB.RoofBase' or x.ToString() == 'Autodesk.Revit.DB.FaceWall':
+		object_param_level =  x.get_Parameter(BuiltInParameter.FACEROOF_LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.FACEROOF_OFFSET_PARAM)
+	elif x.ToString() == 'Autodesk.Revit.DB.Ceiling':
+		object_param_level =  x.get_Parameter(BuiltInParameter.LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.CEILING_HEIGHTABOVELEVEL_PARAM)
+	elif x.ToString() == 'Autodesk.Revit.DB.Group':
+		object_param_level =  x.get_Parameter(BuiltInParameter.GROUP_LEVEL)
+		object_param_offset = x.get_Parameter(BuiltInParameter.GROUP_OFFSET_FROM_LEVEL)
+	elif x.ToString() == 'Autodesk.Revit.DB.Architecture.Railing':
+		object_param_level =  x.get_Parameter(BuiltInParameter.STAIRS_RAILING_BASE_LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.STAIRS_RAILING_HEIGHT_OFFSET)
+	elif x.ToString() == "Autodesk.Revit.DB.Architecture.Stairs" or x.Category.Id == ElementId(BuiltInCategory.OST_Ramps):
+		object_param_level =  x.get_Parameter(BuiltInParameter.STAIRS_BASE_LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.STAIRS_BASE_OFFSET)
+	elif x.Category.Id == ElementId(BuiltInCategory.OST_StructuralColumns):
+		object_param_level =  x.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM)
+		object_param_offset = x.get_Parameter(BuiltInParameter.SCHEDULE_BASE_LEVEL_OFFSET_PARAM)
+	#familyinstances Not Schedule Level
+	elif hasattr(x, "Symbol") and doc.GetElement(x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId())== None :	
+		try:
+			object_param_level = x.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM)
+			object_param_offset = x.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM)
+		except:
+			pass			
+	try:
+		object_level = doc.GetElement(object_param_level.AsElementId())
+		object_newoffset = object_param_offset.AsDouble() + object_level.Elevation - ref_level.Elevation
+		object_param_level.Set(ref_levelid)
+		object_param_offset.Set(object_newoffset)
+	except:
+		pass
+		
+	#system families
+	if hasattr(x, "ConnectorManager") :
+		object_param_level = x.get_Parameter(BuiltInParameter.RBS_START_LEVEL_PARAM)
+	elif x.Category.Id == ElementId(BuiltInCategory.OST_StructuralFraming):
+		object_param_level =  x.get_Parameter(BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM)
+		if x.get_Parameter(BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION) != None and x.get_Parameter(BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION).AsDouble() == 0  :
+			try :
+				newoffset = (x.get_Parameter(BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION)).Set(x.get_Parameter(BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION).AsDouble()+1)
+				object_newoffset = (x.get_Parameter(BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION)).Set(x.get_Parameter(BuiltInParameter.STRUCTURAL_BEAM_END0_ELEVATION).AsDouble()-1)
+			except:
+				pass
+	elif x.ToString() == 'Autodesk.Revit.DB.Structure.Truss':
+		object_param_level =  x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_REFERENCE_LEVEL_PARAM)
+		if round(x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION).AsDouble(),10) == 0 :
+			newoffset = (x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION)).Set(x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION).AsDouble()+1)
+			object_newoffset = (x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION)).Set(x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION).AsDouble()-1)
+	#familyinstances Schedule Level
+	elif hasattr(x, "Symbol") and doc.GetElement(x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId())!= None :
+		object_param_level = x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM)
+		
+	try:
+		object_param_level.Set(ref_levelid)
+		result.append(x)
+	except:
+		result.append(False)
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = result</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="51cf98c5-9d88-40d9-bde7-ce8734b1a19f" start_index="0" end="e6699aef-9072-415a-83b9-298b26c90097" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9551a4c8-6405-4b74-98f3-c4ec49ed6f19" start_index="0" end="e6699aef-9072-415a-83b9-298b26c90097" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e6699aef-9072-415a-83b9-298b26c90097" start_index="0" end="7d418a37-433a-4c3c-a1b6-2c03f54b4999" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-37.5173759460449" eyeY="40.6438217163086" eyeZ="181.333984375" lookX="37.5173759460449" lookY="-40.6438217163086" lookZ="-181.333984375" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
