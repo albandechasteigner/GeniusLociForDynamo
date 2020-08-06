@@ -1,0 +1,59 @@
+<Workspace Version="1.3.4.6666" X="-186.97869324383" Y="58.5618302211027" zoom="0.729950825270786" ScaleFactor="1" Name="Workset By Name" Description="Retrieves the workset by the given name." ID="b1542e01-9084-4a66-aa92-b80f6400277a" Category="GeniusLoci.Workset">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a5af5317-2096-4796-b114-070c8fdd6481" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="312.906730449225" y="371.213786627108" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String&#xD;&#xA;Workset_Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="c419589e-d1ba-411d-98fe-a06ec2d4ef50" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="958.106730449225" y="338.000453293774" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Workset" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="774b0142-4ec6-4438-b5c3-9a433dc8d17d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="542.506730449225" y="371.213786627108" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+worksets = IN[0] if isinstance(IN[0],list) else [IN[0]]
+wks, ids = [],[]
+userWorksets = FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset).ToWorksets()
+
+for workset in worksets :
+	wks.append(next((ws for ws in userWorksets if ws.Name.lower() == workset.lower()), None))
+	ids.append(next((ws.Id.IntegerValue for ws in userWorksets if ws.Name.lower() == workset.lower()), None))
+	
+if isinstance(IN[0], list): OUT = wks, ids
+else: OUT = wks[0], ids[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="4523af76-11a0-45a1-a236-16230e06f762" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="766.906730449225" y="375.427119960441" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0d17218c-e19f-4a12-a561-25a118d310fb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="958.106730449225" y="422.000453293774" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Integer&#xD;&#xA;Id" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a5af5317-2096-4796-b114-070c8fdd6481" start_index="0" end="774b0142-4ec6-4438-b5c3-9a433dc8d17d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="774b0142-4ec6-4438-b5c3-9a433dc8d17d" start_index="0" end="4523af76-11a0-45a1-a236-16230e06f762" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4523af76-11a0-45a1-a236-16230e06f762" start_index="0" end="c419589e-d1ba-411d-98fe-a06ec2d4ef50" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4523af76-11a0-45a1-a236-16230e06f762" start_index="1" end="0d17218c-e19f-4a12-a561-25a118d310fb" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

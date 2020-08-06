@@ -1,0 +1,88 @@
+<Workspace Version="1.3.4.6666" X="213.486636709731" Y="105.08896687393" zoom="0.616107147327431" ScaleFactor="1" Name="View Add Filter" Description="Add a Filter and set its overrides to a view. Unlike the OOTB nodes, it also works with SelectionFilterElement.&#xD;&#xA;For use with the Create OverrideGraphicSettings node." ID="726ecc67-f2b8-4d3c-ab82-e0ca08e5d480" Category="GeniusLoci.Graphics">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <PythonNodeModels.PythonNode guid="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" type="PythonNodeModels.PythonNode" nickname="Python Script" x="360.4" y="326.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="4">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <Script>#Inspired by Cyril Poupin on https://forum.dynamobim.com/
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def getfilterByName(nameFilter):
+	collfilter = FilteredElementCollector(doc).OfClass(FilterElement).ToElements()
+	if collfilter:
+		filterSelect = [x for x in collfilter if x.Name == nameFilter]
+		if filterSelect:
+			return filterSelect[0]
+		else: return None	
+
+views = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+nameFilter = UnwrapElement(IN[1])
+override = IN[2]
+visible = IN[3]
+
+outViews = []
+if isinstance (nameFilter, basestring):
+	filter = getfilterByName(nameFilter)
+elif isinstance (nameFilter, FilterElement):
+	filter = nameFilter
+if filter:
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	for view in views:
+		if view.AreGraphicsOverridesAllowed():
+			if not view.IsFilterApplied(filter.Id):
+				view.AddFilter(filter.Id)
+				if override:
+					view.SetFilterOverrides(filter.Id,override)
+				view.SetFilterVisibility(filter.Id, visible)	
+				outViews.append(view)
+	TransactionManager.Instance.TransactionTaskDone()
+	
+	OUT = outViews
+else:
+	OUT = "Filter not found"</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3796cbcb-c18a-4f0e-8d8c-3a43a8cf27a4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="570.509016269106" y="323.65879939815" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="View" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0ecdbb24-aa64-4454-b871-edde95333d93" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-287.989692800089" y="310.821705702949" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="51aa5939-0a21-4f34-a8a9-4ecdce2fe596" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-95.7175662389371" y="390.259714695843" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String (FilterElement's name), &#xD;&#xA;//SelectionFilter or ParameterFilter&#xD;&#xA;filterElement" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="86d28574-efde-49a7-a1c1-5bc4f5f408bd" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-93.8011322266535" y="491.865365904087" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Revit.DB.OverrideGraphicSettings&#xD;&#xA;//Optional input&#xD;&#xA;overrides:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b2eddf42-b476-41e3-9f7d-85b992722205" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-95.89522240034" y="580.155116767119" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//If True the filter will be visible&#xD;&#xA;visible:bool=true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" start_index="0" end="3796cbcb-c18a-4f0e-8d8c-3a43a8cf27a4" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0ecdbb24-aa64-4454-b871-edde95333d93" start_index="0" end="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="51aa5939-0a21-4f34-a8a9-4ecdce2fe596" start_index="0" end="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="86d28574-efde-49a7-a1c1-5bc4f5f408bd" start_index="0" end="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b2eddf42-b476-41e3-9f7d-85b992722205" start_index="0" end="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" end_index="3" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

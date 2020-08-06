@@ -1,0 +1,69 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Set SketchPlane By Line" Description="Works only in Revit 2016 and later.&#xD;&#xA;Selects a line, constructs a plane and assigns the sketch plane to the active view. &#xD;&#xA;An active sketch plane is required for model curve creation." ID="9ecb5990-0a2e-4436-a765-f132caab949c" Category="GeniusLoci.Geometry">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="b86fcc0c-734d-4652-bfaa-0d43dc6cc091" type="PythonNodeModels.PythonNode" nickname="Set SketchPlane ByLine" x="413.6" y="280" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Inspired by Konrad Sobon, archilab
+import clr
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+# Import ToDSType  (bool) extension method
+clr.AddReference("RevitNodes")
+import Revit
+# Adds ToProtoType, ToRevitType geometry conversion extension methods to objects
+clr.ImportExtensions(Revit.GeometryConversion)
+# Import Element wrapper extension methods
+clr.ImportExtensions(Revit.Elements)
+
+curves = UnwrapElement(IN[0]).ToRevitType()
+
+if not hasattr(curves, '__iter__'):
+	curves = [curves]
+
+for curve in curves:
+	coord1 = curve.GetEndPoint(0)
+	coord2 = curve.GetEndPoint(1)
+
+	#process as vertical
+	if (round(coord1.X, 4),round(coord1.Y, 4))== (round(coord2.X, 4),round(coord2.Y, 4)):
+		line = Line.CreateBound(XYZ(coord1.X + 1, coord1.Y, coord1.Z), XYZ(coord1.X + 1, coord1.Y, coord2.Z))
+		geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisX, line.Evaluate(0.5, True))
+
+	else:
+	#process as horizontal
+		line = Line.CreateBound(XYZ(coord1.X, coord1.Y + 1, coord1.Z), XYZ(coord2.X, coord2.Y + 1, coord1.Z));
+		geomPlane = Plane.CreateByNormalAndOrigin(XYZ.BasisZ, line.Evaluate(0.5, True))
+
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	plane = SketchPlane.Create(doc, geomPlane)
+	doc.ActiveView.SketchPlane = plane
+	TransactionManager.Instance.TransactionTaskDone()
+OUT = plane</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="967835ac-2cf1-432d-bfe5-8290ec0099da" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="204.4" y="275.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Dynamo Curve&#xD;&#xA;line" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8e2d2f92-4deb-4caa-8cb5-333754e8a4db" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="606" y="278.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Active SketchPlane" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="b86fcc0c-734d-4652-bfaa-0d43dc6cc091" start_index="0" end="8e2d2f92-4deb-4caa-8cb5-333754e8a4db" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="967835ac-2cf1-432d-bfe5-8290ec0099da" start_index="0" end="b86fcc0c-734d-4652-bfaa-0d43dc6cc091" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="65.3233947753906" eyeY="63.6285743713379" eyeZ="-55.4333877563477" lookX="-16.6101150512695" lookY="-62.5071449279785" lookZ="60.7606430053711" upX="-0.141294360160828" upY="0.844327926635742" upZ="0.516861915588379" />
+  </Cameras>
+</Workspace>

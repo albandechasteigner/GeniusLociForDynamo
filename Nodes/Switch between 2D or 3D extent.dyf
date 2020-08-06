@@ -1,0 +1,65 @@
+<Workspace Version="1.3.4.6666" X="-189.631735130103" Y="-39.7900238727951" zoom="0.784369328044827" ScaleFactor="1" Name="Switch between 2D or 3D extent" Description="Switch the extents of grid and level from 2d to 3d or vice versa.&#xD;&#xA;For use with &quot;Enumerate Datum Extent Type&quot; node." ID="62b1cd54-26c4-4d97-9820-3fe6596282b7" Category="GeniusLoci.Level">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="a488c08c-14df-4539-9e9e-eea5eca103f9" type="PythonNodeModels.PythonNode" nickname="Python Script" x="638.6" y="457" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+import Autodesk
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+
+#Custom tolist definition provided by Dimitar Venkov
+def tolist(x):
+	if hasattr(x,'__iter__'): return x
+	else : return [x]
+
+elements = tolist(UnwrapElement(IN[0]))
+views = tolist(UnwrapElement(IN[1]))
+extenttype = IN[2]
+TransactionManager.Instance.EnsureInTransaction(doc)
+for view in views :
+	for element in elements:
+		element.SetDatumExtentType(DatumEnds.End0,view, extenttype)
+		element.SetDatumExtentType(DatumEnds.End1,view, extenttype)
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = views</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1b6ce5fb-1199-4e97-9f29-fea182e917a1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="863.4" y="457" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="View" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1dcd6ec2-b472-4df6-9b49-43ada4432e47" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="385" y="400" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8446c16f-b6bd-4519-b125-8d30fbb8f726" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="385" y="483" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="005126a2-43e8-47cb-9e1d-281bb414ffea" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="343.182964545848" y="564.980072305996" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Model or ViewSpecific&#xD;&#xA;DatumExtentType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a488c08c-14df-4539-9e9e-eea5eca103f9" start_index="0" end="1b6ce5fb-1199-4e97-9f29-fea182e917a1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1dcd6ec2-b472-4df6-9b49-43ada4432e47" start_index="0" end="a488c08c-14df-4539-9e9e-eea5eca103f9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8446c16f-b6bd-4519-b125-8d30fbb8f726" start_index="0" end="a488c08c-14df-4539-9e9e-eea5eca103f9" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="005126a2-43e8-47cb-9e1d-281bb414ffea" start_index="0" end="a488c08c-14df-4539-9e9e-eea5eca103f9" end_index="2" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

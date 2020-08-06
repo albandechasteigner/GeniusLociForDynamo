@@ -1,0 +1,54 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Tag Set Location" Description="Moves the head of the tag to the given location point." ID="e5fa20e4-8f09-435e-a049-3762b18b9a42" Category="GeniusLoci.Tag">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="d48d587f-05d1-436d-8018-0cb440748ccf" type="PythonNodeModels.PythonNode" nickname="Python Script" x="277.2" y="251.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Transactions import TransactionManager
+from RevitServices.Persistence import DocumentManager
+doc =  DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+
+tags = UnwrapElement(tolist(IN[0]))
+locations = UnwrapElement(tolist(IN[1]))
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for tag,location in zip(tags,locations):
+	tag.TagHeadPosition = location.ToRevitType()
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = tags</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9836c886-6d09-468e-8717-27b438a38143" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="160.4" y="241.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="tag" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="151fd1ef-3a65-48d1-a6ff-f2785f74c1c9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="161.2" y="308" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="location" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="43cfc9e7-f53c-405e-8dfa-46ae9293c638" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="441.2" y="249.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Tag" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="d48d587f-05d1-436d-8018-0cb440748ccf" start_index="0" end="43cfc9e7-f53c-405e-8dfa-46ae9293c638" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9836c886-6d09-468e-8717-27b438a38143" start_index="0" end="d48d587f-05d1-436d-8018-0cb440748ccf" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="151fd1ef-3a65-48d1-a6ff-f2785f74c1c9" start_index="0" end="d48d587f-05d1-436d-8018-0cb440748ccf" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

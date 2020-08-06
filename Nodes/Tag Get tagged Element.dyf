@@ -1,0 +1,85 @@
+<Workspace Version="1.3.4.6666" X="-70.3908777443568" Y="35.4401060580823" zoom="0.616107147327432" ScaleFactor="1" Name="Tag Get tagged Element" Description="Get tagged element.&#xD;&#xA;Unlike the OOTB node it works also for linked element, linked room, room, space and area categories." ID="92b7707a-dbcf-476a-982e-e6b85e3701f1" Category="GeniusLoci.Tag">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="DSCore.List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="26b22ee7-8203-4ec0-9800-b9f4fe643e07" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="778.60780597871" y="376.417630405321" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="55b72328-2320-4660-9859-fdcff6a218e1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="478.8" y="370.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="tag" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="88678f82-e069-4988-aed6-19b92b851e25" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="117.946113805363" y="448.420060922525" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="1b40d966-3ea2-4fdf-9228-b433f4e8f996" type="PythonNodeModels.PythonNode" nickname="Tag Get Tagged Element" x="580.628449120889" y="372.873461919141" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+import Autodesk
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+def tolist(x):
+    if hasattr(x,'__iter__'): return x
+    else : return [x]
+
+tags = tolist(UnwrapElement(IN[0]))
+inputdocs = tolist(UnwrapElement(IN[1]))
+
+linkedrooms,rooms,spaces,areas,elements,linkedelements = [],[],[],[],[],[]
+
+for tag in tags:
+	for inputdoc in inputdocs :
+		#Inputdoc : Part of script by Andreas Dieckmann
+		if inputdoc == None:
+			doc = DocumentManager.Instance.CurrentDBDocument
+		elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.Document":
+			doc = inputdoc
+		elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
+			doc = inputdoc.GetLinkDocument()
+		tagType = doc.GetElement(tag.GetTypeId())
+		if inputdoc != None:
+			try:
+				linkedelements.append(doc.GetElement((tag.TaggedElementId).LinkedElementId))
+				result = linkedelements
+			except:
+				linkedrooms.append(doc.GetElement((tag.TaggedRoomId).LinkedElementId))
+				result = linkedrooms
+		elif tagType.Category.Id == ElementId(BuiltInCategory.OST_RoomTags):
+			rooms.append(tag.Room)
+			result = rooms
+		elif tagType.Category.Id == ElementId(BuiltInCategory.OST_MEPSpaceTags):
+			spaces.append(tag.Space)
+			result = spaces
+		elif tagType.Category.Id == ElementId(BuiltInCategory.OST_AreaTags):
+			areas.append(tag.Area)
+			result = areas
+		else:
+			elements.append(doc.GetElement(tag.TaggedLocalElementId))
+			result = elements
+		
+OUT = filter(None,result)</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="55b72328-2320-4660-9859-fdcff6a218e1" start_index="0" end="1b40d966-3ea2-4fdf-9228-b433f4e8f996" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="88678f82-e069-4988-aed6-19b92b851e25" start_index="0" end="1b40d966-3ea2-4fdf-9228-b433f4e8f996" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1b40d966-3ea2-4fdf-9228-b433f4e8f996" start_index="0" end="26b22ee7-8203-4ec0-9800-b9f4fe643e07" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

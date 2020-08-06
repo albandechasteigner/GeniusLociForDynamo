@@ -1,0 +1,98 @@
+<Workspace Version="1.3.4.6666" X="-43.5874153654412" Y="-173.759065657367" zoom="1.19179377129296" ScaleFactor="1" Name="Set SystemType Graphics" Description="Assigns line pattern, line weight, line color and  material to the given System Type.&#xD;&#xA;(All graphic inputs are optional)" ID="078551ba-1e8a-4050-90c7-8feaf1608aab" Category="GeniusLoci.MEP">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="bceea0ca-bab0-4754-be61-1fc18a5ec5a8" type="PythonNodeModels.PythonNode" nickname="Set SystemType Properties" x="534.234913611393" y="228.625249982177" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="5">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+def ConvertColor(e):
+	return Autodesk.Revit.DB.Color(e.Red, e.Green, e.Blue)
+
+doc = DocumentManager.Instance.CurrentDBDocument
+systypes = tolist(UnwrapElement(IN[0]))
+linePatterns=tolist(UnwrapElement(IN[1]))
+colors=tolist(IN[2])
+weights=tolist(IN[3])
+materials = tolist(UnwrapElement(IN[4]))
+
+# "Start" the transaction
+TransactionManager.Instance.EnsureInTransaction(doc)
+for systype,linePattern,color,weight, material in zip(systypes,linePatterns,colors,weights,materials):
+	if linePattern == None:
+		pass
+	else:	
+		systype.LinePatternId = linePattern.Id
+	if color == None:
+		pass
+	else:
+		systype.LineColor = Color(color.Red, color.Green, color.Blue)
+	if weight == None:
+		pass
+	else:
+		systype.LineWeight = weight
+	if material == None:
+		pass
+	else:
+		systype.MaterialId = material.Id
+
+# "End" the transaction
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = systypes</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e021e9bc-181f-4ea6-8983-0406d6212f5c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="347.6" y="226.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="SystemType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="af4f4179-0260-482c-b671-389cb542b579" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="786.8" y="228" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="SystemType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6573ce55-783b-4d56-8e43-599270708296" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="213.598421449279" y="291.927200974967" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="LinePattern:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7e82131a-7960-4bcc-9e1a-9e48863c8013" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="211.317308637818" y="363.057503601712" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Dynamo Color&#xD;&#xA;LineColor:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="67d0fc49-2728-4575-8d34-cf581c13830e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="211.201864081691" y="436.876241657444" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Integer&#xD;&#xA;LineWeight:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="475a2199-dd8a-432b-ad07-31cbabe8d44f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="207.663545934129" y="508.596162729908" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="material:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="bceea0ca-bab0-4754-be61-1fc18a5ec5a8" start_index="0" end="af4f4179-0260-482c-b671-389cb542b579" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e021e9bc-181f-4ea6-8983-0406d6212f5c" start_index="0" end="bceea0ca-bab0-4754-be61-1fc18a5ec5a8" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6573ce55-783b-4d56-8e43-599270708296" start_index="0" end="bceea0ca-bab0-4754-be61-1fc18a5ec5a8" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7e82131a-7960-4bcc-9e1a-9e48863c8013" start_index="0" end="bceea0ca-bab0-4754-be61-1fc18a5ec5a8" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="67d0fc49-2728-4575-8d34-cf581c13830e" start_index="0" end="bceea0ca-bab0-4754-be61-1fc18a5ec5a8" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="475a2199-dd8a-432b-ad07-31cbabe8d44f" start_index="0" end="bceea0ca-bab0-4754-be61-1fc18a5ec5a8" end_index="4" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

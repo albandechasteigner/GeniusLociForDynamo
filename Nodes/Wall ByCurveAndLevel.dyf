@@ -1,0 +1,117 @@
+<Workspace Version="1.3.4.6666" X="143.786399805097" Y="42.9852042096019" zoom="0.524865427924484" ScaleFactor="1" Name="Wall ByCurveAndLevel" Description="Creates a wall using the specified guiding curve and level. " ID="93a3fae2-24aa-47dc-9bf2-748662781306" Category="GeniusLoci.CompoundStructure">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="1e09e0eb-6360-456f-8493-fdb417c93a7a" type="PythonNodeModels.PythonNode" nickname="Wall.ByCurveAndLevel" x="495.240356083086" y="399.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="7">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <Script>import clr
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitNodes')
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+
+UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
+
+if isinstance(IN[0], list):
+	lines = IN[0]
+else:
+	lines = [IN[0]]
+
+height=IN[1]
+level = UnwrapElement(IN[2])
+type = UnwrapElement(IN[3])
+location = IN[4]
+flip=IN[5]
+Struc = IN[6]
+ele= []
+
+if location == "WallCenterline":
+	locationLine=0
+elif location == "CoreCenterline":
+	locationLine=1
+elif location == "FinishFaceExterior":
+	locationLine=2	
+elif location == "FinishFaceInterior":
+	locationLine=3	
+elif location == "CoreExterior":
+	locationLine=4
+elif location == "CoreInterior":
+	locationLine=5
+else:
+	locationLine=0
+TransactionManager.Instance.EnsureInTransaction(doc)
+for i in lines:
+	if height != None:
+		wall = Wall.Create(doc,i.ToRevitType(),type.Id,level.Id,(UnitUtils.ConvertToInternalUnits(height,UIunit)),0,flip,Struc)
+	else :
+		wall = Wall.Create(doc,i.ToRevitType(),level.Id,Struc)
+		if type != None:
+			wall.ChangeTypeId(type.Id)
+		else:
+			pass
+	location = wall.get_Parameter(BuiltInParameter.WALL_KEY_REF_PARAM)
+	location.Set(locationLine)
+	ele.append(wall)	
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = ele 
+else: OUT = ele[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="5e292276-9fc9-4851-b657-847b8a90aeba" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="17.6403560830861" y="228.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="curve" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bf7ea02a-57ce-442e-8acb-9b802154c6f9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="17.6403560830861" y="311.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Height:double=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ec966877-6d8e-4faf-99b8-b5ff2aebd649" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="17.6403560830861" y="394.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="level" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4e6f63c2-a3a2-49fa-853d-54b8bc0c410e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="17.6403560830861" y="477.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="wallType:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="83b9006f-39d6-4aa7-a659-ca6bbf89cb2a" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="17.6403560830861" y="560.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="WallLocation:string[]..[]=&quot;WallCenterline&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b2dfbc25-2572-4f92-92d3-e96ad97a2fa1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="17.6403560830861" y="643.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Flip:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6b49564f-63fd-4a6d-9ffb-037930cf5a4e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="17.6403560830861" y="726.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="IsStructural:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="d43c1724-2251-4a83-a86b-f603c671a859" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="745.640356083086" y="399.808308605341" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Wall" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="1e09e0eb-6360-456f-8493-fdb417c93a7a" start_index="0" end="d43c1724-2251-4a83-a86b-f603c671a859" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5e292276-9fc9-4851-b657-847b8a90aeba" start_index="0" end="1e09e0eb-6360-456f-8493-fdb417c93a7a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="bf7ea02a-57ce-442e-8acb-9b802154c6f9" start_index="0" end="1e09e0eb-6360-456f-8493-fdb417c93a7a" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ec966877-6d8e-4faf-99b8-b5ff2aebd649" start_index="0" end="1e09e0eb-6360-456f-8493-fdb417c93a7a" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4e6f63c2-a3a2-49fa-853d-54b8bc0c410e" start_index="0" end="1e09e0eb-6360-456f-8493-fdb417c93a7a" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="83b9006f-39d6-4aa7-a659-ca6bbf89cb2a" start_index="0" end="1e09e0eb-6360-456f-8493-fdb417c93a7a" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b2dfbc25-2572-4f92-92d3-e96ad97a2fa1" start_index="0" end="1e09e0eb-6360-456f-8493-fdb417c93a7a" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b49564f-63fd-4a6d-9ffb-037930cf5a4e" start_index="0" end="1e09e0eb-6360-456f-8493-fdb417c93a7a" end_index="6" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
