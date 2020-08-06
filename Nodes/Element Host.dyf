@@ -1,0 +1,62 @@
+<Workspace Version="1.3.4.6666" X="-103.690192005772" Y="-68.0114525761603" zoom="0.931811528498331" ScaleFactor="1" Name="Element Host" Description="Gets the host of the element.&#xD;&#xA;Unlike the OOTB node FamilyInstance.GetHost, it also works for elements hosted by a linked document, wall sweeps, foundations, railings and builing pads.&#xD;&#xA;Based on a Clockwork's node" ID="f3228c78-e4a0-42f0-8ec3-a19daf7157bb" Category="GeniusLoci.Element">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="8f0783d2-546e-4446-aceb-9c0254eada90" type="PythonNodeModels.PythonNode" nickname="Python Script" x="386.8" y="404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+def GetHost(item):
+	# family instance
+	if hasattr(item, "Host") and item.Host != None and item.Host.ToString() != "Autodesk.Revit.DB.RevitLinkInstance" : return item.Host
+	# element hosted by linked document
+	elif hasattr(item, "Host") and item.Host != None and item.Host.ToString() == "Autodesk.Revit.DB.RevitLinkInstance":  
+		linkdoc = item.Host.GetLinkDocument()
+		return linkdoc.GetElement(item.HostFace.LinkedElementId)
+	# Wall sweeps
+	elif hasattr(item, "GetHostIds"): return [item.Document.GetElement(x) for x in item.GetHostIds()]
+	# Wall foundations
+	elif hasattr(item, "WallId"): return item.Document.GetElement(item.WallId)
+	# railings, building pads
+	elif hasattr(item, "HostId"): return item.Document.GetElement(item.HostId)
+	# parkings
+	elif ElementId(BuiltInCategory.OST_Parking) == item.Category.Id and not item.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_PARAM).AsString().startswith("Level")  : return item.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_PARAM).AsString()
+	#if item is work plane based
+	elif not isinstance(item,Autodesk.Revit.DB.FamilyInstance) and item.get_Parameter(BuiltInParameter.SKETCH_PLANE_PARAM):
+		try: 
+			collector = FilteredElementCollector(item.Document).OfClass(Level).ToElements()
+			return [level for level in collector if item.get_Parameter(BuiltInParameter.SKETCH_PLANE_PARAM).AsString().split(": ")[-1] == level.Name][0]
+		except: 
+			try:
+				collector = FilteredElementCollector(item.Document).OfClass(ReferencePlane).ToElements()
+				return [refP for refP in collector if item.get_Parameter(BuiltInParameter.SKETCH_PLANE_PARAM).AsString().split(": ")[-1] == refP.Name][0]
+			except:	return item.get_Parameter(BuiltInParameter.SKETCH_PLANE_PARAM).AsString()
+	#family instance hosted by a level	
+	elif hasattr(item, "Host") and item.Host == None and hasattr(item, "LevelId"): return item.Document.GetElement(item.LevelId)
+	else: return None
+
+items = UnwrapElement(IN[0])
+if isinstance(IN[0], list): OUT = [GetHost(x) for x in items]
+else: OUT = GetHost(items)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="02383ebc-4dc0-4e11-878f-577b5235f60f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="248.819221014319" y="404.370728642256" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b9428b89-cab2-477f-8cb9-03b15737daf9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="558.522817815777" y="403.931148970893" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Host" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="8f0783d2-546e-4446-aceb-9c0254eada90" start_index="0" end="b9428b89-cab2-477f-8cb9-03b15737daf9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="02383ebc-4dc0-4e11-878f-577b5235f60f" start_index="0" end="8f0783d2-546e-4446-aceb-9c0254eada90" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

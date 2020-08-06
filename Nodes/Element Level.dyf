@@ -1,0 +1,80 @@
+<Workspace Version="1.3.4.6666" X="-160.894340706755" Y="21.6746374278086" zoom="1.05429821501133" ScaleFactor="1" Name="Element Level" Description="Gets an element's level.&#xD;&#xA;Based on a Clockwork's node" ID="0490c879-ad31-4845-aaa0-3efd67e04022" Category="GeniusLoci.Level">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0e342b4e-3a7b-4ea4-ad7e-feaaa676fcc6" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="250.4" y="258.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="d0c477c3-2c05-47af-8a46-ceb7934e406d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="438.4" y="258.400000000001" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+#Inspired by Clockwork
+def GetLevel(item):
+	val = None
+	if hasattr(item, "LevelId"): 
+		val = item.Document.GetElement(item.LevelId)
+		if val: return val
+	if hasattr(item, "Level"):
+		val = item.Level
+		if val: return val
+	if hasattr(item, "GenLevel"):
+		val = item.GenLevel
+		if val: return val
+	if (item.GetType().ToString() in ("Autodesk.Revit.DB.Architecture.StairsRun", "Autodesk.Revit.DB.Architecture.StairsLanding")):
+		item = item.GetStairs()
+	if (item.GetType().ToString() == "Autodesk.Revit.DB.Architecture.Stairs") or item.Category.Id == ElementId(BuiltInCategory.OST_Ramps):
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.STAIRS_BASE_LEVEL_PARAM).AsElementId())
+		except: pass
+	if (item.GetType().ToString() == "Autodesk.Revit.DB.ExtrusionRoof"):
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM).AsElementId())
+		except: pass
+	if (item.GetType().ToString() == "Autodesk.Revit.DB.Mechanical.Duct" or "Autodesk.Revit.DB.Electrical.Conduit"):
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.RBS_START_LEVEL_PARAM).AsElementId())
+		except: pass
+	if not val:
+		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM).AsElementId())
+		except: 
+			try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId())
+			except: 
+				try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.SCHEDULE_LEVEL_PARAM).AsElementId())
+				except:
+					#if item is work plane based
+					collector = FilteredElementCollector(item.Document).OfClass(Level).ToElements()
+					try: return [level for level in collector if item.get_Parameter(BuiltInParameter.SKETCH_PLANE_PARAM).AsString().split(": ")[-1] == level.Name][0]
+					except: return None
+
+ProcessLists = lambda function, lists: [ProcessLists(function, item) if isinstance(item, list) else function(item) for item in lists]
+ApplyFunction = lambda func, objs: ProcessLists(func, objs) if isinstance(objs, list) else [func(objs)]
+
+def Unwrap(item):
+    return UnwrapElement(item)
+    
+if isinstance(IN[0], list):
+	items = ProcessLists(Unwrap, IN[0])
+else:
+	items = Unwrap(IN[0])
+
+OUT=ApplyFunction(GetLevel,items)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1d3a5181-d0f3-4eeb-9647-2ee00c94e33d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="662.4" y="258.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="level" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="0e342b4e-3a7b-4ea4-ad7e-feaaa676fcc6" start_index="0" end="d0c477c3-2c05-47af-8a46-ceb7934e406d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d0c477c3-2c05-47af-8a46-ceb7934e406d" start_index="0" end="1d3a5181-d0f3-4eeb-9647-2ee00c94e33d" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,67 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Element Filter By Name DoesNotContain" Description="Filter elements by part of their name." ID="fdcc1e38-dcb0-44ba-95a5-8474673a4ac5" Category="GeniusLoci.Element">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4192193b-ea89-4577-a879-df0a066602c3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="331.3" y="240.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Element to filter by name doesn't contain&#xD;&#xA;element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="62437f59-f4c2-47c9-8db0-c4493b80c669" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="331.3" y="333.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The string value to filter by&#xD;&#xA;searchString : string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="650aea3c-ba73-4b6d-9960-e61585051cf0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="331.3" y="426.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ignoreCase:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="58851a5c-f95c-4fb8-9565-8662259c2b7b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="983.3" y="307.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="c49591e1-403d-4aa7-8aaa-7d0b69f8d0d7" type="PythonNodeModels.PythonNode" nickname="Python Script" x="773.2" y="305.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference("RevitAPI")
+from Autodesk.Revit.DB import Element
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+names = IN[1] if isinstance(IN[1],list) else [IN[1]]
+bool = IN[2]
+outList=[]
+
+for elem in elements:
+	if isinstance(IN[1],list):
+		if bool:
+			if all(name.lower() not in elem.ToDSType(True).Name.lower() for name in names):
+				outList.append(elem)
+		else:
+			if all(name not in elem.ToDSType(True).Name for name in names):
+				outList.append(elem)
+	else:
+		if bool:
+			outList=[elem for elem in elements if not IN[1].lower() in elem.ToDSType(True).Name.lower()]
+		else:
+			outList=[elem for elem in elements if not IN[1] in elem.ToDSType(True).Name]
+	
+if isinstance(IN[0], list): OUT = outList
+else: OUT = outList[0]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="4192193b-ea89-4577-a879-df0a066602c3" start_index="0" end="c49591e1-403d-4aa7-8aaa-7d0b69f8d0d7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="62437f59-f4c2-47c9-8db0-c4493b80c669" start_index="0" end="c49591e1-403d-4aa7-8aaa-7d0b69f8d0d7" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="650aea3c-ba73-4b6d-9960-e61585051cf0" start_index="0" end="c49591e1-403d-4aa7-8aaa-7d0b69f8d0d7" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="c49591e1-403d-4aa7-8aaa-7d0b69f8d0d7" start_index="0" end="58851a5c-f95c-4fb8-9565-8662259c2b7b" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

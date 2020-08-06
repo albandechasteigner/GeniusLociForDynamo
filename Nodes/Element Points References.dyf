@@ -1,0 +1,74 @@
+<Workspace Version="1.3.4.6666" X="-230.863793827157" Y="24.1686997824668" zoom="0.888789228297156" ScaleFactor="1" Name="Element Points References" Description="Returns the references to the start and the end points of the curve based element." ID="3f5fc3cf-0106-49f1-b938-cd0d43259a2c" Category="GeniusLoci.Reference">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c1956f4e-4e69-407f-a7f6-bb516caed3f9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="297.2" y="283.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Curve based element&#xD;&#xA;element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1c57042e-6b7c-4782-a4c7-514eb00edf59" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="842.016146826213" y="273.09868807037" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Points" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f1511df3-6f88-4ef1-916d-af36c1a4cb86" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="835.200403670655" y="338.103733953562" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="References" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="fd8e3213-76bd-4e5f-ba23-c6700577d262" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="693.519678944447" y="283.691220163247" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <PythonNodeModels.PythonNode guid="40ccfb16-e8c6-4eb7-a7ef-a87c7a8f33c1" type="PythonNodeModels.PythonNode" nickname="Python Script" x="527.196816080793" y="283.409383104408" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitNodes')
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+clr.ImportExtensions(Revit.Elements)
+from Revit.Elements import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+items = UnwrapElement(IN[0])
+if not hasattr(items, '__iter__'):
+	items = [items]
+	
+allReferences,allPoints =[],[]
+
+opt = Options()
+opt.ComputeReferences = True
+opt.IncludeNonVisibleObjects = True
+opt.View = doc.ActiveView
+for item in items:
+	references = ReferenceArray()
+	points=[]
+	for obj in item.get_Geometry(opt):
+		if isinstance(obj, Line):
+			gline = obj
+			references=gline.GetEndPointReference(0),gline.GetEndPointReference(1)
+			points=gline.GetEndPoint(0).ToPoint(),gline.GetEndPoint(1).ToPoint()
+	allReferences.append(references)
+	allPoints.append(points)
+
+if isinstance(IN[0], (list)): OUT = allPoints,allReferences
+else: OUT = allPoints[0],allReferences[0]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="c1956f4e-4e69-407f-a7f6-bb516caed3f9" start_index="0" end="40ccfb16-e8c6-4eb7-a7ef-a87c7a8f33c1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="fd8e3213-76bd-4e5f-ba23-c6700577d262" start_index="0" end="1c57042e-6b7c-4782-a4c7-514eb00edf59" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="fd8e3213-76bd-4e5f-ba23-c6700577d262" start_index="1" end="f1511df3-6f88-4ef1-916d-af36c1a4cb86" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="40ccfb16-e8c6-4eb7-a7ef-a87c7a8f33c1" start_index="0" end="fd8e3213-76bd-4e5f-ba23-c6700577d262" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="15238.3584149172" eyeY="6571.84156234348" eyeZ="12040.280128364" lookX="6894.85025647435" lookY="-6741.75482540773" lookZ="-6017.01443826439" upX="0.306452229055511" upY="0.913545457642599" upZ="-0.267435465350948" />
+  </Cameras>
+</Workspace>

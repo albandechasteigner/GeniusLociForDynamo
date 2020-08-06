@@ -1,0 +1,27 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Enum JoinType" Description="Enumerate the type of join at the end of an element. Use with Set Wall JoinType node" ID="19765b98-2ef6-485c-836d-7f3deed8b136" Category="GeniusLoci.CompoundStructure">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="279ada9d-aa08-43b1-80fe-a1944d97ac10" type="PythonNodeModels.PythonNode" nickname="Python Script" x="301.2" y="275.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>import clr
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+from Autodesk.Revit.DB import Structure
+import System
+
+#Assign your output to the OUT variable
+OUT = System.Enum.GetValues(Autodesk.Revit.DB.JoinType)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8461df5b-db51-450e-92c5-67d84e317adc" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="442.8" y="274.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="JoinType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="279ada9d-aa08-43b1-80fe-a1944d97ac10" start_index="0" end="8461df5b-db51-450e-92c5-67d84e317adc" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

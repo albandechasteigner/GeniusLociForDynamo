@@ -1,0 +1,39 @@
+<Workspace Version="1.3.4.6666" X="-174.582780977266" Y="-171.657849338396" zoom="0.954042924882812" ScaleFactor="1" Name="Element Reference" Description="Gets the reference of a geometric object or a dimension or a reference plane." ID="c74cdf50-fd7b-436a-8e2d-6b6e50879034" Category="GeniusLoci.Reference">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="3fbf0dba-c80b-43cb-8863-3e3c7037f052" type="PythonNodeModels.PythonNode" nickname="Python Script" x="446.4" y="422.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+ref=[]
+for element in elements:
+	if isinstance (element, Autodesk.Revit.DB.Dimension):
+		ref.append(element.References)
+	elif isinstance (element, Autodesk.Revit.DB.ReferencePlane):
+		ref.append(element.GetReference())
+	else : ref.append(Reference(element))
+
+if isinstance(IN[0], list): OUT = ref
+else: OUT = ref[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b82cca69-ec4e-46b9-8b78-5e65cbffe87e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="330" y="424.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="500e9125-9143-4ac5-b0bb-89ac50ae93bb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="620.4" y="423.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Reference" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="3fbf0dba-c80b-43cb-8863-3e3c7037f052" start_index="0" end="500e9125-9143-4ac5-b0bb-89ac50ae93bb" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b82cca69-ec4e-46b9-8b78-5e65cbffe87e" start_index="0" end="3fbf0dba-c80b-43cb-8863-3e3c7037f052" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>
