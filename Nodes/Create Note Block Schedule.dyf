@@ -1,0 +1,102 @@
+<Workspace Version="1.3.4.6666" X="-37.979746069892" Y="161.004497856122" zoom="0.360701118032298" ScaleFactor="1" Name="Create Note Block Schedule" Description="Create a Note Block Schedule of Generic Annotations with Count and Type fields." ID="6cbcbb9d-b359-4ee1-a762-3d0fc5260410" Category="GeniusLoci.Schedule">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="98bb07ba-94a7-46b1-8e6c-566c11e77f1f" type="PythonNodeModels.PythonNode" nickname="Note Block" x="640.872424435399" y="254.283962205696" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+family=UnwrapElement(IN[0])
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+if family ==None:
+	noteblockFamilies = ViewSchedule.GetValidFamiliesForNoteBlock(doc)
+	symbolId = noteblockFamilies[0]
+else :
+	symbolId=family.Id
+if symbolId !=(ElementId.InvalidElementId) :
+	noteBlockSchedule = ViewSchedule.CreateNoteBlock(doc, symbolId)
+TransactionManager.Instance.TransactionTaskDone()
+fields = noteBlockSchedule.Definition.GetSchedulableFields()
+fieldList=[]
+for f in fields:
+	name=f.GetName(doc) 
+	fieldList.append(name)
+OUT = noteBlockSchedule,fieldList,fields</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="582fec12-eed7-4060-b133-4c3b532e0903" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="836.40439889022" y="266.251330658623" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <PythonNodeModels.PythonNode guid="8f7e2afe-be71-431d-ab4b-7013d2f9b5ed" type="PythonNodeModels.PythonNode" nickname="ScheduleView.AddFields" x="1209.42801673873" y="256.107578560981" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+viewSchedule = UnwrapElement(IN[0])
+schedulableFields = UnwrapElement(IN[1])
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for schedulableField in schedulableFields:
+	viewSchedule.Definition.AddField(schedulableField) 
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = viewSchedule</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="50f00075-eaa0-4a4c-8826-acd1209572d6" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1018.99958980947" y="313.338348370645" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0..1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="dab62adf-01c9-4784-8097-07fe208d7d7d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="379.723370545164" y="250.190915760375" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="family:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="135d3e83-bdb3-4230-920e-81df12f42a54" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1425.17624290007" y="253.261071814825" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ViewSchedule" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="98bb07ba-94a7-46b1-8e6c-566c11e77f1f" start_index="0" end="582fec12-eed7-4060-b133-4c3b532e0903" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="582fec12-eed7-4060-b133-4c3b532e0903" start_index="0" end="8f7e2afe-be71-431d-ab4b-7013d2f9b5ed" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="582fec12-eed7-4060-b133-4c3b532e0903" start_index="1" end="50f00075-eaa0-4a4c-8826-acd1209572d6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8f7e2afe-be71-431d-ab4b-7013d2f9b5ed" start_index="0" end="135d3e83-bdb3-4230-920e-81df12f42a54" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="50f00075-eaa0-4a4c-8826-acd1209572d6" start_index="0" end="8f7e2afe-be71-431d-ab4b-7013d2f9b5ed" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="dab62adf-01c9-4784-8097-07fe208d7d7d" start_index="0" end="98bb07ba-94a7-46b1-8e6c-566c11e77f1f" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

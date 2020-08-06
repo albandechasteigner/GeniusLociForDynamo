@@ -1,0 +1,71 @@
+<Workspace Version="1.3.4.6666" X="-126.347366877852" Y="4.42160546702635" zoom="0.770516848202246" ScaleFactor="1" Name="Collector of FillPatternElement" Description="Collect Fill Pattern Elements and separate the pattern types between Drafting and Model." ID="4b75a99a-1f26-4747-91fa-0d173a503b65" Category="GeniusLoci.FillPattern">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="38d075bd-378c-4c4c-bf6a-dacfb750ad96" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="557.288669702563" y="249.307213872104" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="59c4f772-3829-4b19-8b5d-91821b89c7cb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="733.262005567168" y="160.925813243003" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Drafting Pattern" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="6d89fe2e-98af-419f-b67e-70b91edb07af" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="737.056403177698" y="249.363136807977" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Model Pattern" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f376c914-7706-4eb5-9cfe-116ae0e5a18d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="745.045656905627" y="336.643271998846" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="DraftingPatternName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="814c30e2-e3cc-4c30-b015-136835a8df7e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="733.022647678273" y="444.952051835599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ModelPatternName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="6c297493-38ba-41ed-baa3-024dee6139cb" type="PythonNodeModels.PythonNode" nickname="Get Fillpatterns" x="366.655429609436" y="242.365639046589" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>#Alban de Chasteigner, 2018
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+fillpatterns = FilteredElementCollector(doc).OfClass(FillPatternElement)
+
+draft = []
+model = []
+draftid = []
+modelid = []
+
+for fillpattern in fillpatterns:
+	fpt=fillpattern.GetFillPattern()
+	if fpt.Target == FillPatternTarget.Drafting :
+		draft.append(fillpattern)
+		#draftid.append(fillpattern.Id)
+		draftid.append(fillpattern.Name)
+	elif fpt.Target == FillPatternTarget.Model:
+		model.append(fillpattern)
+		#modelid.append(fillpattern.Id)
+		modelid.append(fillpattern.Name)
+		
+OUT = draft,model,draftid,modelid</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="38d075bd-378c-4c4c-bf6a-dacfb750ad96" start_index="0" end="59c4f772-3829-4b19-8b5d-91821b89c7cb" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="38d075bd-378c-4c4c-bf6a-dacfb750ad96" start_index="1" end="6d89fe2e-98af-419f-b67e-70b91edb07af" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="38d075bd-378c-4c4c-bf6a-dacfb750ad96" start_index="2" end="f376c914-7706-4eb5-9cfe-116ae0e5a18d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="38d075bd-378c-4c4c-bf6a-dacfb750ad96" start_index="3" end="814c30e2-e3cc-4c30-b015-136835a8df7e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6c297493-38ba-41ed-baa3-024dee6139cb" start_index="0" end="38d075bd-378c-4c4c-bf6a-dacfb750ad96" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

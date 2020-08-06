@@ -1,0 +1,191 @@
+<Workspace Version="1.3.4.6666" X="3.31281887291814" Y="105.201029028383" zoom="0.437884982559123" ScaleFactor="1" Name="Create Shared Parameter" Description="Add parameter to the shared parameter file and then add it to the project.&#xD;&#xA;It is possible to use an existing GUID to recreate an identical shared parameter in a new SP file.&#xD;&#xA;Inspired by archilab" ID="9bfc4112-8be2-42bc-865e-24b847a516c6" Category="GeniusLoci.Parameter">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="15260ed0-b7f4-4973-91b3-e01a37019f02" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="-24.64005934718" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String&#xD;&#xA;ParameterName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9d4b5537-f1b0-401b-aaff-b2ab3b602334" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="956.972703833027" y="207.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Result" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c876298b-680e-4372-ac15-65814bb27fbe" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="68.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String. Group of the shared parameter&#xD;&#xA;GroupName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1bd11f7d-0c25-4e7a-8b61-1d7019b544f0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="161.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or DB.ParameterType&#xD;&#xA;ParameterType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3d54e6ec-b579-4991-bc08-eb0fd7643205" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="254.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or DB.BuiltInParameterGroup&#xD;&#xA;ParameterGroup" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="180940d8-ff41-4437-bfa6-da6bab7c8c4d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="347.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Is instance parameter, otherwise it's a type parameter&#xD;&#xA;IsInstance:bool[]..[]=true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="aba02377-a4b1-411a-bfcf-9d85068afca0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="440.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="IsVisible:bool[]..[]=true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2a625e19-3dbb-41f7-b19b-b3c553e76761" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="523.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Optional input. String or System Guid&#xD;&#xA;GUID:var[]..[]=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="70a8a020-67f5-4776-8bd1-fd5ff81ec51d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="616.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="category" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" type="PythonNodeModels.PythonNode" nickname="Python Script" x="732.172703833027" y="207.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="8">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <Script>#Inspired by an archilab node
+#Copyright(c) 2015, Konrad Sobon
+# @arch_laboratory, http://archi-lab.net
+
+import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+
+# Import ToDSType(bool) extension method
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+import System
+from System.Collections.Generic import List
+from System import Guid
+
+_paramName = IN[0]
+_groupName = IN[1]
+parameterType = IN[2]
+parameterGroup = IN[3]
+_instance = IN[4]
+_visible = IN[5]
+guid = IN[6]
+_categories = IN[7]
+
+if not hasattr(_categories, '__iter__'):
+	_categories = [_categories]
+
+if isinstance(parameterGroup, basestring):
+	exec("_paramGroup = BuiltInParameterGroup.%s" % parameterGroup)
+else:
+	_paramGroup = parameterGroup
+	
+if isinstance(parameterType, basestring):
+	exec("_paramType = ParameterType.%s" % parameterType)
+else :
+	_paramType = parameterType
+
+if isinstance(guid, basestring):
+	_guid = Guid(guid)
+else :
+	_guid = guid
+
+def ParamBindingExists(_doc, _paramName, _paramType):
+	map = doc.ParameterBindings
+	iterator = map.ForwardIterator()
+	iterator.Reset()
+	while iterator.MoveNext():
+		if iterator.Key != None and iterator.Key.Name == _paramName and iterator.Key.ParameterType == _paramType:
+			paramExists = True
+			break
+		else:
+			paramExists = False
+	return paramExists
+
+def RemoveParamBinding(_doc, _paramName, _paramType):
+	map = doc.ParameterBindings
+	iterator = map.ForwardIterator()
+	iterator.Reset()
+	while iterator.MoveNext():
+		if iterator.Key != None and iterator.Key.Name == _paramName and iterator.Key.ParameterType == _paramType:
+			definition = iterator.Key
+			break
+	message = None
+	if definition != None:
+		map.Remove(definition)
+		message = "Success"
+	return message
+
+def addParam(doc, _paramName, _paramType, _visible, _instance, _guid, _groupName, _paramGroup):
+	message = None
+	if ParamBindingExists(doc, _paramName, _paramType):
+		if not RemoveParamBinding(doc, _paramName, _paramType) == "Success":
+			message = "Param Binding Not Removed Successfully"
+		else:
+			message = None
+			
+	group = app.OpenSharedParameterFile().Groups.get_Item(_groupName)
+	if group == None:
+		group = file.Groups.Create(_groupName)
+	if group.Definitions.Contains(group.Definitions.Item[_paramName]):
+		_def = group.Definitions.Item[_paramName]
+	else:
+		opt = ExternalDefinitionCreationOptions(_paramName, _paramType)
+		opt.Visible = _visible
+		if _guid != None:
+			opt.GUID = _guid 
+		_def = group.Definitions.Create(opt)
+	param = doc.ParameterBindings.Insert(_def, bind, _paramGroup)
+	return message
+	
+TransactionManager.Instance.EnsureInTransaction(doc)
+try:
+	file = app.OpenSharedParameterFile()
+except:
+	message = "No Shared Parameter file found."
+	pass
+
+builtInCategory=[]
+for _category in _categories :
+	builtInCategory.append(System.Enum.ToObject(BuiltInCategory, _category.Id))
+	cats=app.Create.NewCategorySet()
+	for builtIn in builtInCategory :
+		cats.Insert(doc.Settings.Categories.get_Item(builtIn))
+if _instance:
+	bind = app.Create.NewInstanceBinding(cats)
+else:
+	bind = app.Create.NewTypeBinding(cats)
+
+if isinstance(_paramName, list) and _guid:
+	for i, j, k, l, m, n in zip(_paramName, _paramType, _visible, _instance, _guid, _paramGroup):
+		message = addParam(doc, i, j, k, l, m, _groupName, n)
+else:
+	message = addParam(doc, _paramName, _paramType, _visible, _instance, _guid, _groupName, _paramGroup)
+TransactionManager.Instance.TransactionTaskDone()
+
+if message == None:
+	OUT = "Success"
+else:
+	OUT = message</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="15260ed0-b7f4-4973-91b3-e01a37019f02" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="c876298b-680e-4372-ac15-65814bb27fbe" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1bd11f7d-0c25-4e7a-8b61-1d7019b544f0" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3d54e6ec-b579-4991-bc08-eb0fd7643205" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="180940d8-ff41-4437-bfa6-da6bab7c8c4d" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="aba02377-a4b1-411a-bfcf-9d85068afca0" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2a625e19-3dbb-41f7-b19b-b3c553e76761" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="70a8a020-67f5-4776-8bd1-fd5ff81ec51d" start_index="0" end="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" end_index="7" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" start_index="0" end="9d4b5537-f1b0-401b-aaff-b2ab3b602334" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

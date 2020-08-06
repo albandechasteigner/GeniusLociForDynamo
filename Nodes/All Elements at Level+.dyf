@@ -1,0 +1,69 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="All Elements at Level+" Description="Get all the elements at the specified Level from the model. Unlike the OOTB node it works with MEP Curves and Structural Framings." ID="bd4c2866-688c-460a-afef-597f80b6301f" Category="GeniusLoci.Level">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Revit.Level" resolvedName="Revit.Elements.Level" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <PythonNodeModels.PythonNode guid="737d59a7-5236-413a-bf94-e6c67c567f78" type="PythonNodeModels.PythonNode" nickname="Python Script" x="504" y="288.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+#Import Collections
+from System.Collections.Generic import *
+import System
+
+levelInput = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+levList = []
+
+sysId = ElementId(BuiltInParameter.RBS_START_LEVEL_PARAM)
+schedId = ElementId(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM)
+stairsId = ElementId(BuiltInParameter.STAIRS_BASE_LEVEL_PARAM)
+framingId = ElementId(BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM)
+trussId = ElementId(BuiltInParameter.TRUSS_ELEMENT_REFERENCE_LEVEL_PARAM)
+roofId = ElementId(BuiltInParameter.ROOF_CONSTRAINT_LEVEL_PARAM)
+wkId = ElementId(BuiltInParameter.SKETCH_PLANE_PARAM)
+
+for levelIn in levelInput :
+	doc=levelIn.Document
+	filters = List[ElementFilter]()
+	filters.Add(ElementLevelFilter(levelIn.Id))
+	filters.Add(ElementParameterFilter(ParameterFilterRuleFactory.CreateEqualsRule(schedId, levelIn.Id)))
+	filters.Add(ElementParameterFilter(ParameterFilterRuleFactory.CreateEqualsRule(sysId, levelIn.Id)))
+	filters.Add(ElementParameterFilter(ParameterFilterRuleFactory.CreateEqualsRule(stairsId, levelIn.Id)))
+	filters.Add(ElementParameterFilter(ParameterFilterRuleFactory.CreateEqualsRule(framingId, levelIn.Id)))
+	filters.Add(ElementParameterFilter(ParameterFilterRuleFactory.CreateEqualsRule(trussId, levelIn.Id)))
+	filters.Add(ElementParameterFilter(ParameterFilterRuleFactory.CreateEqualsRule(roofId, levelIn.Id)))
+	filters.Add(ElementParameterFilter(ParameterFilterRuleFactory.CreateContainsRule(wkId, levelIn.Name, False)))
+	orFilter = LogicalOrFilter(filters)
+	cat_list = [BuiltInCategory.OST_ConduitCenterLine, BuiltInCategory.OST_PipeCurvesCenterLine]
+	catFilter = ElementMulticategoryFilter(List[BuiltInCategory](cat_list),True)
+	andFilter = LogicalAndFilter(orFilter,catFilter)	
+	levList.append(FilteredElementCollector(doc).WherePasses(andFilter).WhereElementIsNotElementType().ToElements())
+	
+if isinstance(IN[0], list): OUT = levList
+else: OUT = levList[0]
+orFilter.Dispose()
+andFilter.Dispose()</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0e74d93a-517f-4d95-a606-f0cfbcb4c21d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="332" y="288.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="level" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="56671a68-ab65-4ff0-bec1-b70655e08e02" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="728.4" y="288.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Elements" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="737d59a7-5236-413a-bf94-e6c67c567f78" start_index="0" end="56671a68-ab65-4ff0-bec1-b70655e08e02" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0e74d93a-517f-4d95-a606-f0cfbcb4c21d" start_index="0" end="737d59a7-5236-413a-bf94-e6c67c567f78" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

@@ -1,0 +1,94 @@
+<Workspace Version="1.3.4.6666" X="-55.27" Y="41.03" zoom="0.8425" ScaleFactor="1" Name="AppearanceAsset Set Color" Description="Works only in Revit 2018.1 and later.&#xD;&#xA;Set the color property into the rendering color of the AppearanceAsset Element." ID="915fb823-a77f-4b3e-8759-acbb61cb8ef4" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="041ec430-0bd8-40f3-9e99-3f5eadc2b545" type="PythonNodeModels.PythonNode" nickname="Set Appearance Color" x="395.153888621939" y="238.721981521795" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def toList(obj):
+    if hasattr(obj, '__iter__'): return obj
+    else: return [obj]
+    
+assetElems = toList(UnwrapElement(IN[0]))
+colors = toList(IN[1])
+
+def ToRevitColor(dynamoColor):
+	return Color(dynamoColor.Red, dynamoColor.Green, dynamoColor.Blue)
+
+for assetElem, color in zip(assetElems, colors):
+	TransactionManager.Instance.EnsureInTransaction(doc)
+	with Visual.AppearanceAssetEditScope(assetElem.Document) as editScope:
+		editableAsset = editScope.Start(assetElem.Id)
+		if (editableAsset.FindByName("BaseSchema")).Value == "GenericSchema":
+			genericDiffuseProperty = editableAsset.FindByName("generic_diffuse")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "CeramicSchema":
+			genericDiffuseProperty = editableAsset.FindByName("ceramic_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "ConcreteSchema":
+			genericDiffuseProperty = editableAsset.FindByName("concrete_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "GlazingSchema":
+			genericDiffuseProperty = editableAsset.FindByName("glazing_transmittance_map")			
+		elif (editableAsset.FindByName("BaseSchema")).Value == "MetallicPaintSchema":
+			genericDiffuseProperty = editableAsset.FindByName("metallicpaint_base_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "MasonryCMUSchema":
+			genericDiffuseProperty = editableAsset.FindByName("masonrycmu_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "MirrorSchema":
+			genericDiffuseProperty = editableAsset.FindByName("mirror_tintcolor")			
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PlasticVinylSchema":
+			genericDiffuseProperty = editableAsset.FindByName("plasticvinyl_color")			
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismLayeredSchema":
+			genericDiffuseProperty = editableAsset.FindByName("layered_diffuse")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismMetalSchema":
+			genericDiffuseProperty = editableAsset.FindByName("metal_f0")			
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismOpaqueSchema":
+			genericDiffuseProperty = editableAsset.FindByName("opaque_albedo")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "SolidGlassSchema":
+			genericDiffuseProperty = editableAsset.FindByName("solidglass_transmittance_custom_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "WallPaintSchema":
+			genericDiffuseProperty = editableAsset.FindByName("wallpaint_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "PrismTransparentSchema":
+			genericDiffuseProperty = editableAsset.FindByName("transparent_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "WaterSchema":
+			genericDiffuseProperty = editableAsset.FindByName("water_tint_color")
+		elif (editableAsset.FindByName("BaseSchema")).Value == "HardwoodSchema":
+			genericDiffuseProperty = editableAsset.FindByName("hardwood_tint_color")
+		genericDiffuseProperty.SetValueAsColor(ToRevitColor(color))
+		editScope.Commit(True)
+	TransactionManager.Instance.TransactionTaskDone()
+
+OUT = assetElems</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bff44ee4-987e-429c-be40-5a461f19c40f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="141.553888621939" y="209.721981521795" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="appearanceAsset" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="12316c9d-8449-43ee-a09f-a3a82e652bea" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="639.953888621939" y="238.721981521795" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="AppearanceAsset" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="24465c09-8a1a-4499-8fe4-736d95983dd8" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="141.553888621939" y="293.721981521795" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Dynamo Color&#xD;&#xA;color:var[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="041ec430-0bd8-40f3-9e99-3f5eadc2b545" start_index="0" end="12316c9d-8449-43ee-a09f-a3a82e652bea" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="bff44ee4-987e-429c-be40-5a461f19c40f" start_index="0" end="041ec430-0bd8-40f3-9e99-3f5eadc2b545" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="24465c09-8a1a-4499-8fe4-736d95983dd8" start_index="0" end="041ec430-0bd8-40f3-9e99-3f5eadc2b545" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

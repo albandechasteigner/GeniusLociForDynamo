@@ -1,0 +1,90 @@
+<Workspace Version="1.3.4.6666" X="168.256724456836" Y="199.284213236446" zoom="0.734436536454464" ScaleFactor="1" Name="3DView Set Orientation" Description="This node will copy the orientation from the desired 3D view and apply it to a list of 3D views.&#xD;&#xA;The 3D views will be locked.&#xD;&#xA;The name of the 3D view mustn't include any special characters  \ : {} etc.&#xD;&#xA;Based on a Ben Osborne's script." ID="320c5182-8c11-4023-8355-6c7f79eb5a58" Category="GeniusLoci.View">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3fcab0d1-7dab-432f-944c-6c28d488cbcd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="801.783099141579" y="195.81770312273" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ControlView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4b7fc667-f166-4ae3-bbf9-7895b56119e2" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="820.888451623691" y="320.867496191475" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Views" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="9e86f6d2-3e97-43e4-b340-2ab22d05aac5" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="632.444772208672" y="263.52110886605" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="seq[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2aad0256-a6b4-43bd-8489-59caf0a51a91" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="219.73055248799" y="236.865917640755" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ControlView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="babb3deb-2008-47bb-ab90-bc51cefe5d60" type="PythonNodeModels.PythonNode" nickname="Set the View Orientation" x="421.727336759813" y="258.528199921003" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#From Ben Osborne
+#http://dynamobim.org/forums/topic/view-orientation-and-python-script-refresh/
+
+import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitAPI")
+import Autodesk
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+#Les entrées effectuées dans ce noeud sont stockées sous forme de liste dans les variables IN.
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def ProcessList(_func, _list):
+    return map( lambda x: ProcessList(_func, x) if type(x)==list else _func(x), _list )
+
+def Unwrap(item):
+    return UnwrapElement(item)
+
+if isinstance(IN[0], list):
+    controlview = ProcessList(Unwrap, IN[0])
+else:
+    controlview = [Unwrap(IN[0])]
+
+if isinstance(IN[1], list):
+    views = ProcessList(Unwrap, IN[1])
+else:
+    views = [Unwrap(IN[1])]
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for control in controlview:
+	control.Unlock()
+	viewSetting = control.GetOrientation()
+	control.SaveOrientationAndLock()
+for view in views:
+	view.Unlock()
+	view.SetOrientation(viewSetting)
+	view.SaveOrientationAndLock()
+TransactionManager.Instance.TransactionTaskDone()
+
+#Affectez la sortie à la variable OUT.
+OUT = (controlview,views)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9bc8cb61-45cb-4749-8d64-985d17263910" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-108.193144749389" y="321.820473431664" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The active view mustn't be part of the input 3DView&#xD;&#xA;ThreeDView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="9e86f6d2-3e97-43e4-b340-2ab22d05aac5" start_index="0" end="4b7fc667-f166-4ae3-bbf9-7895b56119e2" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2aad0256-a6b4-43bd-8489-59caf0a51a91" start_index="0" end="babb3deb-2008-47bb-ab90-bc51cefe5d60" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2aad0256-a6b4-43bd-8489-59caf0a51a91" start_index="0" end="3fcab0d1-7dab-432f-944c-6c28d488cbcd" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="babb3deb-2008-47bb-ab90-bc51cefe5d60" start_index="0" end="9e86f6d2-3e97-43e4-b340-2ab22d05aac5" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9bc8cb61-45cb-4749-8d64-985d17263910" start_index="0" end="babb3deb-2008-47bb-ab90-bc51cefe5d60" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

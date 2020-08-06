@@ -1,0 +1,89 @@
+<Workspace Version="1.3.4.6666" X="96.9062334112506" Y="51.1723709046336" zoom="0.679007436100058" ScaleFactor="1" Name="AppearanceAsset Get Properties" Description="Get all the properties and their values from an AppearanceAsset." ID="edede0a5-2279-47f5-abe7-f5914523fa5e" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="b16a957f-6fba-40ba-be79-01ffb6fc9b8f" type="PythonNodeModels.PythonNode" nickname="Python Script" x="277.2" y="251.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+clr.AddReference('DSCoreNodes')
+import DSCore
+from DSCore import Color
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def toList(obj):
+    if hasattr(obj, '__iter__'): return obj
+    else: return [obj]
+
+assets = toList(UnwrapElement(IN[0]))
+
+for appAsset in assets:
+	if isinstance(appAsset, Autodesk.Revit.DB.AppearanceAssetElement):
+		asset=appAsset.GetRenderingAsset()
+	elif isinstance(appAsset, Autodesk.Revit.DB.Visual.Asset):
+		asset=appAsset
+	else:
+		pass
+	propName,propType,properties,propValue=[],[],[],[]
+	idx=0
+	while idx &lt; asset.Size:
+		property=asset.Get(idx)
+		#properties.append(property)
+		propName.append(property.Name)
+		propType.append(property.Type)
+		if str(property.Type) != "Double4" and str(property.Type) != "Reference":
+			propValue.append(property.Value)
+		if str(property.Type) == "Double4":
+			color=property.GetValueAsColor()
+			propValue.append(DSCore.Color.ByARGB(255, color.Red, color.Green, color.Blue))
+		if str(property.Type) == "Reference":
+			propValue.append(property.Type)	
+		idx += 1
+
+OUT=propName,propType,propValue</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="766cd8fa-11f6-415e-843a-d8a4b02c1967" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="473.6" y="260.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="e[0];&#xA;e[1];&#xA;e[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="713b4c2c-75df-4a37-9b6a-8d9fb62ec584" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="44.0010327185979" y="250.175081659603" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="appearanceAsset" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="eda33b69-f968-4846-a766-8e8b2c506e5a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="631.982195845697" y="248.475964391691" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Property Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="11c0bbf8-8478-4fcc-9bbb-285087ba60d1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="627.234421364985" y="320.642136498516" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Property Type" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4aa9ff61-8621-478e-b45f-5bfee1defee7" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="629.13353115727" y="393.757863501484" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Value" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="b16a957f-6fba-40ba-be79-01ffb6fc9b8f" start_index="0" end="766cd8fa-11f6-415e-843a-d8a4b02c1967" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="766cd8fa-11f6-415e-843a-d8a4b02c1967" start_index="0" end="eda33b69-f968-4846-a766-8e8b2c506e5a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="766cd8fa-11f6-415e-843a-d8a4b02c1967" start_index="1" end="11c0bbf8-8478-4fcc-9bbb-285087ba60d1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="766cd8fa-11f6-415e-843a-d8a4b02c1967" start_index="2" end="4aa9ff61-8621-478e-b45f-5bfee1defee7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="713b4c2c-75df-4a37-9b6a-8d9fb62ec584" start_index="0" end="b16a957f-6fba-40ba-be79-01ffb6fc9b8f" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

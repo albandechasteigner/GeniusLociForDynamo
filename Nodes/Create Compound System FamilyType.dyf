@@ -1,0 +1,139 @@
+<Workspace Version="1.3.4.6666" X="176.007598671003" Y="24.0728829146802" zoom="0.541716480397302" ScaleFactor="1" Name="Create Compound System FamilyType" Description="Creates a new compound wall, floor, roof or ceiling Type and assigns material, width and function." ID="6ea48024-7006-44ba-9771-c4ef1763497f" Category="GeniusLoci.CompoundStructure">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="442.573796817752" y="340.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="7">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+# Import RevitAPI Classes
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitNodes')
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+import sys
+pyt_path = r'C:\Program Files (x86)\IronPython 2.7\Lib'
+sys.path.append(pyt_path)
+import System
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+elements = tolist(UnwrapElement(IN[0]))
+newfamTypeNames = tolist(IN[1])
+functions = tolist(IN[2])
+materials = tolist(UnwrapElement(IN[3]))
+widths = tolist(IN[4])
+exterior = IN[5]
+interior = IN[6]
+newfamTypes = []
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for elem,newfamTypeName in zip(elements,newfamTypeNames):
+	if isinstance(elem, ElementType):
+		famType=elem
+	elif isinstance(elem, Wall):
+		famType = elem.WallType
+	elif isinstance(elem, Floor):
+		famType = elem.FloorType
+	elif isinstance(elem, Roof) or isinstance(elem, FootPrintRoof) or isinstance(elem, ExtrusionRoof) or isinstance(elem, RoofBase) :
+		famType = elem.RoofType
+	elif isinstance(elem, Ceiling) or isinstance(elem, FaceWall) :
+		famType = doc.GetElement(elem.GetTypeId())
+	else:
+		pass
+	try:
+		newfamType=famType.Duplicate(newfamTypeName)
+		layers=[]
+		for material,width,function in zip(materials,widths,functions):	
+			if isinstance(function, Autodesk.Revit.DB.MaterialFunctionAssignment):
+				layerFunction=function
+			else:
+				layerFunction=System.Enum.Parse(Autodesk.Revit.DB.MaterialFunctionAssignment, function)
+			layers.append(CompoundStructureLayer((UnitUtils.ConvertToInternalUnits(width,UIunit)),layerFunction,material.Id))
+		compound = CompoundStructure.CreateSimpleCompoundStructure(layers)
+		compound.SetNumberOfShellLayers(ShellLayerType.Exterior, exterior)
+		compound.SetNumberOfShellLayers(ShellLayerType.Interior, interior)
+		if famType.ToString() != 'Autodesk.Revit.DB.WallType':
+			compound.EndCap=EndCapCondition.NoEndCap
+		else:
+			pass
+		newfamType.SetCompoundStructure(compound)
+		newfamTypes.append(newfamType)
+	#Part of script by Dimitar Venkov
+	except:
+		fec = FilteredElementCollector(doc).OfClass(famType.GetType())
+		type_dict = dict([(Element.Name.__get__(i), i) for i in fec])
+		n1 = unicode(newfamTypeName)
+		if n1 in type_dict:
+			newfamTypes.append(type_dict[n1])
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = newfamTypes
+else: OUT = newfamTypes[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2c5f88d2-3a95-4818-b084-6c829872fe25" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.82620318224758" y="142.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//To duplicate&#xD;&#xA;ElementOrFamilyType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="19679419-bb62-4a18-8806-9fa22fb48e9c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="666.973796817752" y="340.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FamilyType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f324e8f9-60c3-47b3-b07e-a45c90073ea9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.82620318224758" y="235.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="NewName:string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="70c1424b-46d8-4104-ac35-6d75b751d56b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-135.832619859471" y="308.899373908213" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or MaterialFunctionAssignement&#xD;&#xA;//Use the Enumerate LayerFunction node&#xD;&#xA;LayerFunction" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1dbbd1ab-019d-4cd7-8a32-d2eee02ee320" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.23738815104548" y="412.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//One material per layer&#xD;&#xA;material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="cb885746-e806-4a85-bcd6-659cde179def" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.82620318224758" y="505.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//One thickness per layer&#xD;&#xA;Thickness:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e73b0afd-9232-49bf-b7ce-f86a4d1a3f1c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.82620318224758" y="615.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="NumberOfLayersExterior:int=0" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b32f6242-a242-4b22-ad72-90f73286842c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.82620318224758" y="698.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="NumberOfLayersInterior:int=0" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" start_index="0" end="19679419-bb62-4a18-8806-9fa22fb48e9c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2c5f88d2-3a95-4818-b084-6c829872fe25" start_index="0" end="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f324e8f9-60c3-47b3-b07e-a45c90073ea9" start_index="0" end="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="70c1424b-46d8-4104-ac35-6d75b751d56b" start_index="0" end="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1dbbd1ab-019d-4cd7-8a32-d2eee02ee320" start_index="0" end="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="cb885746-e806-4a85-bcd6-659cde179def" start_index="0" end="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e73b0afd-9232-49bf-b7ce-f86a4d1a3f1c" start_index="0" end="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b32f6242-a242-4b22-ad72-90f73286842c" start_index="0" end="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" end_index="6" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

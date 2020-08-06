@@ -1,0 +1,95 @@
+<Workspace Version="1.3.4.6666" X="70.3816326284614" Y="-29.2645836592608" zoom="0.937867132118446" ScaleFactor="1" Name="3DView Create" Description="Creates a new isometric View3D in the given document." ID="f24a75fe-aed4-4bdd-8142-334ef749df0b" Category="GeniusLoci.View">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="aea2aa0e-ce61-4030-986a-28b5c6c413dc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="142.866837207996" y="199.848014952501" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String&#xD;&#xA;ViewName =&quot;ThreeD&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3b26e70b-9fbf-4d0b-8861-aba5c5d9f112" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="818.4" y="239.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="View" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="8db8e036-10b0-49de-ad3a-502faaaa14ed" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="655" y="241.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7c61b91d-49d8-495b-995f-908ef1d1372b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="811.2" y="314" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Document" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8f79746d-a284-4790-816d-5d80e1f758d8" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-6.45388619463711" y="296.420060922525" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;document : var = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="5581a068-bb4b-46d9-b5d5-3ddc75b52295" type="PythonNodeModels.PythonNode" nickname="Create 3DView" x="476.564456958374" y="227.943413339615" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Suggestion by Marck Ackerley
+#Suggestion of improvement by Jonathan Atger
+import clr
+# Import DocumentManager and TransactionManager
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+# Import RevitAPI
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+def ProcessParallelLists(_func, *lists):
+	return map( lambda *xs: ProcessParallelLists(_func, *xs) if all(type(x) is list for x in xs) else _func(*xs), *lists )
+
+def tolist(obj1):
+    if hasattr(obj1,"__iter__"): return obj1
+    else: return [obj1]
+
+viewNames = tolist(IN[0])
+inputdoc = tolist(UnwrapElement(IN[1]))
+inputdoc = inputdoc[0]
+	
+#Inputdoc : Part of script by Andreas Dieckmann
+if inputdoc == None:
+	doc = DocumentManager.Instance.CurrentDBDocument
+elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.Document":
+	doc = inputdoc
+elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
+	doc = inputdoc.GetLinkDocument()
+else :
+	doc = DocumentManager.Instance.CurrentDBDocument
+
+#get ViewFamilyType for a 3D View
+viewTypeColl = FilteredElementCollector(doc).OfClass(ViewFamilyType)
+for i in viewTypeColl:
+	if i.ViewFamily == ViewFamily.ThreeDimensional:
+		viewType = i
+	else:
+		continue
+
+def CreateView(name):
+	view = View3D.CreateIsometric(doc, viewType.Id)
+	view.Name = name
+	return view
+
+t = Transaction(doc,'Create3D')
+t.Start()
+views=ProcessParallelLists(CreateView, viewNames)
+t.Commit()
+#TransactionManager.Instance.ForceCloseTransaction()
+
+#Assign your output to the OUT variable
+OUT = views, doc</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="aea2aa0e-ce61-4030-986a-28b5c6c413dc" start_index="0" end="5581a068-bb4b-46d9-b5d5-3ddc75b52295" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8db8e036-10b0-49de-ad3a-502faaaa14ed" start_index="0" end="3b26e70b-9fbf-4d0b-8861-aba5c5d9f112" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8db8e036-10b0-49de-ad3a-502faaaa14ed" start_index="1" end="7c61b91d-49d8-495b-995f-908ef1d1372b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8f79746d-a284-4790-816d-5d80e1f758d8" start_index="0" end="5581a068-bb4b-46d9-b5d5-3ddc75b52295" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5581a068-bb4b-46d9-b5d5-3ddc75b52295" start_index="0" end="8db8e036-10b0-49de-ad3a-502faaaa14ed" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

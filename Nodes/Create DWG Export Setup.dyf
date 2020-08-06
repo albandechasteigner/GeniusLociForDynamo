@@ -1,0 +1,86 @@
+<Workspace Version="1.3.4.6666" X="-1033.41902724702" Y="64.4757684573962" zoom="0.531549210232449" ScaleFactor="1" Name="Create DWG Export Setup" Description="Create a DWG export settings with values of the given DWGExportOptions." ID="3b5acc03-eba9-48ea-a182-9d6201cd997d" Category="GeniusLoci.CAD Export">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="151e01be-1b5f-4fd4-aa03-d9a8722fa0d5" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="2763.40401126614" y="440.130065616352" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8e14124a-2737-4bca-a942-f49233ecc48f" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="2939.64418320255" y="402.489719494045" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Document" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="425bdd29-cd45-4d3d-86e2-dfd92791817b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="2948.43475789545" y="498.834418128235" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ExportDwgSettings" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d906a9f2-8ecc-412d-ac79-2a5ae99efc5d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="2015.80293631669" y="359.101372045783" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Use only if you want to query other document&#xD;&#xA;docOrRevitLinkInstance: var = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c5937402-533c-4c6e-afc4-58700c68fd00" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="2152.66336082579" y="487.883374736497" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="DWGExportSetupName : string" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0015c19a-ab80-4a1b-9740-9440d791bc63" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="2174.07741727123" y="589.694945400435" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="DWGExportOptions" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="6856abca-b42a-41f0-aee1-eb5e20234d51" type="PythonNodeModels.PythonNode" nickname="CreateDWGExportOptions" x="2521.43669278809" y="454.749039400367" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+def tolist(input):
+	if isinstance(input,list):
+		return input
+	else:
+		return [input]
+
+inputdoc = tolist(UnwrapElement(IN[0]))
+
+if inputdoc[0] == None:
+    doc = DocumentManager.Instance.CurrentDBDocument
+elif inputdoc[0].GetType().ToString() == "Autodesk.Revit.DB.Document":
+    doc = inputdoc[0]
+elif inputdoc[0].GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
+    doc = inputdoc[0].GetLinkDocument()
+else: doc = DocumentManager.Instance.CurrentDBDocument
+
+name = tolist(IN[1])
+options = tolist(IN[2])
+DWGExports = []
+
+t = Transaction(doc,'create')
+t.Start()
+result = Autodesk.Revit.DB.ExportDWGSettings.Create(doc,name[0],options[0])
+DWGExports.append(result)
+t.Commit()
+
+OUT = doc,DWGExports</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="151e01be-1b5f-4fd4-aa03-d9a8722fa0d5" start_index="0" end="8e14124a-2737-4bca-a942-f49233ecc48f" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="151e01be-1b5f-4fd4-aa03-d9a8722fa0d5" start_index="1" end="425bdd29-cd45-4d3d-86e2-dfd92791817b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d906a9f2-8ecc-412d-ac79-2a5ae99efc5d" start_index="0" end="6856abca-b42a-41f0-aee1-eb5e20234d51" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="c5937402-533c-4c6e-afc4-58700c68fd00" start_index="0" end="6856abca-b42a-41f0-aee1-eb5e20234d51" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0015c19a-ab80-4a1b-9740-9440d791bc63" start_index="0" end="6856abca-b42a-41f0-aee1-eb5e20234d51" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6856abca-b42a-41f0-aee1-eb5e20234d51" start_index="0" end="151e01be-1b5f-4fd4-aa03-d9a8722fa0d5" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

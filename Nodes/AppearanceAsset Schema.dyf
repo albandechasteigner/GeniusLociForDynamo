@@ -1,0 +1,16 @@
+<Workspace Version="1.3.4.6666" X="223.2655795125" Y="94.08353023125" zoom="0.593767140625" ScaleFactor="1" Name="AppearanceAsset Schema" Description="Lists the 14 standard material schemas and the 5 &quot;advanced&quot; material schemas.&#xD;&#xA;For use with the AppearanceAsset Create node." ID="0ba62a45-209f-4517-8e9b-980e98f58002" Category="GeniusLoci.Material">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="34e9f7c0-00f8-4213-a788-5b14c5a55c34" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="357.2" y="311.137017134005" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Schemas" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="a03d54b2-aa6d-4bec-a915-dcc515d3bd89" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="-380.868457939517" y="309.390057113351" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="{&quot;CeramicSchema&quot;,&quot;ConcreteSchema&quot;,&quot;GenericSchema&quot;,&quot;GlazingSchema&quot;,&quot;HardwoodSchema&quot;,&quot;MasonryCMUSchema&quot;,&quot;MetalSchema&quot;,&quot;MetallicPaintSchema&quot;,&quot;MirrorSchema&quot;,&quot;PrismLayeredSchema&quot;,&quot;PrismMetalSchema&quot;,&quot;PrismOpaqueSchema&quot;,&quot;PrismTransparentSchema&quot;,&quot;PrismWoodSchema&quot;,&quot;PlasticVinylSchema&quot;,&quot;SolidGlassSchema&quot;,&quot;StoneSchema&quot;,&quot;WallPaintSchema&quot;,&quot;WaterSchema&quot;};" ShouldFocus="false" />
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a03d54b2-aa6d-4bec-a915-dcc515d3bd89" start_index="0" end="34e9f7c0-00f8-4213-a788-5b14c5a55c34" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

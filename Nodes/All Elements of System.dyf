@@ -1,0 +1,79 @@
+<Workspace Version="1.3.4.6666" X="-140.8629825677" Y="20.8042963953129" zoom="0.784369328044827" ScaleFactor="1" Name="All Elements of System" Description="Returns every element of the duct or piping network, including ducts, pipes, fittings, fixtures, equipments etc." ID="396a3440-1cf0-4d84-bfc0-78f5dd69d949" Category="GeniusLoci.MEP">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="60f34dae-d8fb-4e98-9f35-5599a3113af7" type="PythonNodeModels.PythonNode" nickname="Python Script" x="412.4" y="332" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+#import Revit API
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+def getSystem(elem):
+	mepsys = None
+	if not isinstance(elem,MEPSystem):
+		try:connSet = elem.MEPModel.ConnectorManager.Connectors
+		except:connSet = elem.ConnectorManager.Connectors
+		for con in connSet:
+			if con.IsConnected:
+				mepsys = con.MEPSystem
+	else:mepsys = elem
+	return 	mepsys
+			
+def getNetwork(system):
+	network = None
+	if isinstance(system, Mechanical.MechanicalSystem):
+		try:
+			network = [e.ToDSType(True) for e in system.DuctNetwork]
+		except:
+			pass
+	elif isinstance(system, Plumbing.PipingSystem):
+		try:
+			network = [e.ToDSType(True) for e in system.PipingNetwork]
+		except:
+			pass
+	return network
+
+elems = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+systems,networkElements = [],[]
+
+for e in elems:
+	system = getSystem(e)
+	networkElem = getNetwork(system)
+	systems.append(system)
+	networkElements.append(networkElem)
+	
+OUT = networkElements,systems</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4eef9657-b303-41a6-86a3-a2d26646c1b0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="174.444193747785" y="332.089313093035" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//System or element&#xD;&#xA;element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="c57df7e6-37b9-4079-b623-588f346d8233" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="723.221669054568" y="317.768836715042" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Elements" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="569aca36-e602-4ab6-9477-ee1d17b74eea" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="734.201108872508" y="396.110089931925" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="System" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="3859c251-e20a-4fd0-b269-e0d84906e296" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="579.275372416237" y="337.920289223985" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="60f34dae-d8fb-4e98-9f35-5599a3113af7" start_index="0" end="3859c251-e20a-4fd0-b269-e0d84906e296" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4eef9657-b303-41a6-86a3-a2d26646c1b0" start_index="0" end="60f34dae-d8fb-4e98-9f35-5599a3113af7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3859c251-e20a-4fd0-b269-e0d84906e296" start_index="0" end="c57df7e6-37b9-4079-b623-588f346d8233" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3859c251-e20a-4fd0-b269-e0d84906e296" start_index="1" end="569aca36-e602-4ab6-9477-ee1d17b74eea" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

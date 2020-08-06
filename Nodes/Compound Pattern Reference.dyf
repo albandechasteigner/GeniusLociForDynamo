@@ -1,0 +1,113 @@
+<Workspace Version="1.3.4.6666" X="-57.9706659335165" Y="0.0697973717365699" zoom="0.752278291023546" ScaleFactor="1" Name="Compound Pattern Reference" Description="Retrieves Surface, Material, Fill Pattern and its references of a roof, floor, ceiling or wall.&#xD;&#xA;These references can then be used to dimension the FillPattern.&#xD;&#xA;Also works with linked element." ID="4e1581fd-b82d-4ab5-8585-dcac0a7cf78b" Category="GeniusLoci.Reference">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b9e14005-5c35-48d2-bae3-ea4f47df03e5" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="276.312708936443" y="411.125542868491" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Roof, floor, ceiling or wall&#xD;&#xA;element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="495f9044-806d-4211-819c-1ad62325c8a6" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="276.312708936443" y="505.125542868491" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ReferenceNumber:int=2" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="5cafc80e-d31d-42aa-bd3e-4ccb16ff4c6d" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="829.912708936443" y="449.338876201825" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3d150ee9-9f80-48cf-8973-a9d9eaffa862" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.11270893644" y="314.272209535158" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Surface" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="39677ff4-f663-4d25-b04e-d163fe9d5811" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.11270893644" y="397.272209535158" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Material" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="c0ec4900-fa4a-4686-851c-29246fb8ffbd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.11270893644" y="480.272209535158" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FillPatternElement" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a693d9fe-4274-4621-99f7-e0e021f845c0" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.11270893644" y="563.272209535158" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Vertical References" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="fdc1050b-788f-4b7f-acb5-a3685f54aca4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1021.11270893644" y="646.272209535158" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Horizontal References" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="db1ca33f-a72d-479d-b6c3-571e49b63aa1" type="PythonNodeModels.PythonNode" nickname="Pattern ref" x="605.112708936443" y="445.125542868491" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script># C# code by FAIR59
+import clr
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Transactions import TransactionManager
+
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+from Autodesk.Revit.DB.Structure import *
+
+# Import ToDSType  (bool) extension method
+clr.AddReference("RevitNodes")
+import Revit
+# Adds ToProtoType, ToRevitType geometry conversion extension methods to objects
+clr.ImportExtensions(Revit.GeometryConversion)
+# Import Element wrapper extension methods
+clr.ImportExtensions(Revit.Elements)
+from Revit.Elements import *
+
+elements = UnwrapElement(IN[0])
+if not hasattr(elements, '__iter__'):
+	elements = [elements]
+	
+n = IN[1]
+topFaces,mats,patterntypes,resArrVer,resArrHor=[],[],[],[],[]
+
+for element in elements:
+	doc=element.Document
+	if element.ToString() == 'Autodesk.Revit.DB.Ceiling':
+		top = HostObjectUtils.GetBottomFaces(element)
+	elif element.ToString() == 'Autodesk.Revit.DB.Wall':
+		top = HostObjectUtils.GetSideFaces(element,ShellLayerType.Exterior)
+	else :
+		top = HostObjectUtils.GetTopFaces(element)
+	for t in top:
+		topFace = element.GetGeometryObjectFromReference(t)
+		topFaces.append(topFace.ToProtoType()[0])
+		#Check for model surfacepattern
+		mat=doc.GetElement(topFace.MaterialElementId)
+		mats.append(mat)
+		patterntype = doc.GetElement(mat.SurfacePatternId)
+		patterntypes.append(patterntype)
+		pattern = patterntype.GetFillPattern()
+
+		#Get number of gridLines in pattern                
+		gridCount = pattern.GridCount
+
+		#Construct StableRepresentations and find the Reference to HatchLines
+		StableRef = t.ConvertToStableRepresentation(doc)
+	
+		for ip in range(0, n):
+			indexVer = 1 + ( ip * gridCount * 2 )
+			indexHor = 2 + ( ip * gridCount * 2 )
+			verStableHatchString = StableRef + str.Format( "/{0}", indexVer)
+			horStableHatchString = StableRef + str.Format( "/{0}", indexHor)
+			HatchRefVer = Reference.ParseFromStableRepresentation(doc, verStableHatchString)
+			HatchRefHor = Reference.ParseFromStableRepresentation(doc, horStableHatchString)
+			resArrVer.append(HatchRefVer)
+			resArrHor.append(HatchRefHor)
+			
+if isinstance(IN[0], (list)): OUT = topFaces,mats,patterntypes,resArrVer,resArrHor
+else: OUT = topFaces[0],mats[0],patterntypes[0],resArrVer,resArrHor</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="b9e14005-5c35-48d2-bae3-ea4f47df03e5" start_index="0" end="db1ca33f-a72d-479d-b6c3-571e49b63aa1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="495f9044-806d-4211-819c-1ad62325c8a6" start_index="0" end="db1ca33f-a72d-479d-b6c3-571e49b63aa1" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5cafc80e-d31d-42aa-bd3e-4ccb16ff4c6d" start_index="0" end="3d150ee9-9f80-48cf-8973-a9d9eaffa862" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5cafc80e-d31d-42aa-bd3e-4ccb16ff4c6d" start_index="1" end="39677ff4-f663-4d25-b04e-d163fe9d5811" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5cafc80e-d31d-42aa-bd3e-4ccb16ff4c6d" start_index="2" end="c0ec4900-fa4a-4686-851c-29246fb8ffbd" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5cafc80e-d31d-42aa-bd3e-4ccb16ff4c6d" start_index="3" end="a693d9fe-4274-4621-99f7-e0e021f845c0" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5cafc80e-d31d-42aa-bd3e-4ccb16ff4c6d" start_index="4" end="fdc1050b-788f-4b7f-acb5-a3685f54aca4" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="db1ca33f-a72d-479d-b6c3-571e49b63aa1" start_index="0" end="5cafc80e-d31d-42aa-bd3e-4ccb16ff4c6d" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

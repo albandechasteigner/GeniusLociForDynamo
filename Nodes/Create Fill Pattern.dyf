@@ -1,0 +1,132 @@
+<Workspace Version="1.3.4.6666" X="304.253205408619" Y="18.3805650501067" zoom="0.48415498653946" ScaleFactor="1" Name="Create Fill Pattern" Description="Creates a new FillPatternElement with a repeating sequence of angles, origins, shifts, offsets, &#xD;&#xA;dashes and spaces." ID="5441601f-cecd-4e9d-bfba-6cb8c6205645" Category="GeniusLoci.FillPattern">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="b2d87c60-c853-4b66-a56f-2e6a4cca7685" type="PythonNodeModels.PythonNode" nickname="Python Script" x="310.044812709156" y="406.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="10">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <PortInfo index="8" default="False" />
+      <PortInfo index="9" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference('System')
+import System
+from System.Collections.Generic import List
+
+UIunit = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+#ut_millimeters = DisplayUnitType.DUT_MILLIMETERS
+ut_degrees = DisplayUnitType.DUT_DECIMAL_DEGREES
+
+patternName, angles, x_origins, y_origins, shifts, offsets, segments1, segments2 = IN[0],IN[3],IN[4],IN[5],IN[6],IN[7],IN[8],IN[9]
+if isinstance(IN[1],Autodesk.Revit.DB.FillPatternTarget) :
+	fillPatternTarget = IN[1]
+else :
+	fillPatternTarget = System.Enum.Parse(Autodesk.Revit.DB.FillPatternTarget, IN[1])
+	
+if isinstance(IN[2],Autodesk.Revit.DB.FillPatternHostOrientation) :
+	fillPatternHostOrientation = IN[2]
+else :
+	fillPatternHostOrientation = System.Enum.Parse(Autodesk.Revit.DB.FillPatternHostOrientation, IN[2])
+
+#Creates and returns a new fill grid
+def CreateGrid(angle, origin, shift, offset, *segments) :
+	fillGrid = FillGrid()
+	fillGrid.Angle = angle
+	fillGrid.Origin = origin
+	fillGrid.Shift = shift
+	fillGrid.Offset = offset
+	segmentsList = List[float]()
+	for d in segments :
+		segmentsList.Add(d)
+	fillGrid.SetSegments(segmentsList)
+	return fillGrid
+
+#Create the fill pattern
+fillPattern = FillPattern(patternName, fillPatternTarget, fillPatternHostOrientation)
+#Add grids
+lstGrids = List[FillGrid]()
+
+#The arguments: angle, origin, shift (delta between location of start point per line), offset (vertical distance between lines) 
+#The last two arguments are the segments: e.g. 1.0 units on, 0.1 units off (units are Revit units (ft))
+for angle, x_origin, y_origin, shift, offset, segment1, segment2 in zip(angles, x_origins, y_origins, shifts, offsets, segments1, segments2):
+	lstGrids.Add(CreateGrid(UnitUtils.ConvertToInternalUnits(angle, ut_degrees), UV(UnitUtils.ConvertToInternalUnits(x_origin,UIunit), UnitUtils.ConvertToInternalUnits(y_origin,UIunit)), UnitUtils.ConvertToInternalUnits(shift,UIunit), UnitUtils.ConvertToInternalUnits(offset,UIunit), UnitUtils.ConvertToInternalUnits(segment1,UIunit), UnitUtils.ConvertToInternalUnits(abs(segment2),UIunit)))
+	
+fillPattern.SetFillGrids(lstGrids)
+#Create the fill pattern element.
+TransactionManager.Instance.EnsureInTransaction(doc)
+patternElement = FillPatternElement.Create(doc, fillPattern)
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT=patternElement</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="eef4717c-bc61-4b42-886e-3fa120ee0b57" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="82.4961828927661" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="892a0bde-98aa-4521-83ba-b838304c2ef3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="534.444812709156" y="406.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FillPatternElement" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1aadb7e0-74fb-4100-a088-6c9685f62b6f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="166.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or Revit.DB.FillPatternTarget&#xD;&#xA;//To use with the Fill Pattern Targets node&#xD;&#xA;fillPatternTarget" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7cddb561-6bcb-42a6-9207-2abb920a3214" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="276.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or Revit.DB.FillPatternHostOrientation&#xD;&#xA;//To use with the FillPattern HostOrientation node&#xD;&#xA;fillPatternHostOrientation" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3b5adcf9-e62a-4a47-8461-fb939e092783" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="386.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Degrees. The angle specifies the direction&#xD;&#xA;angles:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d0429e49-8e52-4f8d-9460-4db3c7125358" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="479.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The line in the set starts at the specified x origin.&#xD;&#xA;x_origins:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e1603ad6-7482-4b7f-8357-66defc971890" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="572.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The line in the set starts at the specified y origin.&#xD;&#xA;y_origins:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ed062556-72ce-41ba-abf5-0539240bcb83" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="665.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Shift moves the pattern of dashes and spaces along &#xD;&#xA;//the length of each new parallel line.&#xD;&#xA;shifts:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="67b8da10-705a-49c4-a15b-1cddd471984c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="775.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Offset defines the vertical distance between parallel lines.&#xD;&#xA;offsets:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="5797ee73-9aca-4b66-97e0-9eab8a1ed2db" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="868.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The dash-space sequence defines a repeating pattern for a line.&#xD;&#xA;dashes:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1a617554-5c15-4d95-9d97-fbc02681809f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-471.955187290844" y="961.496182892766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The dash-space sequence defines a repeating pattern for a line. &#xD;&#xA;spaces:double[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="b2d87c60-c853-4b66-a56f-2e6a4cca7685" start_index="0" end="892a0bde-98aa-4521-83ba-b838304c2ef3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="eef4717c-bc61-4b42-886e-3fa120ee0b57" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1aadb7e0-74fb-4100-a088-6c9685f62b6f" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7cddb561-6bcb-42a6-9207-2abb920a3214" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3b5adcf9-e62a-4a47-8461-fb939e092783" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d0429e49-8e52-4f8d-9460-4db3c7125358" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e1603ad6-7482-4b7f-8357-66defc971890" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ed062556-72ce-41ba-abf5-0539240bcb83" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="67b8da10-705a-49c4-a15b-1cddd471984c" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="7" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5797ee73-9aca-4b66-97e0-9eab8a1ed2db" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="8" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1a617554-5c15-4d95-9d97-fbc02681809f" start_index="0" end="b2d87c60-c853-4b66-a56f-2e6a4cca7685" end_index="9" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,91 @@
+<Workspace Version="1.3.3.4651" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Create Sheet List Schedule" Description="Create a Sheet List Schedule with Sheet Number, Sheet Name, Current Revision and Current Revision Date." ID="d976888f-88f0-4c40-9a82-3ccd7e8512bc" Category="GeniusLoci.Schedule">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="c81ba684-93f0-4a76-8aff-a3fe81b6684e" type="PythonNodeModels.PythonNode" nickname="Sheet List" x="397.8" y="376.270701105734" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+TransactionManager.Instance.EnsureInTransaction(doc) 
+sheetList = Autodesk.Revit.DB.ViewSchedule.CreateSheetList(doc) 
+TransactionManager.Instance.TransactionTaskDone()
+
+fields = sheetList.Definition.GetSchedulableFields()
+fieldList=[]
+for f in fields:
+	name=f.GetName(doc) 
+	fieldList.append(name)
+OUT = sheetList,fieldList,fields</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="dd78b973-1421-43ac-9746-db57aeb32c7e" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="580.6" y="380.484034439067" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="708fc616-310e-42bb-ab1f-bc8a84f17807" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="771.8" y="402.270701105734" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[{23,24,18,16}];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <PythonNodeModels.PythonNode guid="415ab445-c64f-4ad5-9af2-4caa9b7df1e8" type="PythonNodeModels.PythonNode" nickname="ScheduleView.AddFields" x="1061.8" y="372.057367772401" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2018
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+viewSchedule = UnwrapElement(IN[0])
+schedulableFields = UnwrapElement(IN[1])
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for schedulableField in schedulableFields:
+	viewSchedule.Definition.AddField(schedulableField) 
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = viewSchedule</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="558984d4-2c8c-44a3-9e98-dc4d7c13bb38" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1323" y="372.057367772401" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ViewSchedule" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="c81ba684-93f0-4a76-8aff-a3fe81b6684e" start_index="0" end="dd78b973-1421-43ac-9746-db57aeb32c7e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="dd78b973-1421-43ac-9746-db57aeb32c7e" start_index="0" end="415ab445-c64f-4ad5-9af2-4caa9b7df1e8" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="dd78b973-1421-43ac-9746-db57aeb32c7e" start_index="1" end="708fc616-310e-42bb-ab1f-bc8a84f17807" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="708fc616-310e-42bb-ab1f-bc8a84f17807" start_index="0" end="415ab445-c64f-4ad5-9af2-4caa9b7df1e8" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="415ab445-c64f-4ad5-9af2-4caa9b7df1e8" start_index="0" end="558984d4-2c8c-44a3-9e98-dc4d7c13bb38" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

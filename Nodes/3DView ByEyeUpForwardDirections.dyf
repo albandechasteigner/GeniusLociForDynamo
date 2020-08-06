@@ -1,0 +1,83 @@
+<Workspace Version="1.3.4.6666" X="117.832360464717" Y="-2.29932535845643" zoom="0.590352561493108" ScaleFactor="1" Name="3DView ByEyeUpForwardDirections" Description="Sets the orientation of a given 3D view based on a given eye position, an Up and a forward directions.&#xD;&#xA;Based on a script by Mark Ackerley" ID="521f3ca6-cce3-4f6a-aa4e-930825c9b0bc" Category="GeniusLoci.View">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Autodesk.DesignScript.Geometry.Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Revit.Elements.Views.PerspectiveView" resolvedName="Revit.Elements.Views.PerspectiveView" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Elements.Views.View3D" resolvedName="Revit.Elements.Views.View3D" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Autodesk.DesignScript.Geometry.Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <PythonNodeModels.PythonNode guid="4c1663cb-e208-49a6-9053-56acc03b79d6" type="PythonNodeModels.PythonNode" nickname="Python Script" x="441.6" y="325.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="4">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <Script>#Based on a script by Mark Ackerley
+#https://forum.dynamobim.com/t/rotate-3d-isometric-view/44388/2
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+#we need to unwrap Dynamo 'elements'
+views = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+#we need to convert Dynamo Vectors &amp; Points to Revit XYZs
+eye = IN[1].ToRevitType()
+forward = IN[2].ToRevitType()
+up = IN[3].ToRevitType()
+#start transaction
+TransactionManager.Instance.EnsureInTransaction(doc)
+for view in views:
+#unlock view
+	view.Unlock()
+#create a new orientation object based on our modified info
+	viewOrientation = ViewOrientation3D(eye, up, forward)
+	view.SetOrientation(viewOrientation)
+#finish transaction
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = views</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8bb844c5-63c0-4c63-a6fc-8141df561a5d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-382.735650103537" y="270.959509266679" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ThreeDView: Revit.Elements.Views.View3D=Revit.Application.Document.Current.ActiveView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="65bbf5cb-d1c4-4996-ad4e-1453965417e3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-145.517564120975" y="366.207316530866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The coordinates of the eye position&#xD;&#xA;eyePosition: Autodesk.DesignScript.Geometry.Point" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3f6352e0-54d6-4355-984f-b864da4f8168" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-192.997232053288" y="446.584045476731" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//A vector pointing from the camera towards the screen&#xD;&#xA;forwardDirection:Autodesk.DesignScript.Geometry.Vector" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="69379afa-155f-4e7f-b7c3-368d44939b3f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-211.40786062693" y="536.23122016296" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//A vector pointing to the Up direction of the view&#xD;&#xA;upDirection:Autodesk.DesignScript.Geometry.Vector" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="418b9071-4210-4950-ab02-57923208f86e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="677.2" y="264.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ThreeDView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="8bb844c5-63c0-4c63-a6fc-8141df561a5d" start_index="0" end="4c1663cb-e208-49a6-9053-56acc03b79d6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8bb844c5-63c0-4c63-a6fc-8141df561a5d" start_index="0" end="418b9071-4210-4950-ab02-57923208f86e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="65bbf5cb-d1c4-4996-ad4e-1453965417e3" start_index="0" end="4c1663cb-e208-49a6-9053-56acc03b79d6" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3f6352e0-54d6-4355-984f-b864da4f8168" start_index="0" end="4c1663cb-e208-49a6-9053-56acc03b79d6" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69379afa-155f-4e7f-b7c3-368d44939b3f" start_index="0" end="4c1663cb-e208-49a6-9053-56acc03b79d6" end_index="3" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,83 @@
+<Workspace Version="1.3.4.6666" X="-9.97135005244917" Y="203.125668717185" zoom="0.80821986639303" ScaleFactor="1" Name="3DView To BoundingBox" Description="Extract section boxes from desired 3D views, and convert them into bounding box element.&#xD;&#xA;Based on Amy Williams's script." ID="9fc142dc-b99f-492e-a3ab-df1e5a0ffe2c" Category="GeniusLoci.View">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="961f9468-848e-4808-aede-925643309608" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="96.4447722086717" y="61.9211088660496" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="ThreeDView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="0ca6d1eb-6277-4e89-8820-eaa4164cf9f9" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="490.844772208672" y="53.9211088660495" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="seq[0];&#xA;seq[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="19cd7619-00b2-493a-8ca3-148f2267fda7" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="675.644772208672" y="32.3211088660495" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Views" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="def53385-cc87-4689-a526-a28a120d8aaa" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="674.844772208671" y="115.521108866049" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="BoundingBox" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="da123db3-8933-444c-9157-2f97a7bc28ef" type="PythonNodeModels.PythonNode" nickname="Get section box from this View" x="229.1101193526" y="64.4308973933235" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#From Amy Williams
+#https://forum.dynamobim.com/t/bounding-box-of-section-box-min-max-pts-z-values-dont-correspond-with-model-elevation/15776
+
+import clr
+# Import ToDSType(bool) extension method
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+def ProcessList(_func, _list):
+    return map( lambda x: ProcessList(_func, x) if type(x)==list else _func(x), _list )
+
+def Unwrap(item):
+    return UnwrapElement(item)
+
+if isinstance(IN[0], list):
+    views = ProcessList(Unwrap, IN[0])
+else:
+    views = [Unwrap(IN[0])]
+
+viewlist = []
+sectionboxes = []
+
+for view in views:
+    viewlist.append(view)
+    sectionbox = view.GetSectionBox()
+    transform = sectionbox.Transform
+    sboxoriginx = transform.Origin.X
+    sboxoriginy = transform.Origin.Y
+    sboxoriginz = transform.Origin.Z
+    minx = sectionbox.Min.X + sboxoriginx
+    maxx = sectionbox.Max.X + sboxoriginx
+    miny = sectionbox.Min.Y + sboxoriginy
+    maxy = sectionbox.Max.Y + sboxoriginy
+    minz = sectionbox.Min.Z + sboxoriginz
+    maxz = sectionbox.Max.Z + sboxoriginz
+    bbox = BoundingBoxXYZ()
+    bbox.Min = XYZ((minx), (miny), (minz))
+    bbox.Max = XYZ((maxx), (maxy), (maxz))
+    tsectionbox = bbox.ToProtoType()
+    sectionboxes.append(tsectionbox)
+
+#Assign your output to the OUT variable
+if isinstance(IN[0], list): OUT = views, sectionboxes
+else: OUT = views[0], sectionboxes[0]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="961f9468-848e-4808-aede-925643309608" start_index="0" end="da123db3-8933-444c-9157-2f97a7bc28ef" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0ca6d1eb-6277-4e89-8820-eaa4164cf9f9" start_index="0" end="19cd7619-00b2-493a-8ca3-148f2267fda7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0ca6d1eb-6277-4e89-8820-eaa4164cf9f9" start_index="1" end="def53385-cc87-4689-a526-a28a120d8aaa" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="da123db3-8933-444c-9157-2f97a7bc28ef" start_index="0" end="0ca6d1eb-6277-4e89-8820-eaa4164cf9f9" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

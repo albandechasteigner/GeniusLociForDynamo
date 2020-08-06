@@ -1,0 +1,67 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Change Family Thumbnail Preview" Description="Update the Family Thumbnail Preview visible in the directory, save and close the family Document." ID="dedbd2cc-767c-44b4-9f11-502787109b4e" Category="GeniusLoci.Family">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="7f4a3e33-90bb-401f-a31a-b6e5194bcb33" type="PythonNodeModels.PythonNode" nickname="Python Script" x="347.6" y="194.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#https://apidocs.co/apps/revit/2019/df74c7e1-a98a-7751-676a-e9b074566f62.htm
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+#familyDocument = app.OpenDocumentFile(path)
+familyDocuments = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+targetViews = UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])]
+paths=[]
+
+opt = SaveAsOptions()
+opt.OverwriteExistingFile = True
+
+TransactionManager.Instance.ForceCloseTransaction()
+TransactionManager.Instance.EnsureInTransaction(doc)
+for familyDocument,targetView in zip(familyDocuments,targetViews):
+	path = familyDocument.PathName
+	paths.append(path)
+	
+	documentPreviewSettings = familyDocument.GetDocumentPreviewSettings()
+	if documentPreviewSettings.IsViewIdValidForPreview(targetView.Id) :
+		documentPreviewSettings.PreviewViewId = targetView.Id
+		opt.PreviewViewId = targetView.Id
+	documentPreviewSettings.ForceViewUpdate(True)
+
+	familyDocument.SaveAs(path, opt)
+	familyDocument.Close(False)
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = paths
+else: OUT = paths[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="244c7730-4cd0-4341-a181-10bc41d8db1f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="27.6000000000001" y="163.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Autodesk.Revit.DB.Document&#xD;&#xA;familyDocument" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="15948157-fbd3-43fe-b288-8ea85b032ad3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="146" y="252.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Chosen view&#xD;&#xA;familyView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="2460d3a6-d703-423e-9853-164063b6ea88" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="572.4" y="195.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Path" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="7f4a3e33-90bb-401f-a31a-b6e5194bcb33" start_index="0" end="2460d3a6-d703-423e-9853-164063b6ea88" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="244c7730-4cd0-4341-a181-10bc41d8db1f" start_index="0" end="7f4a3e33-90bb-401f-a31a-b6e5194bcb33" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="15948157-fbd3-43fe-b288-8ea85b032ad3" start_index="0" end="7f4a3e33-90bb-401f-a31a-b6e5194bcb33" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

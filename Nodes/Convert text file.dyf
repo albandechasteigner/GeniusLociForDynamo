@@ -1,0 +1,47 @@
+<Workspace Version="1.3.4.6666" X="-53.1132730260597" Y="96.7900746771128" zoom="0.551520311464878" ScaleFactor="1" Name="Convert text file" Description="Convert exported schedules from format Unicode to ANSI (or utf_8)" ID="408e3cbf-f7fa-41f4-8d1e-8a253a15bbdc" Category="GeniusLoci.Export">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="5234a697-bd8f-4151-a4a9-c49abfa9a5bb" type="PythonNodeModels.PythonNode" nickname="Python Script" x="682.62868202232" y="206.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>import sys
+sys.path.append(r'C:\Program Files (x86)\IronPython 2.7\Lib')
+import codecs
+
+filepath = IN[0]
+
+with codecs.open(filepath, 'r', encoding = 'UTF-16') as file:
+	lines = file.read()  
+
+#write output file
+with codecs.open(filepath, 'w', encoding = IN[1]) as file:
+	file.write(lines)
+
+#Affectez la sortie à la variable OUT.
+OUT = "Success"</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0e63dd46-4372-4b7d-8889-4a500293bf07" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="403.2" y="136.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Filepath : string" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d6efe96e-e501-4135-a81c-a0e31f7b9b8d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="301.6" y="268" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="Format : string = &quot;latin-1&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4b44b21c-da63-4694-a83b-a26abbf1435e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="896.8" y="220.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Result" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="5234a697-bd8f-4151-a4a9-c49abfa9a5bb" start_index="0" end="4b44b21c-da63-4694-a83b-a26abbf1435e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0e63dd46-4372-4b7d-8889-4a500293bf07" start_index="0" end="5234a697-bd8f-4151-a4a9-c49abfa9a5bb" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d6efe96e-e501-4135-a81c-a0e31f7b9b8d" start_index="0" end="5234a697-bd8f-4151-a4a9-c49abfa9a5bb" end_index="1" portType="0" />
+  </Connectors>
+  <Notes>
+    <Dynamo.Graph.Notes.NoteModel guid="69d78975-0ed4-441b-b23c-fa18b1287cd7" text="https://docs.python.org/2/library/codecs.html#standard-encodings" x="670.795426893123" y="124.467384225903" />
+  </Notes>
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

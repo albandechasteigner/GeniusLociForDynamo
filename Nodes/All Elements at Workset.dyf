@@ -1,0 +1,56 @@
+<Workspace Version="1.3.4.6666" X="69.8816652252871" Y="67.5902585152924" zoom="0.642869557405948" ScaleFactor="1" Name="All Elements at Workset" Description="Collect all elements at a given workset.&#xD;&#xA;Works with a workset name or with a Autodesk.Revit.DB.Workset." ID="77c1faef-c506-4055-982c-97d66b8deec3" Category="GeniusLoci.Workset">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Autodesk.Plane.Revit" resolvedName="Autodesk.DesignScript.Geometry.Plane" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Autodesk.Plane" resolvedName="Autodesk.DesignScript.Geometry.Plane" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Autodesk.DesignScript.Geometry.Plane.Revit" resolvedName="Autodesk.DesignScript.Geometry.Plane" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Autodesk.Revit.DB.Workset" resolvedName="Autodesk.Revit.DB.Workset" assemblyName="" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <PythonNodeModels.PythonNode guid="cfa1cf6d-de83-4105-ada0-62a4f4085722" type="PythonNodeModels.PythonNode" nickname="Python Script" x="347" y="191.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+worksets = IN[0] if isinstance(IN[0],list) else [IN[0]]
+worksetList = []
+
+for workset in worksets :
+	if isinstance(workset,Autodesk.Revit.DB.Workset):
+		wks = workset
+	else:
+		userWorksets = FilteredWorksetCollector(doc).OfKind(WorksetKind.UserWorkset).ToWorksets()
+		wks=next((ws for ws in userWorksets if ws.Name.lower() == workset.lower()), None)
+	filter=ElementWorksetFilter(wks.Id,False)
+	worksetList.append(FilteredElementCollector(doc).WherePasses(filter).WhereElementIsNotElementType().ToElements())
+
+if isinstance(IN[0], list): OUT = worksetList
+else: OUT = worksetList[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b205ce1c-d756-4013-9642-ffe1ea9f1f7f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-106.852818991098" y="193.024332344214" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Workset Name or Autodesk.Revit.DB.Workset&#xD;&#xA;workset" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="335cbe13-846f-43d4-b081-dda38d9ab95a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="571.4" y="191.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="cfa1cf6d-de83-4105-ada0-62a4f4085722" start_index="0" end="335cbe13-846f-43d4-b081-dda38d9ab95a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b205ce1c-d756-4013-9642-ffe1ea9f1f7f" start_index="0" end="cfa1cf6d-de83-4105-ada0-62a4f4085722" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

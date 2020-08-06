@@ -1,0 +1,129 @@
+<Workspace Version="1.3.4.6666" X="124.601728922616" Y="11.8880766374678" zoom="0.971377355631052" ScaleFactor="1" Name="Convert Point in Coordinate Systems" Description="Get location point in the 3 coordinate systems : Shared Coordinates, Project Coordinates, Relative Origin Coordinates.&#xD;&#xA;Based on a Daniel Woodcock's script." ID="cfb23751-b258-4f7b-bc1a-0139bdeadb52" Category="GeniusLoci.Geometry">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Autodesk.DesignScript.Geometry.Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="00928172-fd7e-4289-839a-6e763a57f625" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-95.1762872558693" y="261.36581510421" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="point: Autodesk.DesignScript.Geometry.Point[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="db095d75-1995-41d6-9ed8-eb161c2a10cf" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="721.210865666245" y="235.710592237065" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Point (Survey System)" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="e3aa7705-6750-4736-8fb4-fafa19f13efa" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="552.013787327422" y="261.731007527967" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="df660c64-370d-4258-973f-beddfd1cd287" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="739.973741643578" y="307.400237782767" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Point (Project Base Pt System)" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3e6fff7a-277e-419f-8f23-a6d2e18b6769" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="745.675083454366" y="391.475559276733" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Point (Internal Origin System)" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="98bb4a4f-de3b-4d84-89a3-0b2f21d7ba04" type="PythonNodeModels.PythonNode" nickname="Python Script" x="385.977201727344" y="260.216611786732" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Based on a script by Daniel Woodcock
+
+import clr
+import math
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript import Geometry as geom
+clr.AddReference("RevitServices")
+import RevitServices 
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import*
+import Autodesk
+
+version=int(app.VersionNumber)
+	
+UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
+
+# Create a list object from singleton...
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+	
+# Convert Point from Relative to Shared Coordinates...
+def ToSharedCoordinates(pt,iop,pbp,rot):
+	# First we need to translate the point by adding the Internal Origin to the Point we're converting...
+	pt = geom.Point.ByCoordinates(pt.X+iop.X, pt.Y+iop.Y, pt.Z+iop.Z)
+	# Then we need to rotate this point about the Internal Origin in the opposite direction as the Project Rotation...
+	pt = geom.Geometry.Rotate(pt,iop,geom.Vector.ZAxis(),rot*-1)
+	return pt
+
+# Convert Point from Relative to Project Coordinates...
+def ToProjectCoordinates(pt,iop,pbp,rot):
+	# First we need to Rotate the Project Base Point about the Internal Origin Point by the Project Rotation...
+	pbp = geom.Geometry.Rotate(pbp,iop,geom.Vector.ZAxis(),rot)
+	# Then we need to Translate the point we're converting by subtracting the Project Base Point and then adding the Internal Origin Point...
+	pt = geom.Point.ByCoordinates(pt.X-pbp.X+iop.X,pt.Y-pbp.Y+iop.Y,pt.Z-pbp.Z+iop.Z)
+	return pt
+
+# Input Variables...
+pts = tolist(IN[0])
+ 
+# Internal Variables...
+pbp = None
+iop = None
+rot = 0
+ 
+# Output Variables...
+shared = []
+project = []
+relative = []
+
+# Collect Project Basepoint...
+basePt = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_ProjectBasePoint).ToElements()
+ 
+# Convert Project Basepoint (pbp) to DS Point...
+for e in basePt:
+	# Get Project Base Points Parameter Values...
+	ew = Autodesk.Revit.DB.UnitUtils.ConvertFromInternalUnits(e.get_Parameter(BuiltInParameter.BASEPOINT_EASTWEST_PARAM).AsDouble(),UIunit)
+	ns = Autodesk.Revit.DB.UnitUtils.ConvertFromInternalUnits(e.get_Parameter(BuiltInParameter.BASEPOINT_NORTHSOUTH_PARAM).AsDouble(),UIunit)
+	ele = Autodesk.Revit.DB.UnitUtils.ConvertFromInternalUnits(e.get_Parameter(BuiltInParameter.BASEPOINT_ELEVATION_PARAM).AsDouble(),UIunit)
+	rot = e.get_Parameter(BuiltInParameter.BASEPOINT_ANGLETON_PARAM).AsDouble()*180/math.pi    
+	# Create Point from Project Base Point Values...
+	pbp = geom.Point.ByCoordinates(ew,ns,ele)
+
+# Convert Internal Origin Point (iop) as DS Point...
+if version &gt; 2017:
+	projPos = doc.ActiveProjectLocation.GetProjectPosition(XYZ(0,0,0))
+else :
+	projPos = doc.ActiveProjectLocation.get_ProjectPosition(XYZ(0,0,0))
+
+iop = geom.Point.ByCoordinates((Autodesk.Revit.DB.UnitUtils.ConvertFromInternalUnits(projPos.EastWest,UIunit)),(Autodesk.Revit.DB.UnitUtils.ConvertFromInternalUnits(projPos.NorthSouth,UIunit)),0)
+ 
+for pt in pts:
+# Convert point to Shared Coordinates...
+	shared.append(ToSharedCoordinates(pt,iop,pbp,rot))
+	# Convert point to Project Coordinates...
+	project.append(ToProjectCoordinates(pt,iop,pbp,rot))
+	# Point is already Relative to the Internal Origin...
+	relative.append(pt)
+     
+OUT = shared, project, relative</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="00928172-fd7e-4289-839a-6e763a57f625" start_index="0" end="98bb4a4f-de3b-4d84-89a3-0b2f21d7ba04" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e3aa7705-6750-4736-8fb4-fafa19f13efa" start_index="0" end="db095d75-1995-41d6-9ed8-eb161c2a10cf" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e3aa7705-6750-4736-8fb4-fafa19f13efa" start_index="1" end="df660c64-370d-4258-973f-beddfd1cd287" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e3aa7705-6750-4736-8fb4-fafa19f13efa" start_index="2" end="3e6fff7a-277e-419f-8f23-a6d2e18b6769" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="98bb4a4f-de3b-4d84-89a3-0b2f21d7ba04" start_index="0" end="e3aa7705-6750-4736-8fb4-fafa19f13efa" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

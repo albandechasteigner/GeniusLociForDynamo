@@ -1,0 +1,55 @@
+<Workspace Version="1.3.4.6666" X="65.3980000000001" Y="58.3640000000001" zoom="0.8425" ScaleFactor="1" Name="Collector of DWFMarkup" Description="Collects all DWF Markup in the document or in the active sheet view." ID="93a1c4ed-8113-48aa-8e94-dcc0ed15cd6f" Category="GeniusLoci.DWF">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="83119a94-d85e-48a2-954b-bf7915bee992" type="PythonNodeModels.PythonNode" nickname="Python Script" x="297.6" y="300" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+# Import RevitAPI Classes
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+# Import DocumentManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+activeView = doc.ActiveView
+
+pvp = ParameterValueProvider(ElementId(BuiltInParameter.IMPORT_SYMBOL_NAME))
+fRule = FilterStringRule(pvp, FilterStringBeginsWith(),"Markup",False)
+filter = ElementParameterFilter(fRule)
+
+boolean =IN[0]
+
+if boolean == True:
+	dwfMarkups = FilteredElementCollector(doc, activeView.Id).OfClass( ImportInstance ).WhereElementIsNotElementType().WherePasses(filter).ToElements()
+else:
+	dwfMarkups = FilteredElementCollector(doc).OfClass( ImportInstance ).WhereElementIsNotElementType().WherePasses(filter).ToElements()
+		
+OUT=dwfMarkups</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bb8751bc-29e0-4770-8d70-44226a315c26" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-3.2000000000001" y="299.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//True = Active sheet view&#xD;&#xA;//False = Current document&#xD;&#xA;SheetOrDocument : bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4148d9b5-e85c-49ab-9232-d1306a1981ef" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="494.4" y="294.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="DWFMarkup" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="83119a94-d85e-48a2-954b-bf7915bee992" start_index="0" end="4148d9b5-e85c-49ab-9232-d1306a1981ef" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="bb8751bc-29e0-4770-8d70-44226a315c26" start_index="0" end="83119a94-d85e-48a2-954b-bf7915bee992" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
