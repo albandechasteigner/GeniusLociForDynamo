@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="157.896092222776" Y="-30.7388287058581" zoom="0.679007436100057" ScaleFactor="1" Name="FamilyInstance ByReference" Description="Inserts a new instance of a family onto a face referenced by the input Reference, using a location, reference direction, and a type/symbol. " ID="ce6e2d9d-4464-4e99-beb1-fbf55f5abeb7" Category="GeniusLoci.Family">
+<Workspace Version="1.3.4.6666" X="274.04605410878" Y="-19.2111075046725" zoom="0.631317243097572" ScaleFactor="1" Name="FamilyInstance ByReference" Description="Inserts a new instance of the given family type onto a face (or Reference Plane) referenced by the input Reference, using a location and a reference direction.&#xD;&#xA;Note : The FamilyPlacementType must be WorkPlane Based.&#xD;&#xA;The reference direction defines the rotation of the instance and thus can't be perpendicular to the face." ID="ce6e2d9d-4464-4e99-beb1-fbf55f5abeb7" Category="GeniusLoci.Family">
   <NamespaceResolutionMap>
     <ClassMap partialName="Autodesk.DesignScript.Geometry.Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
     <ClassMap partialName="Autodesk.DesignScript.Geometry.Vector" resolvedName="Autodesk.DesignScript.Geometry.Vector" assemblyName="ProtoGeometry.dll" />
@@ -26,6 +26,9 @@ import Revit
 clr.ImportExtensions(Revit.Elements)
 clr.ImportExtensions(Revit.GeometryConversion)
 
+import sys
+sys.path.append(r"C:\Program Files (x86)\IronPython 2.7\Lib")
+
 def tolist(obj1):
 	if hasattr(obj1,"__iter__"): return obj1
 	else: return [obj1]
@@ -45,19 +48,22 @@ for i in xrange(len(locationPoint)):
 	j = 0 if ftp_len else i
 	k = 0 if ref_len else i
 	try:
+		errorReport = None
 		if not familyType[j].IsActive : familyType[j].Activate()	
 		nf = doc.Create.NewFamilyInstance(reference[k],p,refDirection[d],familyType[j])
 		OUT.append(nf.ToDSType(False))
 	except:
-		OUT.append(None)
-
+		# if error accurs anywhere in the process catch it
+		import traceback
+		errorReport = traceback.format_exc()
+		OUT.append(errorReport)
 TransactionManager.Instance.TransactionTaskDone()</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e9761920-ea73-4bad-b30c-e11dc58d3e3c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="168.8" y="298" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e9761920-ea73-4bad-b30c-e11dc58d3e3c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="125.206957529051" y="286.218096629473" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="familyType" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f810d06b-974d-4c64-93eb-ed600a309eea" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-31.0648245622447" y="362.282914569024" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Autodesk.Revit.DB.Reference&#xD;&#xA;reference" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f810d06b-974d-4c64-93eb-ed600a309eea" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-234.891752872358" y="354.035582209655" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Autodesk.Revit.DB.Reference&#xD;&#xA;//Reference surface geometry derived from a Revit face&#xD;&#xA;reference" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8e9e7f7f-ef9d-48f2-ada9-4b15bfcf6c06" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-234.615629386818" y="452.04299062144" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//Point where the instance is to be placed&#xD;&#xA;location:Autodesk.DesignScript.Geometry.Point[]..[]" />
@@ -80,4 +86,7 @@ TransactionManager.Instance.TransactionTaskDone()</Script>
   <Notes />
   <Annotations />
   <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
 </Workspace>

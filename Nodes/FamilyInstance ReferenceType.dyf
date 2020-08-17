@@ -2,7 +2,11 @@
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="268f5278-3837-46cc-ae4d-f7ae9efecbf8" type="PythonNodeModels.PythonNode" nickname="FamilyInstanceReferenceType" x="444" y="268" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="0">
-      <Script>import clr
+      <Script>#Alban de Chasteigner 2019
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
 # Import RevitAPI
 clr.AddReference("RevitAPI")
 import Autodesk

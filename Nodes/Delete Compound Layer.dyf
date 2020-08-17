@@ -54,8 +54,10 @@ for elem in elements :
 	compStr = famType.GetCompoundStructure()
 	layers=list(compStr.GetLayers())
 	structural=compStr.StructuralMaterialIndex
+	variable=compStr.VariableLayerIndex
 	#index before the structural layer
-	count = sum(i &lt; structural for i in index) 
+	count = sum(i &lt; structural for i in index)
+	count2 = sum(i &lt; variable for i in index)
 	idx = 0
 	while idx &lt; compStr.LayerCount:
 		boolList.Add(compStr.ParticipatesInWrapping(idx))
@@ -65,30 +67,33 @@ for elem in elements :
 	numberOfShellLayExt = compStr.GetNumberOfShellLayers(ShellLayerType.Exterior)
 	numberOfShellLayInt = compStr.GetNumberOfShellLayers(ShellLayerType.Interior)
 	
-	TransactionManager.Instance.EnsureInTransaction(doc)
 	for idx in sorted(index, reverse=True):
 		del boolList[idx]
-		if (idx &lt; firstCoreLayerIndex) :
+		if idx &lt; firstCoreLayerIndex :
 			numberOfShellLayExt -= 1
-		if (idx &gt; lastCoreLayerIndex):
+		if idx &gt; lastCoreLayerIndex:
 			numberOfShellLayInt -= 1
 	layersToKeep=[l for l in layers if l.LayerId not in index]
-	try:
-		compStr.SetLayers(layersToKeep)
-		compStr.SetNumberOfShellLayers(ShellLayerType.Exterior, numberOfShellLayExt)
-		compStr.SetNumberOfShellLayers(ShellLayerType.Interior, numberOfShellLayInt)
-		if structural not in index :
-			compStr.StructuralMaterialIndex=structural-count 
-		idx = 0
-		while idx &lt; compStr.LayerCount:
-			if idx &lt; compStr.GetFirstCoreLayerIndex() or idx &gt; compStr.GetLastCoreLayerIndex() :
-				compStr.SetParticipatesInWrapping(idx, boolList[idx])
-			idx = idx+1
+	
+	compStr.SetLayers(layersToKeep)
+	compStr.SetNumberOfShellLayers(ShellLayerType.Exterior, numberOfShellLayExt)
+	compStr.SetNumberOfShellLayers(ShellLayerType.Interior, numberOfShellLayInt)
+	if structural not in index :
+		compStr.StructuralMaterialIndex=structural-count
+	if variable not in index:
+		compStr.VariableLayerIndex=variable-count2
+	idx = 0
+	while idx &lt; compStr.LayerCount:
+		if idx &lt; compStr.GetFirstCoreLayerIndex() or idx &gt; compStr.GetLastCoreLayerIndex() :
+			compStr.SetParticipatesInWrapping(idx, boolList[idx])
+		idx = idx+1
+	try:	
+		TransactionManager.Instance.EnsureInTransaction(doc)
 		famType.SetCompoundStructure(compStr)
 		outList.append(famType)
+		TransactionManager.Instance.TransactionTaskDone()
 	except Exception, e:
 		outList.append("Failed:-\n" + e.message)
-	TransactionManager.Instance.TransactionTaskDone()
 
 if isinstance(IN[0], list): OUT = outList
 else: OUT = outList[0]</Script>
