@@ -1,0 +1,84 @@
+<Workspace Version="1.3.4.6666" X="186.402817935297" Y="90.0128426617227" zoom="0.601227966203388" ScaleFactor="1" Name="FamilyInstance ByFaceReference" Description="Inserts a new instance of the given family type onto a surface referenced by the input Reference, using a line for its position.&#xD;&#xA;Note : The FamilyPlacementType must be CurveBased and the input surface reference must be created from a Revit face." ID="a0cd0860-10ac-4fff-9636-7b84c71c4807" Category="GeniusLoci.Family">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Autodesk.DesignScript.Geometry.Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
+    <ClassMap partialName="Autodesk.DesignScript.Geometry.Curve" resolvedName="Autodesk.DesignScript.Geometry.Curve" assemblyName="ProtoGeometry.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b2ad4b16-022f-4a2c-a2b3-95b44a14e78b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="771.51009989204" y="375.366446562109" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FamilyInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="c3089520-df45-40cf-a505-b93441c4fa05" type="PythonNodeModels.PythonNode" nickname="Python Script" x="546.71009989204" y="375.366446562109" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>#Inspired by Springs package, Dimitar Venkov
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference("RevitAPI")
+import Autodesk
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+clr.ImportExtensions(Revit.GeometryConversion)
+
+import sys
+sys.path.append(r"C:\Program Files (x86)\IronPython 2.7\Lib")
+
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+
+familyType, reference, line = map(tolist, UnwrapElement(IN))
+
+OUT = []
+ftp_len = len(familyType) == 1
+ref_len = len(reference) == 1
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for i in xrange(len(line)):
+	l = line[i].ToRevitType()
+	j = 0 if ftp_len else i
+	k = 0 if ref_len else i
+	try:
+		errorReport = None
+		if not familyType[j].IsActive : familyType[j].Activate()	
+		nf = doc.Create.NewFamilyInstance(reference[k],l,familyType[j])
+		OUT.append(nf.ToDSType(False))
+	except:
+		# if error accurs anywhere in the process catch it
+		import traceback
+		errorReport = traceback.format_exc()
+		OUT.append(errorReport)
+TransactionManager.Instance.TransactionTaskDone()</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9b179d32-efb5-4d4a-b717-4dd5dca29331" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-111.689900107959" y="309.366446562109" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="familyType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6ad4a6da-86d4-4b42-8bf4-7f92f6cf4ba1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-111.689900107959" y="392.366446562109" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Autodesk.Revit.DB.Reference&#xD;&#xA;//Reference surface geometry derived from a Revit face&#xD;&#xA;reference" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="877a526f-200f-4cfe-87b6-a9b31ac62518" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-111.689900107959" y="502.366446562109" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//A line on the face defining where the instance is to be placed&#xD;&#xA;line:Autodesk.DesignScript.Geometry.Curve[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="c3089520-df45-40cf-a505-b93441c4fa05" start_index="0" end="b2ad4b16-022f-4a2c-a2b3-95b44a14e78b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9b179d32-efb5-4d4a-b717-4dd5dca29331" start_index="0" end="c3089520-df45-40cf-a505-b93441c4fa05" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6ad4a6da-86d4-4b42-8bf4-7f92f6cf4ba1" start_index="0" end="c3089520-df45-40cf-a505-b93441c4fa05" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="877a526f-200f-4cfe-87b6-a9b31ac62518" start_index="0" end="c3089520-df45-40cf-a505-b93441c4fa05" end_index="2" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

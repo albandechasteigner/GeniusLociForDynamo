@@ -1,0 +1,51 @@
+<Workspace Version="1.3.4.6666" X="-61.5036163327613" Y="70.1976778893243" zoom="0.803321593462598" ScaleFactor="1" Name="FamilyInstance Get Mirrored" Description="Gets the mirrored family instances." ID="cd1b06a4-8c50-4ec7-a274-dc0ebd4ee425" Category="GeniusLoci.Family">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="3af69430-b3cf-4118-8ab9-c5bb0b07abd8" type="PythonNodeModels.PythonNode" nickname="Python Script" x="385.6" y="318.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import Element
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+mirroredElements,items = [],[]
+
+for element in elements:
+	if hasattr(element, "Mirrored"):
+		if element.Mirrored is True:
+			mirroredElements.append(element)
+		else:
+			items.append(element)
+	else:items.append(element)
+	
+OUT = mirroredElements, items</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b4d68f5c-7947-4b33-a8aa-29c5ac55e3bd" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="201.6" y="318.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="familyInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="6e5eb576-0e60-4e40-aea6-371517bd046d" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="545.578635014837" y="321.252225519288" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8dc9c7b4-6bea-4791-bc44-bcc2828a615a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="684.039394440037" y="315.941117699449" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Mirrored" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7f165fa7-3fc5-4f73-af71-6d57a06d1899" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="688.549506245474" y="385.734376495825" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Others" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="3af69430-b3cf-4118-8ab9-c5bb0b07abd8" start_index="0" end="6e5eb576-0e60-4e40-aea6-371517bd046d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b4d68f5c-7947-4b33-a8aa-29c5ac55e3bd" start_index="0" end="3af69430-b3cf-4118-8ab9-c5bb0b07abd8" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6e5eb576-0e60-4e40-aea6-371517bd046d" start_index="0" end="8dc9c7b4-6bea-4791-bc44-bcc2828a615a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6e5eb576-0e60-4e40-aea6-371517bd046d" start_index="1" end="7f165fa7-3fc5-4f73-af71-6d57a06d1899" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

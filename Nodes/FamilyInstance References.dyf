@@ -1,0 +1,87 @@
+<Workspace Version="1.3.4.6666" X="-159.591117598723" Y="54.2840265866517" zoom="0.803321593462598" ScaleFactor="1" Name="FamilyInstance References" Description="Returns all references and references names." ID="0e4b754b-3ca7-4cd9-9f54-c5012f1763fd" Category="GeniusLoci.Reference">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="ca5e7185-cdf8-4f71-9c8c-2c8f1d3526c3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1342.4" y="355.9" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Reference" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="e109ad9a-1dd0-4851-bc7b-943e0d410bf5" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1151.2" y="393.326666666667" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <PythonNodeModels.PythonNode guid="0abc38b1-4824-4577-addc-c57d1db86ffe" type="PythonNodeModels.PythonNode" nickname="Python Script" x="927.395865175927" y="389.113333333333" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+import System
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference('RevitNodes')
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+referenceList,refnameList,planeList=[],[],[]
+
+instanceReferenceType = System.Enum.GetValues(FamilyInstanceReferenceType)
+
+#Get Reference Planes from Families
+for element in elements:
+	references,planes=[],[]
+	for referenceType in instanceReferenceType:
+		references.extend(element.GetReferences(referenceType))
+		refname=[element.GetReferenceName(reference) for reference in references]
+		try:
+			TransactionManager.Instance.EnsureInTransaction(doc)
+			trans1 = SubTransaction(doc)
+			trans1.Start()
+			sketchPlane = [Autodesk.Revit.DB.SketchPlane.Create(doc, reference) for reference in references]
+			planes = [sketch.GetPlane().ToPlane(True) for sketch in sketchPlane]
+			[sketch.Dispose() for sketch in sketchPlane]
+			trans1.RollBack()
+			TransactionManager.Instance.TransactionTaskDone()
+		except:
+			planes.append(None)
+	referenceList.append(references)
+	refnameList.append(refname)
+	planeList.append(planes)
+	
+if isinstance(IN[0], list): OUT = referenceList,refnameList,planeList
+else: OUT = referenceList[0],refnameList[0],planeList[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e5733c2b-00e7-45cb-98f1-73eedc1b98f1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="680.8" y="389.113333333333" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="familyInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4fd95948-d1b1-469c-91fb-e9ecc2af252b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1342.4" y="439.9" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ReferenceName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a64c7fc7-ee60-43a2-afd6-74ba2a5b7f59" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1338.66984149974" y="545.544405129766" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Plane" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="e109ad9a-1dd0-4851-bc7b-943e0d410bf5" start_index="0" end="ca5e7185-cdf8-4f71-9c8c-2c8f1d3526c3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e109ad9a-1dd0-4851-bc7b-943e0d410bf5" start_index="1" end="4fd95948-d1b1-469c-91fb-e9ecc2af252b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e109ad9a-1dd0-4851-bc7b-943e0d410bf5" start_index="2" end="a64c7fc7-ee60-43a2-afd6-74ba2a5b7f59" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="0abc38b1-4824-4577-addc-c57d1db86ffe" start_index="0" end="e109ad9a-1dd0-4851-bc7b-943e0d410bf5" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e5733c2b-00e7-45cb-98f1-73eedc1b98f1" start_index="0" end="0abc38b1-4824-4577-addc-c57d1db86ffe" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
