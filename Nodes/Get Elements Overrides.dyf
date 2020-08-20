@@ -184,7 +184,7 @@ OUT=listprPat,listprojRGB,listprwe,listSurForPat,listSurForPatRGB,listSurBacPat,
       <Symbol value="Halftone" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4aec5ce0-e477-4874-9864-90d7d7271418" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="75.871061307643" y="880.51805779622" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
+      <Symbol value="view:var = Revit.Application.Document.Current.ActiveView" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="9276bc9c-cf7c-4111-bf1e-22fada46632a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1367.49257659921" y="1655.4465490155" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />

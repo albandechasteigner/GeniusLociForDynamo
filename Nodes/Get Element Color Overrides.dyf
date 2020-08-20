@@ -1,110 +1,224 @@
-<Workspace Version="1.3.4.6666" X="127.994688012253" Y="81.1637864325522" zoom="0.538046297688571" ScaleFactor="1" Name="Get Element Color Overrides" Description="Retrieves the color of the element with several methods (view-specific, view filter and material overrides)." ID="e0dc231a-7aaa-4278-a3ef-7540296b98c5" Category="GeniusLoci.Graphics">
-  <NamespaceResolutionMap>
-    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-  </NamespaceResolutionMap>
-  <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="806c2c7c-e651-4d45-8e6d-b7ae81afb30d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="297.939755863902" y="335.585888668641" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="element" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1088d41a-4328-4657-8be4-1835cea5b7f9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="606.8" y="372.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Color" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e99fa0eb-4676-4701-950d-83c5df8f9c99" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-145.6" y="412.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <PythonNodeModels.PythonNode guid="9edae239-ff12-4e47-a786-50e471a16c57" type="PythonNodeModels.PythonNode" nickname="Get color override" x="435.2" y="367.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
-      <PortInfo index="0" default="False" />
-      <PortInfo index="1" default="False" />
-      <Script>#Based on a Lukas Mikkelsen's script
-import clr
-clr.AddReference('DSCoreNodes')
-import DSCore
-from DSCore import Color
-
-#Import ToDSType(bool) extension method
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.Elements)
-
-# Import DocumentManager and TransactionManager
-clr.AddReference("RevitServices")
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-
-# Import RevitAPI
-clr.AddReference("RevitAPI")
-import Autodesk
-from Autodesk.Revit.DB import *
-
-doc = DocumentManager.Instance.CurrentDBDocument
-uiapp = DocumentManager.Instance.CurrentUIApplication
-app = uiapp.Application
-
-def tolist(obj1):
-	if hasattr(obj1,"__iter__"): return obj1
-	else: return [obj1]
-
-elements = tolist(UnwrapElement(IN[0]))
-views = tolist(UnwrapElement(IN[1]))[0]
-
-output = []
-
-for element in elements :
-	#activeview = doc.ActiveView
-	override = views.GetElementOverrides(element.Id)
-	color = None
-	if override.ProjectionFillColor.IsValid:
-		color = DSCore.Color.ByARGB(255, override.ProjectionFillColor.Red, override.ProjectionFillColor.Green, override.ProjectionFillColor.Blue)
-	else:
-		filters = views.GetFilters() # Get all the filter ids
-		for f in filters:
-			filtercats = [x for x in doc.GetElement(f).GetCategories()]
-			# Check if element category corresponds to filter category
-			if element.Category.Id in filtercats:
-			 	filterrules = doc.GetElement(f).GetRules()
-			 	rulepassed = []
-			 	# Check if element passes all filter rules
-			 	for frule in filterrules:
-			 		rulepassed.append(frule.ElementPasses(element))
-			 	if all(rulepassed):
-		 			override = views.GetFilterOverrides(f)
-					# BEWARE: THIS PART ASSUMES THAT MULTIPLE FILTERS DOES NOT COLLIDE IN REGARDS TO COLOR DEFINITION OF THE ELEMENT
-		 			if override.ProjectionFillColor.IsValid:
-						color = DSCore.Color.ByARGB(255, override.ProjectionFillColor.Red, override.ProjectionFillColor.Green, override.ProjectionFillColor.Blue)
-			 		else:
-			 			pass
-			 	# Otherwise element does not satisfy the filter
-			 	else:
-			 		pass
-			# Otherwise the element category does not correspond to the filter category
-			else:
-				pass
-		# Check if color has been previously defined.
-		# If the color is retrieved based on material, our element may consist of multiple materials.
-		if not color:
-			color = []
-			mats = [doc.GetElement(x) for x in element.GetMaterialIds(False)]
-			for mat in mats:
-				color.append(DSCore.Color.ByARGB(255, mat.Color.Red, mat.Color.Green, mat.Color.Blue))
-		else:
-			pass
-	output.append(color)
-#Assign your output to the OUT variable
-if isinstance(IN[0], list): OUT = output
-else: OUT = output[0]</Script>
-    </PythonNodeModels.PythonNode>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="806c2c7c-e651-4d45-8e6d-b7ae81afb30d" start_index="0" end="9edae239-ff12-4e47-a786-50e471a16c57" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="e99fa0eb-4676-4701-950d-83c5df8f9c99" start_index="0" end="9edae239-ff12-4e47-a786-50e471a16c57" end_index="1" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="9edae239-ff12-4e47-a786-50e471a16c57" start_index="0" end="1088d41a-4328-4657-8be4-1835cea5b7f9" end_index="0" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "e0dc231a-7aaa-4278-a3ef-7540296b98c5",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Graphics",
+  "Description": "Retrieves the color of the element with several methods (view-specific, view filter and material overrides).",
+  "Name": "Get Element Color Overrides",
+  "ElementResolver": {
+    "ResolutionMap": {
+      "Revit.Application.Document.Current": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      },
+      "Revit.Application.Document": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      }
+    }
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "element",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "806c2c7ce6514d458e6db7ae81afb30d",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "6b0f2a37bd464f40a35ecafd5fd198ab",
+          "Name": "",
+          "Description": "Symbol",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "A function parameter, use with custom nodes.\r\n\r\nYou can specify the type and default value for parameter. E.g.,\r\n\r\ninput : var[]..[]\r\nvalue : bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Color",
+      "Id": "1088d41a432846578be41835cea5b7f9",
+      "Inputs": [
+        {
+          "Id": "57641ee1354a438d9594bea4c2577d8d",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "A function output, use with custom nodes"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "view",
+        "TypeName": "var",
+        "TypeRank": 0,
+        "DefaultValue": "Revit.Application.Document.Current.ActiveView",
+        "Description": ""
+      },
+      "Id": "e99fa0eb46764701950d83c5df8f9c99",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "3481771bd6ae45afb7a359dfa4d3947f",
+          "Name": "",
+          "Description": "Symbol",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "A function parameter, use with custom nodes.\r\n\r\nYou can specify the type and default value for parameter. E.g.,\r\n\r\ninput : var[]..[]\r\nvalue : bool = false"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Based on a Lukas Mikkelsen's script\nimport clr\nclr.AddReference('DSCoreNodes')\nimport DSCore\nfrom DSCore import Color\n\n#Import ToDSType(bool) extension method\nclr.AddReference(\"RevitNodes\")\nimport Revit\nclr.ImportExtensions(Revit.Elements)\n\n# Import DocumentManager and TransactionManager\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\n\n# Import RevitAPI\nclr.AddReference(\"RevitAPI\")\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\ndoc = DocumentManager.Instance.CurrentDBDocument\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\nversion=int(app.VersionNumber)\n\nelements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\nviews = UnwrapElement(IN[1])\noutput = []\n\t\nfor element in elements :\n\t#activeview = doc.ActiveView\n\toverride = views.GetElementOverrides(element.Id)\n\tif version < 2019 :\n\t\tprojectionColor = override.ProjectionFillColor\n\telse:\n\t\tprojectionColor = override.SurfaceForegroundPatternColor\n\tcolor = None\n\tif projectionColor.IsValid:\n\t\tcolor = DSCore.Color.ByARGB(255, projectionColor.Red, projectionColor.Green, projectionColor.Blue)\n\telse:\n\t\tfilters = views.GetFilters() # Get all the filter ids\n\t\tfor f in filters:\n\t\t\tfiltercats = [x for x in doc.GetElement(f).GetCategories()]\n\t\t\t# Check if element category corresponds to filter category\n\t\t\tif element.Category.Id in filtercats:\n\t\t\t \tfilterrules = doc.GetElement(f).GetRules()\n\t\t\t \trulepassed = []\n\t\t\t \t# Check if element passes all filter rules\n\t\t\t \tfor frule in filterrules:\n\t\t\t \t\trulepassed.append(frule.ElementPasses(element))\n\t\t\t \tif all(rulepassed):\n\t\t \t\t\toverride2 = views.GetFilterOverrides(f)\n\t\t\t\t\t# BEWARE: THIS PART ASSUMES THAT MULTIPLE FILTERS DOES NOT COLLIDE IN REGARDS TO COLOR DEFINITION OF THE ELEMENT\n\t\t \t\t\tif version < 2019 :\n\t\t\t\t\t\tprojectionColor2 = override2.ProjectionFillColor\n\t\t\t\t\telse:\n\t\t\t\t\t\tprojectionColor2 = override2.SurfaceForegroundPatternColor\n\t\t \t\t\tif override.ProjectionFillColor.IsValid:\n\t\t\t\t\t\tcolor = DSCore.Color.ByARGB(255, projectionColor2.Red, projectionColor2.Green, projectionColor2.Blue)\n\t\t\t \t\telse:\n\t\t\t \t\t\tpass\n\t\t\t \t# Otherwise element does not satisfy the filter\n\t\t\t \telse:\n\t\t\t \t\tpass\n\t\t\t# Otherwise the element category does not correspond to the filter category\n\t\t\telse:\n\t\t\t\tpass\n\t\t# Check if color has been previously defined.\n\t\t# If the color is retrieved based on material, our element may consist of multiple materials.\n\t\tif not color:\n\t\t\tcolor = []\n\t\t\tmats = [doc.GetElement(x) for x in element.GetMaterialIds(False)]\n\t\t\tfor mat in mats:\n\t\t\t\tcolor.append(DSCore.Color.ByARGB(255, mat.Color.Red, mat.Color.Green, mat.Color.Blue))\n\t\telse:\n\t\t\tpass\n\toutput.append(color)\n#Assign your output to the OUT variable\nif isinstance(IN[0], list): OUT = output\nelse: OUT = output[0]",
+      "VariableInputPorts": true,
+      "Id": "9edae239ff124e47a78650e471a16c57",
+      "Inputs": [
+        {
+          "Id": "636f357a669847408273cb01807a9fa3",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "97789f5e2ef54b9685f6d9632a1733b8",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "f01ec14c88334076b968b76949d0cf6b",
+          "Name": "OUT",
+          "Description": "Result of the python script",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Runs an embedded IronPython script."
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "6b0f2a37bd464f40a35ecafd5fd198ab",
+      "End": "636f357a669847408273cb01807a9fa3",
+      "Id": "ccf00171c5f04783b57e9664240a2914"
+    },
+    {
+      "Start": "3481771bd6ae45afb7a359dfa4d3947f",
+      "End": "97789f5e2ef54b9685f6d9632a1733b8",
+      "Id": "605af05735f04a6a8ca3db679b269c3e"
+    },
+    {
+      "Start": "f01ec14c88334076b968b76949d0cf6b",
+      "End": "57641ee1354a438d9594bea4c2577d8d",
+      "Id": "08ceeb072e0c43abb7d1ba2340eb60b3"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.3.0.5885",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Background Preview",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "NodeViews": [
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "806c2c7ce6514d458e6db7ae81afb30d",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 297.939755863902,
+        "Y": 335.585888668641
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Output",
+        "Id": "1088d41a432846578be41835cea5b7f9",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 606.8,
+        "Y": 372.8
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "e99fa0eb46764701950d83c5df8f9c99",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": -145.6,
+        "Y": 412.8
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Get color override",
+        "Id": "9edae239ff124e47a78650e471a16c57",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 435.2,
+        "Y": 367.2
+      }
+    ],
+    "Annotations": [],
+    "X": 127.994688012253,
+    "Y": 81.1637864325522,
+    "Zoom": 0.538046297688571
+  }
+}
