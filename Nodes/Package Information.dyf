@@ -2,7 +2,7 @@
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="8bd47873-0454-4375-9660-bf842d92e55b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="269.2" y="55.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false" inputcount="0">
-      <Script>OUT = "Author : Alban de Chasteigner","Contact : geniusloci.bim@gmail.com", "Twitter : @geniusloci_bim"</Script>
+      <Script>OUT = "Author : Alban de Chasteigner","Contact : geniusloci.bim@gmail.com", "Twitter : @geniusloci_bim", "GitHub : https://github.com/albandechasteigner/GeniusLociForDynamo"</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="eb47c965-fb0a-42c6-94de-a9d421d4a274" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="386.4" y="56.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
@@ -16,6 +16,6 @@
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>
