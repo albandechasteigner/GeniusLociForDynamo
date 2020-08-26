@@ -19,13 +19,13 @@
       <Symbol value="familyType:var[]..[]" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0d99ca46-5764-4c4a-8603-dcfe75c432ff" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="245.52896752587" y="123.931593638061" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Point to use as translation relative to the component already placed&#xD;&#xA;translation: Autodesk.DesignScript.Geometry.Point[]..[]" />
+      <Symbol value="//Point where the component is to be placed&#xD;&#xA;location: Autodesk.DesignScript.Geometry.Point[]..[]" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <PythonNodeModels.PythonNode guid="37e3c6ec-082e-430b-9122-6ec2f65b3687" type="PythonNodeModels.PythonNode" nickname="Python Script" x="886.87531942083" y="17.3744447670765" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
       <PortInfo index="0" default="False" />
       <PortInfo index="1" default="False" />
       <PortInfo index="2" default="False" />
-      <Script>#Oliwer Kulpa : https://thebuildingcoder.typepad.com/blog/2010/05/duplicate-legend-component.html
+      <Script>#Idea by Oliwer Kulpa : https://thebuildingcoder.typepad.com/blog/2010/05/duplicate-legend-component.html
 import clr
 # Import RevitAPI Classes
 clr.AddReference('RevitAPI')
@@ -51,13 +51,19 @@ translations = IN[2] if isinstance(IN[2],list) else [IN[2]]
 output=[]
 
 existing_legend_component = FilteredElementCollector(doc, view.Id).OfCategory(BuiltInCategory.OST_LegendComponents).FirstElement()
-
+# Get the location of the existing_legend_component
+box = existing_legend_component.BoundingBox[view]
+mid = (box.Min+box.Max)/2
+x=mid.X*-1
+y=mid.Y*-1
 # Start Transaction
 TransactionManager.Instance.EnsureInTransaction(doc)
 for translation,family_type in zip(translations,family_types):
-	# Copy legend and set new Id to represent new element
+	# Copy the existing legend component with a translation relative to him
 	new_legend_component = ElementTransformUtils.CopyElement(doc, existing_legend_component.Id,translation.ToRevitType())
-	# Since result of CopyElement is a list of Ids, I need to fetch first element from copied elements
+	# Translate the new element to the chosen location
+	ElementTransformUtils.MoveElement(doc,new_legend_component[0],XYZ(x,y,0))
+	# Change the family type of the new element
 	doc.GetElement(new_legend_component[0]).get_Parameter(BuiltInParameter.LEGEND_COMPONENT).Set(family_type.Id)
 	output.append(doc.GetElement(new_legend_component[0]))
 doc.Regenerate()
