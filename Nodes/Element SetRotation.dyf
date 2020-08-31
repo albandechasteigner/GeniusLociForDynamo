@@ -52,8 +52,7 @@ for angle, element in zip(angles, elements):
 				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
 			# sketch-based elements (e.g. floors)
 			else:
-				view=doc.ActiveView
-				box = element.BoundingBox[view]
+				box = element.get_BoundingBox(None)
 				loca = (box.Min+box.Max)/2
 				rot = 0
 	# view specific elements (e.g. filled regions)
