@@ -54,15 +54,12 @@ existing_legend_component = FilteredElementCollector(doc, view.Id).OfCategory(Bu
 # Get the location of the existing_legend_component
 box = existing_legend_component.BoundingBox[view]
 mid = (box.Min+box.Max)/2
-x=mid.X*-1
-y=mid.Y*-1
+
 # Start Transaction
 TransactionManager.Instance.EnsureInTransaction(doc)
 for translation,family_type in zip(translations,family_types):
-	# Copy the existing legend component with a translation relative to him
-	new_legend_component = ElementTransformUtils.CopyElement(doc, existing_legend_component.Id,translation.ToRevitType())
-	# Translate the new element to the chosen location
-	ElementTransformUtils.MoveElement(doc,new_legend_component[0],XYZ(x,y,0))
+	# Copy the existing legend component at the correct location
+	new_legend_component = ElementTransformUtils.CopyElement(doc, existing_legend_component.Id,translation.ToRevitType()-mid)
 	# Change the family type of the new element
 	doc.GetElement(new_legend_component[0]).get_Parameter(BuiltInParameter.LEGEND_COMPONENT).Set(family_type.Id)
 	output.append(doc.GetElement(new_legend_component[0]))
