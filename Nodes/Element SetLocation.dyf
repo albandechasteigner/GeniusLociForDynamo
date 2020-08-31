@@ -1,0 +1,79 @@
+<Workspace Version="1.3.4.6666" X="116.9950635" Y="162.00566431875" zoom="0.593767140625" ScaleFactor="1" Name="Element SetLocation" Description="Modify the location of the given element.&#xD;&#xA;(Same as the Move command in Revit.)&#xD;&#xA;Works for point, line, sketch based and view-specific elements.&#xD;&#xA;Note : The active view is used for the sketch-based elements." ID="d0e002bc-b698-422e-9027-0908d87ed18c" Category="GeniusLoci.Element">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="e24997be-0f34-4363-a0c9-61890104126d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="297.973681638717" y="367.946960020654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+# Import RevitAPI Classes
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+locations = IN[1] if isinstance(IN[1],list) else [IN[1]]
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for element,location in zip(elements,locations):
+	if hasattr(element, "Location"):
+		loc = element.Location
+		if loc:	
+			# point-based elements (e.g. most loadable families)
+			if isinstance(loc,LocationPoint):
+				loca=loc.Point
+			# line-based elements (e.g. walls)
+			elif isinstance(loc,LocationCurve):
+				loca=loc.Curve.Evaluate(0.5,True)
+			# sketch-based elements (e.g. floors)
+			else:
+				view=doc.ActiveView
+				box = element.BoundingBox[view]
+				loca = (box.Min+box.Max)/2
+	# view specific elements (e.g. filled regions)
+	elif hasattr(element, "OwnerViewId"):
+		view=element.Document.GetElement(element.OwnerViewId)
+		box = element.BoundingBox[view]
+		loca = (box.Min+box.Max)/2
+	ElementTransformUtils.MoveElement(doc,element.Id,location.ToRevitType()-loca)
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT=elements</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="718f8cf4-913a-4803-9c62-0b73b2eb0b95" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="522.373681638717" y="367.946960020654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d4384e39-fce0-499b-97ca-351c311bf1fb" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="68.373681638717" y="338.946960020654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element:var" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9caf821a-232c-4aaf-a0a1-cb62ca7b25fa" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="68.373681638717" y="422.946960020654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="location:var" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="e24997be-0f34-4363-a0c9-61890104126d" start_index="0" end="718f8cf4-913a-4803-9c62-0b73b2eb0b95" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d4384e39-fce0-499b-97ca-351c311bf1fb" start_index="0" end="e24997be-0f34-4363-a0c9-61890104126d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9caf821a-232c-4aaf-a0a1-cb62ca7b25fa" start_index="0" end="e24997be-0f34-4363-a0c9-61890104126d" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

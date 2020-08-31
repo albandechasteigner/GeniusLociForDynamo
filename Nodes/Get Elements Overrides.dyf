@@ -4,33 +4,33 @@
     <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
   </NamespaceResolutionMap>
   <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6e612789-b926-4bf1-bda1-4faba94f5fc2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="528.144598899894" y="793.387402428664" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="element" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6e612789-b926-4bf1-bda1-4faba94f5fc2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="212.407830103767" y="823.730309055416" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view:var = Revit.Application.Document.Current.ActiveView" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="1af36269-b502-48af-b31f-18fe6877c4e9" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="940.944598899894" y="826.600735761998" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];&#xA;x[5];&#xA;x[6];&#xA;x[7];&#xA;x[8];&#xA;x[9];&#xA;x[10];&#xA;x[11];&#xA;x[12];&#xA;x[13];&#xA;x[14];&#xA;x[15];&#xA;x[16];" ShouldFocus="false">
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="1af36269-b502-48af-b31f-18fe6877c4e9" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1029.20783010377" y="856.943642388749" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];&#xA;x[5];&#xA;x[6];&#xA;x[7];&#xA;x[8];&#xA;x[9];&#xA;x[10];&#xA;x[11];&#xA;x[12];&#xA;x[13];&#xA;x[14];&#xA;x[15];&#xA;x[16];" ShouldFocus="false">
       <PortInfo index="0" default="False" />
     </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e0571bce-8e02-4fba-8e67-3e5f58b5cd75" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="331.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e0571bce-8e02-4fba-8e67-3e5f58b5cd75" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="329.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="ProjectionLinePattern" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0fb22882-f238-43a2-910b-8f408c8cf66c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="414.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0fb22882-f238-43a2-910b-8f408c8cf66c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="412.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="ProjectionLineColor" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="6ee6f905-8970-4f7c-8123-459df37300d8" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="497.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="6ee6f905-8970-4f7c-8123-459df37300d8" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="495.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="ProjectionLineWeight" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1044adde-2101-4cef-ba7d-6d62c0f1e688" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="580.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1044adde-2101-4cef-ba7d-6d62c0f1e688" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="578.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="SurfaceForegroundPattern" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="041b9d91-4ac7-46c1-a666-60136295def7" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="663.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="041b9d91-4ac7-46c1-a666-60136295def7" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="661.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="SurfaceForegroundPatternColor" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <PythonNodeModels.PythonNode guid="246b048b-8433-4315-a050-db918becb161" type="PythonNodeModels.PythonNode" nickname="Python Script" x="716.144598899894" y="822.387402428664" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+    <PythonNodeModels.PythonNode guid="246b048b-8433-4315-a050-db918becb161" type="PythonNodeModels.PythonNode" nickname="Python Script" x="804.807830103766" y="852.730309055416" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
       <PortInfo index="0" default="False" />
       <PortInfo index="1" default="False" />
       <Script>#Alban de Chasteigner 2018
@@ -53,8 +53,8 @@ clr.AddReference('DSCoreNodes')
 import DSCore
 from DSCore import Color
 
-elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
-view = UnwrapElement(IN[1])
+view = UnwrapElement(IN[0])
+elements = UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])]
 
 listprwe,listprojRGB,listprPat,listSurForPatRGB,listSurForPat,listSurBacPatRGB,listSurBacPat,listcutwe,listcutRGB,listcutPat,listCutForPatRGB,listCutForPat,listCutBacPatRGB,listCutBacPat,listtrans,listhalf, visible = [],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[],[]
 
@@ -139,54 +139,54 @@ for element in elements:
 	
 OUT=listprPat,listprojRGB,listprwe,listSurForPat,listSurForPatRGB,listSurBacPat,listSurBacPatRGB,listcutPat,listcutRGB,listcutwe,listCutForPat,listCutForPatRGB,listCutBacPat,listCutBacPatRGB,listtrans,listhalf,visible</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a51b856b-2f15-4ec9-a073-63af45c003cc" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="746.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a51b856b-2f15-4ec9-a073-63af45c003cc" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="744.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="SurfaceBackgroundPattern" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e82e5858-4e71-44a9-94b8-3d56728244c4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="829.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e82e5858-4e71-44a9-94b8-3d56728244c4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="827.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="SurfaceBackgroundPatternColor" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3c2c0320-3181-49ac-8729-61fdd287a315" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="912.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3c2c0320-3181-49ac-8729-61fdd287a315" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="910.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="CutLinePattern" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a517b39f-ce7e-4833-8e6a-a66cfefdd4eb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="996.187402428665" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a517b39f-ce7e-4833-8e6a-a66cfefdd4eb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="993.316975722082" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="CutLineColor" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="2731e87f-eb8c-43f5-9d7a-9dbd1588805a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="1079.18740242866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="2731e87f-eb8c-43f5-9d7a-9dbd1588805a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1076.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="CutLineWeight" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="13de864f-a9c0-499a-a568-c710644ac6e9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="1162.18740242866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="13de864f-a9c0-499a-a568-c710644ac6e9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1159.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="CutForegroundPattern" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f33e3ee2-fe11-4ffe-b107-92c87fa76d9b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="1245.18740242866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f33e3ee2-fe11-4ffe-b107-92c87fa76d9b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1242.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="CutForegroundPatternColor" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="21999348-9075-4842-9973-9eb063419abd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="1328.18740242866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="21999348-9075-4842-9973-9eb063419abd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1325.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="CutBackgroundPattern" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="21c89831-9d73-4705-8436-0d59fa507a2d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="1411.18740242866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="21c89831-9d73-4705-8436-0d59fa507a2d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1408.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="CutBackgroundPatternColor" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="abb62b30-09d1-4e02-8f93-3482204a38c2" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="1494.18740242866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="abb62b30-09d1-4e02-8f93-3482204a38c2" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1491.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Transparency" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="dcd8b4fc-6259-434f-988d-8f5c8651d957" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1364.94459889989" y="1577.18740242866" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="dcd8b4fc-6259-434f-988d-8f5c8651d957" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1574.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Halftone" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4aec5ce0-e477-4874-9864-90d7d7271418" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="75.871061307643" y="880.51805779622" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="view:var = Revit.Application.Document.Current.ActiveView" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4aec5ce0-e477-4874-9864-90d7d7271418" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="212.407830103767" y="907.730309055416" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9276bc9c-cf7c-4111-bf1e-22fada46632a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1367.49257659921" y="1655.4465490155" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9276bc9c-cf7c-4111-bf1e-22fada46632a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1228.40783010377" y="1657.31697572208" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Visible" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>

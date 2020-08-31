@@ -1,0 +1,94 @@
+<Workspace Version="1.3.4.6666" X="150.942528380109" Y="242.032011461297" zoom="0.496186487382813" ScaleFactor="1" Name="Element SetRotation" Description="Set the angle of the element around its local Z-axis.&#xD;&#xA;(Same as the Rotate command in Revit)" ID="b7d53942-f5f1-46b5-b32c-8da905c94724" Category="GeniusLoci.Element">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="6dab0607-a1c2-4ffb-9308-0c71c5558a0b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="260.4" y="334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+import math
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+angles = [i* math.pi/180 for i in IN[1]] if isinstance(IN[1],list) else [IN[1]* math.pi/180]
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for angle, element in zip(angles, elements):
+	if angle&gt;math.pi:
+		angle=abs(angle-2*math.pi)
+	else:angle
+	#Get initial Rotation Angle using transform
+	#transform=element.GetTransform()
+	#vectorTran = transform.OfVector(transform.BasisX)
+	#rot = transform.BasisX.AngleOnPlaneTo(vectorTran, transform.BasisZ) 
+	#rot = rot * (180 / math.pi)
+	if hasattr(element, "Location"):
+		loc = element.Location
+		if loc:	
+			# point-based elements (e.g. most loadable families)
+			if isinstance(loc,LocationPoint):
+				loca=loc.Point
+				if hasattr(loc, "Rotation"):
+					rot=loc.Rotation
+			# line-based elements (e.g. walls)
+			elif isinstance(loc,LocationCurve):
+				loca=loc.Curve.Evaluate(0.5,True)
+				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
+			# sketch-based elements (e.g. floors)
+			else:
+				view=doc.ActiveView
+				box = element.BoundingBox[view]
+				loca = (box.Min+box.Max)/2
+				rot = 0
+	# view specific elements (e.g. filled regions)
+	elif hasattr(element, "OwnerViewId"):
+		view=element.Document.GetElement(element.OwnerViewId)
+		box = element.BoundingBox[view]
+		loca = (box.Min+box.Max)/2
+		rot = 0
+	line = Line.CreateBound(loca, XYZ(loca.X,loca.Y,1))
+	#Set Rotation
+	Autodesk.Revit.DB.ElementTransformUtils.RotateElement(doc, element.Id, line, angle-rot)
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = elements</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f3a1c5ee-8c88-4f48-bff9-a9fe80024312" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="484.8" y="334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7472697e-0a37-4333-a33d-598704217efc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-76.4" y="305" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element:var" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="be71b5d9-26d6-41ad-83db-5e48ed51751c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-76.4" y="389" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//The angle around Z-axis&#xD;&#xA;degree:var" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="6dab0607-a1c2-4ffb-9308-0c71c5558a0b" start_index="0" end="f3a1c5ee-8c88-4f48-bff9-a9fe80024312" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7472697e-0a37-4333-a33d-598704217efc" start_index="0" end="6dab0607-a1c2-4ffb-9308-0c71c5558a0b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="be71b5d9-26d6-41ad-83db-5e48ed51751c" start_index="0" end="6dab0607-a1c2-4ffb-9308-0c71c5558a0b" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

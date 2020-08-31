@@ -1,0 +1,54 @@
+<Workspace Version="1.3.4.6666" X="57.6454253610893" Y="83.7962472575855" zoom="0.674831658426865" ScaleFactor="1" Name="Get AllDocuments" Description="Get documents (linked and opened in background). The first document is the active document." ID="210a928f-79ad-4c9e-88f9-bb32e14b55f0" Category="GeniusLoci.Document">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="a412a503-6dc5-45c1-bb51-e557386aa804" type="PythonNodeModels.PythonNode" nickname="Python Script" x="291.730260829625" y="343.7806209778" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+docs = app.Documents
+
+titles,documents = [],[]
+
+for dc in docs:
+	if dc.Title != doc.Title:
+		documents.Add(dc)
+		titles.Add(dc.Title)
+	else:
+		docu=dc
+		titl=dc.Title
+
+OUT = [docu]+documents,[titl]+titles</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="12db5270-84ab-4451-8a25-c0b8a35d9196" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="485.330260829625" y="347.993954311133" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8e9ed2d8-cb98-48e3-8c2d-f91400234eab" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="676.530260829625" y="310.567287644466" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Document" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="d54c3bab-2e91-4882-b0cb-22978007b42b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="676.530260829625" y="394.567287644466" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FileName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a412a503-6dc5-45c1-bb51-e557386aa804" start_index="0" end="12db5270-84ab-4451-8a25-c0b8a35d9196" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="12db5270-84ab-4451-8a25-c0b8a35d9196" start_index="0" end="8e9ed2d8-cb98-48e3-8c2d-f91400234eab" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="12db5270-84ab-4451-8a25-c0b8a35d9196" start_index="1" end="d54c3bab-2e91-4882-b0cb-22978007b42b" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
