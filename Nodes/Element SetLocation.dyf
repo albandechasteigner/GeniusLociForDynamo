@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="116.9950635" Y="162.00566431875" zoom="0.593767140625" ScaleFactor="1" Name="Element SetLocation" Description="Modify the location of the given element.&#xD;&#xA;(Same as the Move command in Revit.)&#xD;&#xA;Works for point, line, sketch based and view-specific elements." ID="d0e002bc-b698-422e-9027-0908d87ed18c" Category="GeniusLoci.Element">
+<Workspace Version="1.3.4.6666" X="116.9950635" Y="162.00566431875" zoom="0.593767140625" ScaleFactor="1" Name="Element SetLocation" Description="Modify the location of the given element.&#xD;&#xA;(Same as the Move command in Revit.)&#xD;&#xA;Works for point, line, sketch based, view-specific elements and link instances." ID="d0e002bc-b698-422e-9027-0908d87ed18c" Category="GeniusLoci.Element">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="e24997be-0f34-4363-a0c9-61890104126d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="297.973681638717" y="367.946960020654" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
@@ -39,6 +39,8 @@ for element,location in zip(elements,locations):
 			# line-based elements (e.g. walls)
 			elif isinstance(loc,LocationCurve):
 				loca=loc.Curve.Evaluate(0.5,True)
+			elif isinstance(element,Instance):
+				loca = element.GetTotalTransform().Origin
 			# sketch-based elements (e.g. floors)
 			else:
 				box = element.get_BoundingBox(None)

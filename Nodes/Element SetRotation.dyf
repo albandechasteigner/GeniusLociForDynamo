@@ -50,18 +50,33 @@ for angle, element in zip(angles, elements):
 			elif isinstance(loc,LocationCurve):
 				loca=loc.Curve.Evaluate(0.5,True)
 				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
-			# sketch-based elements (e.g. floors)
+			elif isinstance(element,Instance):
+				trans=element.GetTotalTransform()
+				loca = trans.Origin
+				rot = -trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ)
 			else:
 				box = element.get_BoundingBox(None)
 				loca = (box.Min+box.Max)/2
-				rot = 0
+				# sketch-based elements (ceiling, floor and roof)
+				if hasattr(element, "FindInserts"):
+					for ref in HostObjectUtils.GetTopFaces(element):
+						geomFace=element.GetGeometryObjectFromReference(ref)
+						#Get BoundingBox max UV point
+						maxUV = geomFace.GetBoundingBox().Max
+						#Get transform
+						trans=geomFace.ComputeDerivatives(maxUV)
+						if isinstance(element,Ceiling):
+							rot = abs(trans.BasisZ.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ)-2*math.pi)
+						else:
+							rot = abs(trans.BasisY.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ)-math.pi)
+				else:rot = 0
 	# view specific elements (e.g. filled regions)
 	elif hasattr(element, "OwnerViewId"):
 		view=element.Document.GetElement(element.OwnerViewId)
 		box = element.BoundingBox[view]
 		loca = (box.Min+box.Max)/2
 		rot = 0
-	line = Line.CreateBound(loca, XYZ(loca.X,loca.Y,1))
+	line = Line.CreateBound(loca, XYZ(loca.X,loca.Y,loca.Z+1))
 	#Set Rotation
 	Autodesk.Revit.DB.ElementTransformUtils.RotateElement(doc, element.Id, line, angle-rot)
 TransactionManager.Instance.TransactionTaskDone()
