@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Element GetRotation" Description="Calculates the rotation angle between the given element and the X axis.&#xD;&#xA;Works for point, line, sketch based elements and link instances." ID="1e33ecff-42cd-41a3-8cac-d414dcc8fde9" Category="GeniusLoci.Geometry">
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Element GetRotation" Description="Calculates the rotation angle between the given element and the X axis.&#xD;&#xA;Works for point, line, sketch based elements and link instances." ID="1e33ecff-42cd-41a3-8cac-d414dcc8fde9" Category="GeniusLoci.Element">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="b8acc724-744e-4a99-b3e8-2022c971aa6f" type="PythonNodeModels.PythonNode" nickname="Python Script" x="277.6" y="228.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
@@ -27,17 +27,20 @@ def GetRotation(item):
 	elif hasattr(item, "Location"):
 		loc = item.Location
 		if loc:	
+			# Annotation symbol, importInstance and linkInstance
+			if hasattr(item, "GetTotalTransform"):
+				trans=item.GetTotalTransform()
+				rotationAngle = math.degrees(trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
 			# point-based elements (e.g. most loadable families)
-			if isinstance(loc,LocationPoint):
+			elif isinstance(loc,LocationPoint):
 				if hasattr(loc, "Rotation"):
 					rotationAngle = math.degrees(loc.Rotation)
+				# Group, assembly
+				else:rotationAngle = 0
 			# line-based elements (e.g. walls)
 			elif isinstance(loc,LocationCurve):
 				vector = loc.Curve.Direction
 				rotationAngle = math.degrees(vector.AngleTo(XYZ.BasisX))
-			elif isinstance(item,Instance):
-				trans=item.GetTotalTransform()
-				rotationAngle = math.degrees(trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
 			else:
 				# sketch-based elements (ceiling, floor and roof)
 				if hasattr(item, "FindInserts"):
@@ -60,9 +63,9 @@ def GetRotation(item):
 			rotationAngle=0
 	return round(rotationAngle,3)
 	
-locations = [GetRotation(x) for x in items]
+rotations = [GetRotation(x) for x in items]
 
-OUT = locations</Script>
+OUT = rotations</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="45294bf0-4385-499a-adf0-1599385cd2e2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="29.1999999999999" y="225.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//element or Dynamo line&#xD;&#xA;element" />

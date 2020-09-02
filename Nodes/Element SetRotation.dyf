@@ -41,19 +41,22 @@ for angle, element in zip(angles, elements):
 	if hasattr(element, "Location"):
 		loc = element.Location
 		if loc:	
+			# Annotation symbol, importInstance and linkInstance
+			if hasattr(element, "GetTotalTransform"):
+				trans=element.GetTotalTransform()
+				loca = trans.Origin
+				rot = -trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ)
 			# point-based elements (e.g. most loadable families)
-			if isinstance(loc,LocationPoint):
+			elif isinstance(loc,LocationPoint):
 				loca=loc.Point
 				if hasattr(loc, "Rotation"):
 					rot=loc.Rotation
+				# Group, assembly
+				else:rot = 0
 			# line-based elements (e.g. walls)
 			elif isinstance(loc,LocationCurve):
 				loca=loc.Curve.Evaluate(0.5,True)
 				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
-			elif isinstance(element,Instance):
-				trans=element.GetTotalTransform()
-				loca = trans.Origin
-				rot = -trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ)
 			else:
 				box = element.get_BoundingBox(None)
 				loca = (box.Min+box.Max)/2
