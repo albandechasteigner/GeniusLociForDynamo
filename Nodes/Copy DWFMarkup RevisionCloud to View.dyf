@@ -49,12 +49,14 @@ for vp in viewports:
 		scale=vp.get_Parameter(BuiltInParameter.VIEW_SCALE).AsInteger()
 		trans1 = SubTransaction(doc)
 		trans1.Start()
-		view.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)
+		try:
+			view.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)
+		except:pass
 		BC = vp.GetBoxCenter()
 		if view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
 			viewCenter= (view.CropBox.Min + view.CropBox.Max)/2

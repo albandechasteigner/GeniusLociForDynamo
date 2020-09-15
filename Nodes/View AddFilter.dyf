@@ -4,7 +4,7 @@
     <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
   </NamespaceResolutionMap>
   <Elements>
-    <PythonNodeModels.PythonNode guid="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" type="PythonNodeModels.PythonNode" nickname="Python Script" x="360.4" y="326.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="4">
+    <PythonNodeModels.PythonNode guid="42c603f7-9cd2-40bb-a8e6-2d74ef6ee15e" type="PythonNodeModels.PythonNode" nickname="Python Script" x="349.759661734509" y="399.488411235034" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="4">
       <PortInfo index="0" default="False" />
       <PortInfo index="1" default="False" />
       <PortInfo index="2" default="False" />
@@ -34,7 +34,6 @@ nameFilter = UnwrapElement(IN[1])
 override = IN[2]
 visible = IN[3]
 
-outViews = []
 if isinstance (nameFilter, basestring):
 	filter = getfilterByName(nameFilter)
 elif isinstance (nameFilter, FilterElement):
@@ -48,27 +47,26 @@ if filter:
 				if override:
 					view.SetFilterOverrides(filter.Id,override)
 				view.SetFilterVisibility(filter.Id, visible)	
-				outViews.append(view)
 	TransactionManager.Instance.TransactionTaskDone()
 	
-	OUT = outViews
+	OUT = IN[0]
 else:
 	OUT = "Filter not found"</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3796cbcb-c18a-4f0e-8d8c-3a43a8cf27a4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="570.509016269106" y="323.65879939815" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3796cbcb-c18a-4f0e-8d8c-3a43a8cf27a4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="573.759661734509" y="399.488411235034" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="View" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0ecdbb24-aa64-4454-b871-edde95333d93" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-287.989692800089" y="310.821705702949" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="0ecdbb24-aa64-4454-b871-edde95333d93" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-291.240338265491" y="293.488411235034" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="51aa5939-0a21-4f34-a8a9-4ecdce2fe596" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-95.7175662389371" y="390.259714695843" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//String (FilterElement's name), &#xD;&#xA;//SelectionFilter or ParameterFilter&#xD;&#xA;filterElement" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="51aa5939-0a21-4f34-a8a9-4ecdce2fe596" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-291.240338265491" y="376.488411235034" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String (FilterElement's name) or &#xD;&#xA;//SelectionFilter or ParameterFilter&#xD;&#xA;filterElement" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="86d28574-efde-49a7-a1c1-5bc4f5f408bd" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-93.8011322266535" y="491.865365904087" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="86d28574-efde-49a7-a1c1-5bc4f5f408bd" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-291.240338265491" y="486.488411235034" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//Revit.DB.OverrideGraphicSettings&#xD;&#xA;//Optional input&#xD;&#xA;overrides:var[]..[]=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b2eddf42-b476-41e3-9f7d-85b992722205" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-95.89522240034" y="580.155116767119" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b2eddf42-b476-41e3-9f7d-85b992722205" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-291.240338265491" y="597.488411235034" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//If True the filter will be visible&#xD;&#xA;visible:bool=true" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
   </Elements>

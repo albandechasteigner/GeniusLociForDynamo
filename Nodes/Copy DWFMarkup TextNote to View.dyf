@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="-260.702276570477" Y="150.684193548666" zoom="0.496186487382813" ScaleFactor="1" Name="Copy DWFMarkup TextNote to View" Description="Copies the text note from the Markup objects for the given or active sheet.&#xD;&#xA;Please note that markups are found by name (label) and therefore depend on the Revit localization (language)." ID="ba42cce0-4772-4c73-8b7c-1aa80291a1c5" Category="GeniusLoci.DWF">
+<Workspace Version="1.3.4.6666" X="44.2150338928456" Y="210.78954485288" zoom="0.382295833359047" ScaleFactor="1" Name="Copy DWFMarkup TextNote to View" Description="Copies the text note from the Markup objects for the given or active sheet.&#xD;&#xA;Please note that markups are found by name (label) and therefore depend on the Revit localization (language)." ID="ba42cce0-4772-4c73-8b7c-1aa80291a1c5" Category="GeniusLoci.DWF">
   <NamespaceResolutionMap>
     <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
     <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
@@ -8,7 +8,7 @@
       <PortInfo index="0" default="False" />
       <Symbol value="DWFMarkup" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="798fafb8-fd8c-46eb-a4e1-b026b28e517c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1236.80423854188" y="239.449848623504" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="798fafb8-fd8c-46eb-a4e1-b026b28e517c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1236.80423854188" y="239.449848623504" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
       <PortInfo index="0" default="False" />
     </Dynamo.Graph.Nodes.CodeBlockNodeModel>
     <PythonNodeModels.PythonNode guid="70c59a31-51c1-4f42-93fa-f8f106578ba1" type="PythonNodeModels.PythonNode" nickname="Python Script" x="1078.61457962578" y="234.747296078171" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
@@ -51,7 +51,16 @@ filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),
 filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"cloud",False),True))
 filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"a main",False),True))
 filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"hand",False),True))
+filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Cote",False),True))
+filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Dimension",False),True))
 orFilter = LogicalAndFilter(filters)
+
+ueWrapper = None
+wrappers = clr.GetClrType(Revit.Elements.ElementWrapper).GetMethods()
+for w in wrappers:
+	if w.ToString().startswith("Revit.Elements.UnknownElement"):
+		ueWrapper = w
+		break
 
 def convert(centr):
 	if view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan:
@@ -75,12 +84,15 @@ for vp in viewports:
 		scale=vp.get_Parameter(BuiltInParameter.VIEW_SCALE).AsInteger()
 		trans1 = SubTransaction(doc)
 		trans1.Start()
-		view.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)
-		view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)
+		try:
+			view.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)
+			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)
+		except: 
+			pass
 		BC = vp.GetBoxCenter()
 		if view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation:
 			viewCenter = (view.CropBox.Min + view.CropBox.Max)/2
@@ -103,18 +115,25 @@ textTypeId = FilteredElementCollector(doc).OfClass(TextNoteType).FirstElementId(
 
 types = FilteredElementCollector(doc).OfClass(FamilySymbol).ToElements()
 
-dwfs,text=[],[]
+dwfs,texts,labels=[],[],[]
 TransactionManager.Instance.EnsureInTransaction(doc)
 for dwf in dwfMarkups:
 	if all(famType.FamilyName.lower() not in dwf.Name.lower() for famType in types):
 		box=dwf.BoundingBox[activeView]
 		centr=XYZ(box.Min.X,box.Max.Y,0)	
 		label=dwf.get_Parameter(BuiltInParameter.MARKUPS_LABEL).AsString()
-		text.append(TextNote.Create(doc, view.Id, convert(centr), label, textTypeId))
+		labels.append(label)
+		textNote=TextNote.Create(doc, view.Id, convert(centr), label, textTypeId)
+		try: check = Revit.Elements.ElementWrapper.Wrap(textNote, True)
+		except: check = None
+		if check is None:
+			texts.append(ueWrapper.Invoke(None, (textNote, False)))
+		else:
+			texts.append(textNote)
 		dwfs.append(dwf)
 TransactionManager.Instance.TransactionTaskDone()
 
-OUT = dwfs,text</Script>
+OUT = dwfs,texts, labels</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f63b9835-f3c5-41ee-9c9c-7d66e0af1517" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="509.2" y="233.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="sheet:var[]..[]=Revit.Application.Document.Current.ActiveView" />
@@ -123,10 +142,15 @@ OUT = dwfs,text</Script>
       <PortInfo index="0" default="False" />
       <Symbol value="TextNote" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="bbc69086-66c4-4ea1-9384-7fa3f8490633" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1363.90315267587" y="366.700850590462" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="String" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
   </Elements>
   <Connectors>
     <Dynamo.Graph.Connectors.ConnectorModel start="798fafb8-fd8c-46eb-a4e1-b026b28e517c" start_index="0" end="c7080a4e-47a6-46b8-8e16-d2c5884af319" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="798fafb8-fd8c-46eb-a4e1-b026b28e517c" start_index="1" end="d651aa13-5710-4649-98f2-83d7265c57a6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="798fafb8-fd8c-46eb-a4e1-b026b28e517c" start_index="2" end="bbc69086-66c4-4ea1-9384-7fa3f8490633" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="70c59a31-51c1-4f42-93fa-f8f106578ba1" start_index="0" end="798fafb8-fd8c-46eb-a4e1-b026b28e517c" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="f63b9835-f3c5-41ee-9c9c-7d66e0af1517" start_index="0" end="70c59a31-51c1-4f42-93fa-f8f106578ba1" end_index="0" portType="0" />
   </Connectors>

@@ -1,29 +1,29 @@
 <Workspace Version="1.3.4.6666" X="-95.6328696606048" Y="31.5778623361883" zoom="0.784369328044827" ScaleFactor="1" Name="Element Change Level" Description="Change the element to the selected level without moving the element.&#xD;&#xA;Doesn't work with hosted family (Wall Based) and Work Plane based family (without Reference Level or with read-only Schedule Level)." ID="1ad046da-824d-44a1-b168-3fbe0c012b3f" Category="GeniusLoci.Level">
   <NamespaceResolutionMap />
   <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="51cf98c5-9d88-40d9-bde7-ce8734b1a19f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="311.2" y="232" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="51cf98c5-9d88-40d9-bde7-ce8734b1a19f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="266.4" y="229.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="element" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9551a4c8-6405-4b74-98f3-c4ec49ed6f19" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="306.4" y="311.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9551a4c8-6405-4b74-98f3-c4ec49ed6f19" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="266.4" y="313.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="level" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7d418a37-433a-4c3c-a1b6-2c03f54b4999" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="639.2" y="260" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7d418a37-433a-4c3c-a1b6-2c03f54b4999" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.2" y="258.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Result" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <PythonNodeModels.PythonNode guid="e6699aef-9072-415a-83b9-298b26c90097" type="PythonNodeModels.PythonNode" nickname="Python Script" x="433.6" y="252" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+    <PythonNodeModels.PythonNode guid="e6699aef-9072-415a-83b9-298b26c90097" type="PythonNodeModels.PythonNode" nickname="Python Script" x="454.8" y="258.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
       <PortInfo index="0" default="False" />
       <PortInfo index="1" default="False" />
-      <Script>#Inspired by https://forum.dynamobim.com/t/level-parameter-bug-read-only/5781/4
-#Alban de Chasteigner 2020
+      <Script>#Alban de Chasteigner 2020
 #twitter : @geniusloci_bim
 #geniusloci.bim@gmail.com
 
 import clr
 clr.AddReference('RevitAPI')
+import Autodesk
 from Autodesk.Revit.DB import *
 
-clr.AddReference("RevitServices")
+clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
 from RevitServices.Transactions import TransactionManager
@@ -66,8 +66,17 @@ for x in element:
 	elif x.Category.Id == ElementId(BuiltInCategory.OST_StructuralColumns):
 		object_param_level =  x.get_Parameter(BuiltInParameter.FAMILY_BASE_LEVEL_PARAM)
 		object_param_offset = x.get_Parameter(BuiltInParameter.SCHEDULE_BASE_LEVEL_OFFSET_PARAM)
-	#familyinstances Not Schedule Level
-	elif hasattr(x, "Symbol") and doc.GetElement(x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId())== None :	
+	#BuildingPads
+	elif isinstance(x, Autodesk.Revit.DB.Architecture.BuildingPad):
+		#Read-Only BIP
+		#object_param_level = x.get_Parameter(BuiltInParameter.SCHEDULE_LEVEL_PARAM)
+		if x.LookupParameter("Level") != None :
+			object_param_level = x.LookupParameter("Level")
+		elif x.LookupParameter("Niveau") != None :
+			object_param_level = x.LookupParameter("Niveau")
+		object_param_offset = x.get_Parameter(BuiltInParameter.BUILDINGPAD_HEIGHTABOVELEVEL_PARAM)
+	#Familyinstances without Schedule Level
+	elif hasattr(x, "Symbol") and doc.GetElement(x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId()) == None :	
 		try:
 			object_param_level = x.get_Parameter(BuiltInParameter.FAMILY_LEVEL_PARAM)
 			object_param_offset = x.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM)
@@ -81,7 +90,7 @@ for x in element:
 	except:
 		pass
 		
-	#system families
+	#System families
 	if hasattr(x, "ConnectorManager") :
 		object_param_level = x.get_Parameter(BuiltInParameter.RBS_START_LEVEL_PARAM)
 	elif x.Category.Id == ElementId(BuiltInCategory.OST_StructuralFraming):
@@ -97,8 +106,8 @@ for x in element:
 		if round(x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION).AsDouble(),10) == 0 :
 			newoffset = (x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION)).Set(x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION).AsDouble()+1)
 			object_newoffset = (x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION)).Set(x.get_Parameter(BuiltInParameter.TRUSS_ELEMENT_END0_ELEVATION).AsDouble()-1)
-	#familyinstances Schedule Level
-	elif hasattr(x, "Symbol") and doc.GetElement(x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId())!= None :
+	#Familyinstances with Schedule Level
+	elif hasattr(x, "Symbol") and doc.GetElement(x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId()) != None :
 		object_param_level = x.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM)
 		
 	try:
@@ -120,6 +129,6 @@ OUT = result</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-37.5173759460449" eyeY="40.6438217163086" eyeZ="181.333984375" lookX="37.5173759460449" lookY="-40.6438217163086" lookZ="-181.333984375" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

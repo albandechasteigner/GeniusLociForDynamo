@@ -1,7 +1,7 @@
 <Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Element GetRotation" Description="Calculates the rotation angle between the given element and the X axis.&#xD;&#xA;Works for point, line, sketch based elements and link instances." ID="1e33ecff-42cd-41a3-8cac-d414dcc8fde9" Category="GeniusLoci.Element">
   <NamespaceResolutionMap />
   <Elements>
-    <PythonNodeModels.PythonNode guid="b8acc724-744e-4a99-b3e8-2022c971aa6f" type="PythonNodeModels.PythonNode" nickname="Python Script" x="277.6" y="228.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+    <PythonNodeModels.PythonNode guid="b8acc724-744e-4a99-b3e8-2022c971aa6f" type="PythonNodeModels.PythonNode" nickname="Python Script" x="276" y="228.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
       <PortInfo index="0" default="False" />
       <Script>#Alban de Chasteigner 2020
 #twitter : @geniusloci_bim
@@ -56,11 +56,14 @@ def GetRotation(item):
 							rotationAngle = math.degrees(abs(trans.BasisY.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ)-math.pi))
 				else:
 					rotationAngle=0
-			if rotationAngle&gt;180:
-				rotationAngle=abs(rotationAngle-360)
-			else:rotationAngle
 		else:
 			rotationAngle=0
+	if rotationAngle==180:
+		rotationAngle=0
+	elif rotationAngle&gt;180:
+		rotationAngle=abs(rotationAngle-360)
+	else:
+		rotationAngle
 	return round(rotationAngle,3)
 	
 rotations = [GetRotation(x) for x in items]
