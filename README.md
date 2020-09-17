@@ -11,7 +11,7 @@ Genius Loci is compatible with Dynamo 1.3.x and new versions 2.x.
 Feedbacks, [issues](https://github.com/albandechasteigner/GeniusLociForDynamo/issues), [pull request](https://github.com/albandechasteigner/GeniusLociForDynamo/pulls) and suggestions for improvement are welcome and can be reported in the repository.
 
 Some custom nodes were inspired by the brilliant authors of the packages like archi-lab.net, Clockwork and Springs and adapted to meet my needs.
-Thanks to the original authors for their great Python script and for everything they taught me.
+Thanks to the original authors for their great Python scripts and for everything they taught me by analyzing them..
 
 ### INSTALLATION
 Installation is simple - just use Dynamo's built-in package manager and search for `Genius Loci`.
