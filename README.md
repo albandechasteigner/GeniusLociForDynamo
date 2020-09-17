@@ -1,4 +1,6 @@
-Genius Loci is a compilation of 250+ custom nodes for the [Dynamo](http://www.dynamobim.com/) environment.
+![Logo Genius Loci](https://github.com/albandechasteigner/GeniusLociForDynamo/blob/master/Logo%20Genius%20Loci.png)
+
+***Genius Loci*** is a compilation of 250+ custom nodes for the [Dynamo](http://www.dynamobim.com/) environment.
 The vast majority of nodes are written in Python and related to Revit.
 Particular emphasis is placed on interoperability and many nodes can handle with DWG, DWF, NWC and IFC files.
 Another goal is to interact easily with linked files and Revit documents. 
