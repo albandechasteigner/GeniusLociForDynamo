@@ -1,3 +1,5 @@
+<a href="https://twitter.com/geniusloci_bim?ref_src=twsrc%5Etfw" class="twitter-follow-button" data-show-count="false">Follow @geniusloci_bim</a><script async src="https://platform.twitter.com/widgets.js" charset="utf-8"></script>
+
 ![Logo Genius Loci](https://github.com/albandechasteigner/GeniusLociForDynamo/blob/master/Logo%20Genius%20Loci.png)
 
 ***Genius Loci*** is a compilation of 250+ custom nodes for the [Dynamo](http://www.dynamobim.com/) environment.
