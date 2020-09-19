@@ -1,4 +1,4 @@
-[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/dwyl/esta/issues)
+[![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/albandechasteigner/GeniusLociForDynamo/issues)
 ![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen.svg)
 [![Current version](https://img.shields.io/badge/current%20version-2020.9.17-brightgreen.svg)](http://dynamopackages.com/)
 [![Follow me on Twitter for updates](https://img.shields.io/twitter/follow/geniusloci_bim.svg?label=Follow&style=social)](https://twitter.com/geniusloci_bim) 
