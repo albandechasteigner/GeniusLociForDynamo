@@ -22,9 +22,6 @@ from Autodesk.Revit.DB import *
 clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.GeometryConversion)
 
 def tolist(x):
     if hasattr(x,'__iter__'): return x

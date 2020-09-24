@@ -37,6 +37,11 @@ def GetLevel(item):
 	if (item.GetType().ToString() == "Autodesk.Revit.DB.Mechanical.Duct" or "Autodesk.Revit.DB.Electrical.Conduit"):
 		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.RBS_START_LEVEL_PARAM).AsElementId())
 		except: pass
+	if hasattr(item, "OwnerViewId"):
+		view = item.Document.GetElement(item.OwnerViewId)
+		if hasattr(view, "GenLevel"):
+			val = view.GenLevel
+			if val: return val
 	if not val:
 		try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.INSTANCE_REFERENCE_LEVEL_PARAM).AsElementId())
 		except: 

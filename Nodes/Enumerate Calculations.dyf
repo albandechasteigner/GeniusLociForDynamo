@@ -1,0 +1,27 @@
+<Workspace Version="1.3.4.6666" X="-147.116449676059" Y="78.4050897001376" zoom="1.26333177263822" ScaleFactor="1" Name="Enumerate Calculations" Description="Enumerates the calculations levels for the MEP system type. &#xD;&#xA;For use with the &quot;Set SystemType Properties&quot; node." ID="caff0f7a-18ac-4108-9561-b961f583aa8e" Category="GeniusLoci.MEP">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="eaea69af-2371-47dc-91ab-0ea7804ea1ee" type="PythonNodeModels.PythonNode" nickname="Python Script" x="433.030956200737" y="132.549583800582" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import Mechanical
+import System
+
+OUT = System.Enum.GetValues(Autodesk.Revit.DB.Mechanical.SystemCalculationLevel)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="751cf896-3812-4e8f-b4f4-85a538f58c18" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="564.791842478976" y="134.791560978068" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Calculations" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="eaea69af-2371-47dc-91ab-0ea7804ea1ee" start_index="0" end="751cf896-3812-4e8f-b4f4-85a538f58c18" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

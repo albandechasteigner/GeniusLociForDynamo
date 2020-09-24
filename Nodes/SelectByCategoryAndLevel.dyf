@@ -20,7 +20,6 @@
 # Grimshaw Architects, http://grimshaw-architects.com/
 # Archi-lab, http://wwww.archi-lab.net
 
-# Default imports
 import clr
 clr.AddReference('RevitAPI')
 import Autodesk
@@ -28,9 +27,8 @@ from Autodesk.Revit.DB import *
 clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
-
-#Import Collections
-from System.Collections.Generic import *
+clr.AddReference('RevitNodes')
+import Revit
 import System
 
 def tolist(x):
@@ -42,7 +40,9 @@ cats = tolist(IN[1])
 catlist = []
 
 for cat in cats:
-	bic = System.Enum.ToObject(BuiltInCategory, cat.Id)
+	if isinstance(cat, Revit.Elements.Category): id=cat.Id
+	else: id=cat.Id.IntegerValue
+	bic = System.Enum.ToObject(BuiltInCategory, id)
 	for levelIn in levelInput :
 		doc=levelIn.Document
 		levelFilter = ElementLevelFilter(levelIn.Id)
