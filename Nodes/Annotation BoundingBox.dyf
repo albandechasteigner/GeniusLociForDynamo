@@ -3,28 +3,17 @@
   <Elements>
     <PythonNodeModels.PythonNode guid="ea62f5d5-131c-424d-8f99-651b51bfb96b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="656.675677721371" y="284.477202679528" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
       <PortInfo index="0" default="False" />
-      <Script>#Based on a kennyb6's script
-import clr
-clr.AddReference('ProtoGeometry')
-from Autodesk.DesignScript.Geometry import *
+      <Script>import clr
 clr.AddReference('RevitNodes')
 import Revit
-# Import DocumentManager
-clr.AddReference('RevitServices')
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-doc = DocumentManager.Instance.CurrentDBDocument
 clr.ImportExtensions(Revit.GeometryConversion)
 
-annotations=UnwrapElement(IN[0])
-if not hasattr(annotations, '__iter__'):
-    annotations = [annotations]
-
+annotations=UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
 bbox = []
 
 for anno in annotations:
     viewId = anno.OwnerViewId
-    view = doc.GetElement(viewId)
+    view = anno.Document.GetElement(viewId)
     bbox.append(anno.BoundingBox[view].ToProtoType())
 
 if isinstance(IN[0], list): OUT = bbox

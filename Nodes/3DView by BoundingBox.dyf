@@ -1,15 +1,15 @@
 <Workspace Version="1.3.4.6666" X="-280.967276858415" Y="265.743005781289" zoom="1.16438980805626" ScaleFactor="1" Name="3DView by BoundingBox" Description="Use a boundingbox to create a new 3D View with a specified name.&#xD;&#xA;Note: Use the &quot;Remove Special Characters from String&quot; node to obtain a view name without prohibited characters." ID="42548128-8606-41a0-920b-3cfa3a66d961" Category="GeniusLoci.View">
   <NamespaceResolutionMap />
   <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1f37198f-21bd-4b82-805e-fb8b8022b4ac" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="291.585489259452" y="14.5845867083083" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Section box&#xD;&#xA;boundingBox" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1f37198f-21bd-4b82-805e-fb8b8022b4ac" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="250.705708561732" y="13.8975315705315" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Future Section box&#xD;&#xA;boundingBox" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="c965bdcc-3e5f-4590-8a09-6aba97526350" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="665.115303176804" y="44.9801991454159" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Views" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="def2cd54-e3cb-400d-9a4d-2919d36027e5" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="326.086828276943" y="100.453846562683" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="viewname" />
+      <Symbol value="viewName" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <PythonNodeModels.PythonNode guid="9a773cf9-4f25-44fd-86b7-a2812569fbad" type="PythonNodeModels.PythonNode" nickname="Python Script" x="493.462008990311" y="37.7996033682453" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
       <PortInfo index="0" default="False" />
@@ -18,6 +18,10 @@
 clr.AddReference('RevitAPI')
 import Autodesk
 from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitNodes')
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
 
 clr.AddReference('RevitServices')
 import RevitServices
@@ -42,7 +46,11 @@ for i in viewTypeColl:
 		continue
 
 for bbox,viewName in zip(bboxs,viewNames):
+	newmax = UnwrapElement(bbox.MaxPoint).ToRevitType()
+	newmin = UnwrapElement(bbox.MinPoint).ToRevitType()
 	newbox = BoundingBoxXYZ()
+	newbox.Max = newmax
+	newbox.Min = newmin
 	try:
 		TransactionManager.Instance.EnsureInTransaction(doc)
 		view = View3D.CreateIsometric(doc, viewType.Id)

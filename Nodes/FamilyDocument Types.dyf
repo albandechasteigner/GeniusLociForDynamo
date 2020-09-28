@@ -1,0 +1,51 @@
+<Workspace Version="1.3.4.6666" X="96.7505175" Y="61.15473" zoom="0.70823125" ScaleFactor="1" Name="FamilyDocument Types" Description="Retrieves the family type names in the family document." ID="834e7a8b-874d-402e-ac8c-c62dc71fd898" Category="GeniusLoci.Family">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="972848a5-2e02-496f-8cb1-4ac9c97ff5ad" type="PythonNodeModels.PythonNode" nickname="Python Script" x="220.8" y="293.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import Document
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+
+inputdocs = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+typeList=[]
+
+for inputdoc in inputdocs :
+	if inputdoc == None:
+		doc = DocumentManager.Instance.CurrentDBDocument
+	elif isinstance (inputdoc,Autodesk.Revit.DB.Document):
+		doc = inputdoc
+	else: doc = DocumentManager.Instance.CurrentDBDocument
+	types = []
+	if doc.IsFamilyDocument:
+		for type in doc.FamilyManager.Types :
+			types.append(type.Name)
+		typeList.append(types)
+
+if isinstance(IN[0], list): OUT = typeList 
+else: OUT = typeList[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="da1ccd84-075d-4257-9d1c-ab87f163e9a4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="360.041367138205" y="292.423110389438" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="TypeName" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e3d23d6e-8c2e-48a8-812e-6411c2070093" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-146.774824607075" y="290.364580777818" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Use only to query a Family Document&#xD;&#xA;familydocument : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="972848a5-2e02-496f-8cb1-4ac9c97ff5ad" start_index="0" end="da1ccd84-075d-4257-9d1c-ab87f163e9a4" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="e3d23d6e-8c2e-48a8-812e-6411c2070093" start_index="0" end="972848a5-2e02-496f-8cb1-4ac9c97ff5ad" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

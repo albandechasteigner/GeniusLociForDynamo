@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="25.7585903441312" Y="17.2244399662094" zoom="0.631317243097572" ScaleFactor="1" Name="SelectByCategoryAndView" Description="Collects elements by Category and View in the active or given document." ID="64218d82-6e92-4d4d-90cb-05646d085ab4" Category="GeniusLoci.Select">
+<Workspace Version="1.3.4.6666" X="25.7585903441312" Y="17.2244399662094" zoom="0.631317243097572" ScaleFactor="1" Name="SelectByCategoryAndView" Description="Collects elements by Category or Element Type and View in the active or given document." ID="98f14be9-1567-4dd0-af6c-da8a1d7ddb19" Category="GeniusLoci.Select">
   <NamespaceResolutionMap>
     <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
     <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
@@ -34,7 +34,9 @@ linkedEl,elements = [],[]
 for view in views:
 	doc=view.Document
 	for cat in cats:
-		collector = FilteredElementCollector(doc,view.Id).OfCategoryId(cat.Id).ToElements()
+		if isinstance(cat, Category):
+			collector = FilteredElementCollector(doc,view.Id).OfCategoryId(cat.Id).ToElements()
+		else: collector = FilteredElementCollector(doc,view.Id).OfClass(cat).ToElements()
 		linkedEl.append(collector)
 	elements.append(linkedEl)
 
@@ -44,8 +46,8 @@ else: OUT = elements[0]</Script>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="09c3e538-f09f-4e4f-af10-2560be6cea9e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-89.6139288655884" y="244.397035452525" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//View of current or given document&#xD;&#xA;view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="89ae866e-44b6-4484-bfdf-39db12b30624" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="318.90401038665" y="348.446625064029" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="category" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="89ae866e-44b6-4484-bfdf-39db12b30624" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="302.430517679604" y="350.347412684073" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="CategoryOrType" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
   </Elements>
   <Connectors>
