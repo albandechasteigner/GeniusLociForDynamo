@@ -10,7 +10,7 @@ result = []
 for char in strings:
 	#remove spaces
 	#result.append(''.join(c for c in char if c.isalnum()))
-	result.append("".join(re.findall(r"[a-zA-Z0-9 ]+", char) ))
+	result.append("".join(re.findall(r"[a-zA-Z0-9 _éè-]+", char) ))
 	
 if isinstance(IN[0], list): OUT = result 
 else: OUT = result[0]

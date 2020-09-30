@@ -7,20 +7,44 @@
     <ClassMap partialName="Autodesk.DesignScript.Geometry.Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
   </NamespaceResolutionMap>
   <Elements>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="740bd1df-fc2f-4928-aee5-e3cc4f652782" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="129" y="207" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="geometry1 = Autodesk.DesignScript.Geometry.Transform(point, CoordinateSystem.Identity(), CoordinateSystem.ByOrigin(Coordinates.BasePoint()));" ShouldFocus="false">
-      <PortInfo index="0" default="False" />
-    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="543d9003-8c8a-4003-8f6f-a127dd291194" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-351.315555867322" y="202.247543519873" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="543d9003-8c8a-4003-8f6f-a127dd291194" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-84.4910456178389" y="203.314321924916" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//Point in Project BasePoint Coordinate System&#xD;&#xA;point: Autodesk.DesignScript.Geometry.Point[]..[]" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5e13bfc4-36be-4d08-9501-96436d7d2eb9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="941.533464631644" y="204.381100329959" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5e13bfc4-36be-4d08-9501-96436d7d2eb9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="674.708954382161" y="203.314321924916" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="//Point in Internal Origin Coordinate System&#xD;&#xA;Point" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="270a7de6-2dbe-4218-b5e4-7551e9e634f9" type="PythonNodeModels.PythonNode" nickname="Python Script" x="450.308954382161" y="203.314321924916" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import FilteredElementCollector, BuiltInCategory
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+clr.AddReference('RevitNodes')
+import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
+
+pts = [pt.ToXyz(True) for pt in IN[0]] if isinstance(IN[0],list) else [IN[0].ToXyz(True)]
+
+# Collect Project Basepoint...
+basePt = FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_ProjectBasePoint).FirstElement()
+pbp = basePt.get_BoundingBox(None).Min
+
+translatedPoint = [pt.Add(pbp).ToPoint() for pt in pts]
+
+if isinstance(IN[0], list): OUT = translatedPoint
+else: OUT = translatedPoint[0]</Script>
+    </PythonNodeModels.PythonNode>
   </Elements>
   <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="740bd1df-fc2f-4928-aee5-e3cc4f652782" start_index="0" end="5e13bfc4-36be-4d08-9501-96436d7d2eb9" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="543d9003-8c8a-4003-8f6f-a127dd291194" start_index="0" end="740bd1df-fc2f-4928-aee5-e3cc4f652782" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="543d9003-8c8a-4003-8f6f-a127dd291194" start_index="0" end="270a7de6-2dbe-4218-b5e4-7551e9e634f9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="270a7de6-2dbe-4218-b5e4-7551e9e634f9" start_index="0" end="5e13bfc4-36be-4d08-9501-96436d7d2eb9" end_index="0" portType="0" />
   </Connectors>
   <Notes />
   <Annotations />
