@@ -18,12 +18,18 @@ clr.AddReference("RevitServices")
 import RevitServices
 from RevitServices.Persistence import DocumentManager
 
+#Import Collections
+from System.Collections.Generic import List
+import System
+
 doc = DocumentManager.Instance.CurrentDBDocument
 activeView = doc.ActiveView
 
+filters = List[ElementFilter]()
 pvp = ParameterValueProvider(ElementId(BuiltInParameter.IMPORT_SYMBOL_NAME))
-fRule = FilterStringRule(pvp, FilterStringBeginsWith(),"Markup",False)
-filter = ElementParameterFilter(fRule)
+filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringBeginsWith(),"Markup",False)))
+filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringBeginsWith(),"Objet d'annotation",False)))
+filter = LogicalOrFilter(filters)
 
 boolean =IN[0]
 

@@ -1,9 +1,9 @@
-<Workspace Version="1.3.4.6666" X="-153.61044121333" Y="85.383875886456" zoom="0.590637259413872" ScaleFactor="1" Name="Collector of PlacedViews" Description="This node will collect all views placed on sheets in the active or given document." ID="595b3f6e-bfb1-4314-9702-e4af3af12812" Category="GeniusLoci.View">
+<Workspace Version="1.3.4.6666" X="-200.492957906373" Y="38.5279028924985" zoom="0.671318258150714" ScaleFactor="1" Name="Collector of PlacedViews" Description="This node will collect all views placed on sheets in the active or given document." ID="595b3f6e-bfb1-4314-9702-e4af3af12812" Category="GeniusLoci.View">
   <NamespaceResolutionMap>
     <ClassMap partialName="DSCore.List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
   </NamespaceResolutionMap>
   <Elements>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="cd466476-4aca-453e-a28b-2d630000be9c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="553.236527714098" y="336" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="list[0];&#xA;list[1];&#xA;DSCore.List.UniqueItems(list[2]);&#xA;list[3];" ShouldFocus="false">
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="cd466476-4aca-453e-a28b-2d630000be9c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="553.236527714098" y="336" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="list[0];&#xA;DSCore.List.UniqueItems(list[1]);&#xA;DSCore.List.UniqueItems(list[2]);&#xA;list[3];" ShouldFocus="false">
       <PortInfo index="0" default="False" />
     </Dynamo.Graph.Nodes.CodeBlockNodeModel>
     <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="dd33fef2-7e4c-4126-81fe-b7464aeb2a99" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="903.848433617385" y="508.21832972004" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="DSCore.List.Flatten({l1,l2,l3},-1);" ShouldFocus="false">
@@ -103,6 +103,6 @@ OUT = sheetInstances, allScheds, legends, filter(None, parents)</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

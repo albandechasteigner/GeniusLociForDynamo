@@ -110,11 +110,11 @@ instances,dwfs = [],[]
 sT = StructuralType.NonStructural
 for dwf in dwfMarkups:
 	for famType in types:
-		if famType.FamilyName in dwf.Name:
+		if famType.ToDSType(False).Name in dwf.Name or famType.FamilyName in dwf.Name:
 			box=dwf.BoundingBox[activeView]
 			dwfs.append(dwf)
 			placement=famType.Family.FamilyPlacementType 
-			if not famType.IsActive : famTypeActivate()
+			if not famType.IsActive : famType.Activate()
 			if placement == FamilyPlacementType.ViewBased :
 				instances.append(doc.Create.NewFamilyInstance(convert(box), famType, view).ToDSType(False))
 			elif placement == FamilyPlacementType.OneLevelBased :
