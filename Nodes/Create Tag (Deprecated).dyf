@@ -1,0 +1,269 @@
+<Workspace Version="1.3.4.6666" X="-190.034367458377" Y="-41.9524451271946" zoom="0.53491931476683" ScaleFactor="1" Name="Create Tag (Deprecated)" Description="Note : This method is deprecated in Revit 2019.&#xD;&#xA;Creates a tag at a given location, of a given type and in a supplied view.&#xD;&#xA;Works also with linked rooms.&#xD;&#xA;Area tag, Multi Category tag and Material Tag have been added to the original node.&#xD;&#xA;Based on an archilab node" ID="8bb4a1b2-ceb2-414c-9886-ee799731a1b3" Category="GeniusLoci.Tag">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9d791e1c-8443-4a60-8eb0-c8d8cd9d1ffa" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1404.41877362313" y="541.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Tag" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="faa588b0-967c-46a1-8276-6d5e95a7df28" type="PythonNodeModels.PythonNode" nickname="Python Script" x="1179.61877362313" y="541.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="8">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <Script>#Copyright(c) 2015, Konrad K Sobon
+# @arch_laboratory, http://archi-lab.net
+#This node is an update to Create Annotation Tag node that can be found in archi-lab package. Thanks to Konrad K Sobon for making the original one.
+# Additions by Kulkul, T_Pover, Fcampojr and Alban de Chasteigner
+
+import clr
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+# Import Element wrapper extension methods
+clr.AddReference("RevitNodes")
+import Revit
+# Import geometry conversion extension methods
+clr.ImportExtensions(Revit.GeometryConversion)
+
+# Import DocumentManager and TransactionManager
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+import sys
+sys.path.append(r"C:\Program Files (x86)\IronPython 2.7\Lib")
+
+views = UnwrapElement(IN[0])
+elements = UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])]
+locationPts = UnwrapElement(IN[2]) if isinstance(IN[2],list) else [UnwrapElement(IN[2])]
+tagType = UnwrapElement(IN[3])
+
+tagOrientation = IN[4]
+if tagOrientation == True :
+	tagOrientation = TagOrientation.Horizontal
+	spTagOrientation = SpatialElementTagOrientation.Horizontal
+elif tagOrientation == False :
+	tagOrientation = TagOrientation.Vertical
+	spTagOrientation = SpatialElementTagOrientation.Vertical
+
+leader = IN[5]
+
+if IN[6] != None:
+	link = UnwrapElement(IN[6])
+else:
+	link = None
+	
+RunIt = IN[7]
+
+def toRvtPoint(point):
+	return point.ToXyz()
+
+def toRvtId(_id):
+	if isinstance(_id, int) or isinstance(_id, str):
+		id = ElementId(int(_id))
+		return id
+	elif isinstance(_id, ElementId):
+		return _id
+
+tagTypeId = toRvtId(tagType.Id)
+chk = []
+try:
+	errorReport = None
+	if RunIt:
+		if tagType.Category.Id == ElementId(BuiltInCategory.OST_RoomTags):
+			roomTags = []
+			if isinstance(IN[0], list):
+				for j in views:
+					for i, k in zip(elements, locationPts):
+						TransactionManager.Instance.EnsureInTransaction(doc)
+						#added the if statement to get roomId from the linked element.
+						if link != None:
+							roomId = LinkElementId(link.Id, i.Id)
+						else:
+							roomId = LinkElementId(i.Id)
+						location = Autodesk.Revit.DB.UV(toRvtPoint(k).X, toRvtPoint(k).Y)
+						roomTag = doc.Create.NewRoomTag(roomId, location, j.Id)
+						roomTag.RoomTagType = tagType
+						roomTag.TagOrientation = spTagOrientation
+						roomTag.HasLeader = leader
+						chk.append(roomId)
+						roomTags.append(roomTag)
+						TransactionManager.Instance.TransactionTaskDone()
+			else:
+				TransactionManager.Instance.EnsureInTransaction(doc)
+				for i, j in zip(elements, locationPts):
+					if link != None:
+						roomId = LinkElementId(link.Id, i.Id)
+					else:
+						roomId = LinkElementId(i.Id)
+					location = Autodesk.Revit.DB.UV(toRvtPoint(j).X, toRvtPoint(j).Y)
+					roomTag = doc.Create.NewRoomTag(roomId, location, views.Id)
+					roomTag.RoomTagType = tagType
+					roomTag.TagOrientation = spTagOrientation
+					roomTag.HasLeader = leader
+					roomTags.append(roomTag)
+				TransactionManager.Instance.TransactionTaskDone()
+			result = roomTags
+		elif tagType.Category.Id == ElementId(BuiltInCategory.OST_MEPSpaceTags):
+			TransactionManager.Instance.EnsureInTransaction(doc)
+			roomTags = []
+			if isinstance(IN[0], list):
+				for j in views:
+					for i, k in zip(elements, locationPts):
+						location = Autodesk.Revit.DB.UV(toRvtPoint(k).X, toRvtPoint(k).Y)
+						spaceTag = doc.Create.NewSpaceTag(i, location, j)
+						spaceTag.SpaceTagType = tagType
+						spaceTag.TagOrientation = spTagOrientation
+						spaceTag.HasLeader = leader
+						roomTags.append(spaceTag)
+			else:
+				for i, j in zip(elements, locationPts):
+					location = Autodesk.Revit.DB.UV(toRvtPoint(j).X, toRvtPoint(j).Y)
+					spaceTag = doc.Create.NewSpaceTag(i,location, views)
+					spaceTag.SpaceTagType = tagType
+					spaceTag.TagOrientation = spTagOrientation
+					spaceTag.HasLeader = leader
+					roomTags.append(spaceTag)
+			TransactionManager.Instance.TransactionTaskDone()
+			result = roomTags
+		elif tagType.Category.Id == ElementId(BuiltInCategory.OST_AreaTags):
+			TransactionManager.Instance.EnsureInTransaction(doc)
+			roomTags = []
+			if isinstance(IN[0], list):
+				for j in views:
+					for i,k in zip(elements, locationPts):
+						location = Autodesk.Revit.DB.UV(toRvtPoint(k).X, toRvtPoint(k).Y)
+						areaTag = doc.Create.NewAreaTag(j,i, location)
+						areaTag.AreaTagType = tagType
+						areaTag.TagOrientation = spTagOrientation
+						areaTag.HasLeader = leader
+						roomTags.append(areaTag)
+			else:
+				for i, j in zip(elements, locationPts):
+					location = Autodesk.Revit.DB.UV(toRvtPoint(j).X, toRvtPoint(j).Y)
+					areaTag = doc.Create.NewAreaTag(views,i,location)
+					areaTag.AreaTagType = tagType
+					areaTag.TagOrientation = spTagOrientation
+					areaTag.HasLeader = leader
+					roomTags.append(areaTag)
+			TransactionManager.Instance.TransactionTaskDone()
+			result = roomTags
+		elif tagType.Category.Id == ElementId(BuiltInCategory.OST_MultiCategoryTags):
+			TransactionManager.Instance.EnsureInTransaction(doc)
+			multitags = []
+			if isinstance(IN[0], list):
+				for j in views:
+					for i, k in zip(elements, locationPts):
+						location = toRvtPoint(k)
+						tag = doc.Create.NewTag(j, i, leader, TagMode.TM_ADDBY_MULTICATEGORY, tagOrientation, location)
+						tag.ChangeTypeId(tagTypeId)
+						multitags.append(tag)
+			else:
+				for i, j in zip(elements, locationPts):
+					location = toRvtPoint(j)
+					tag = doc.Create.NewTag(views, i, leader, TagMode.TM_ADDBY_MULTICATEGORY, tagOrientation, location)
+					tag.ChangeTypeId(tagTypeId)
+					multitags.append(tag)
+			TransactionManager.Instance.TransactionTaskDone()
+			result = multitags
+		elif tagType.Category.Id == ElementId(BuiltInCategory.OST_MaterialTags):
+			TransactionManager.Instance.EnsureInTransaction(doc)
+			Mattags = []
+			if isinstance(IN[0], list):
+				for j in views:
+					for i, k in zip(elements, locationPts):
+						tag = doc.Create.NewTag(j, i, leader, TagMode.TM_ADDBY_MATERIAL, tagOrientation, location)
+						tag.ChangeTypeId(tagTypeId)
+						Mattags.append(tag)
+			else:
+				for i, j in zip(elements, locationPts):
+					location = toRvtPoint(j)
+					tag = doc.Create.NewTag(views, i, leader, TagMode.TM_ADDBY_MATERIAL, tagOrientation, location)
+					tag.ChangeTypeId(tagTypeId)
+					Mattags.append(tag)
+			TransactionManager.Instance.TransactionTaskDone()
+			result = Mattags
+		else:
+			TransactionManager.Instance.EnsureInTransaction(doc)
+			tags = []
+			if isinstance(IN[0], list):
+				for j in views:
+					for i, k in zip(elements, locationPts):
+						location = toRvtPoint(k)
+						tag = doc.Create.NewTag(j, i, leader, TagMode.TM_ADDBY_CATEGORY, tagOrientation, location)
+						tag.ChangeTypeId(tagTypeId)
+						tags.append(tag)
+			else:
+				for i, j in zip(elements, locationPts):
+					location = toRvtPoint(j)
+					tag = doc.Create.NewTag(views, i, leader, TagMode.TM_ADDBY_CATEGORY, tagOrientation, location)
+					tag.ChangeTypeId(tagTypeId)
+					tags.append(tag)
+			TransactionManager.Instance.TransactionTaskDone()
+			result = tags
+	else:
+		result = "RunIt is set to False."
+except:
+	# if error accurs anywhere in the process catch it
+	import traceback
+	errorReport = traceback.format_exc()
+
+#Assign your output to the OUT variable
+if errorReport == None:
+	OUT = result
+else:
+	OUT = errorReport</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="54e53017-65d5-4750-a5bb-e27be062fd5b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="306.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//View to tag in.&#xD;&#xA;view:var[]..[]=Revit.Application.Document.Current.ActiveView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9f2bf1b5-ed11-49ff-962d-0b0ebd20f533" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="399.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Element to tag&#xD;&#xA;element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6cdb497f-3999-4bfd-ba34-25beaa516cd1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="492.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Point&#xD;&#xA;TagLocation" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6b77b191-21a3-48e8-8e6f-19c6bd19c09a" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="585.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Family Type to use&#xD;&#xA;TagType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="76775cd6-1213-4839-937d-aaad5159cb34" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="679.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Optional : Place tag horizontal, defaults to true&#xD;&#xA;horizontal : bool = true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="cdc59f8d-7358-4070-b299-1252a271c277" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="772.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Optional : Add a leader, defaults to false&#xD;&#xA;addLeader : bool = false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="eec9039d-6e10-4f7d-86f4-0c04a54ec827" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="865.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//For linked rooms&#xD;&#xA;LinkInstance:var=null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6d954858-1660-40e6-939f-3f84f23d54ca" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="554.818773623127" y="958.507229731404" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RunIt:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="faa588b0-967c-46a1-8276-6d5e95a7df28" start_index="0" end="9d791e1c-8443-4a60-8eb0-c8d8cd9d1ffa" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="54e53017-65d5-4750-a5bb-e27be062fd5b" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9f2bf1b5-ed11-49ff-962d-0b0ebd20f533" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6cdb497f-3999-4bfd-ba34-25beaa516cd1" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6b77b191-21a3-48e8-8e6f-19c6bd19c09a" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="76775cd6-1213-4839-937d-aaad5159cb34" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="cdc59f8d-7358-4070-b299-1252a271c277" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="eec9039d-6e10-4f7d-86f4-0c04a54ec827" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6d954858-1660-40e6-939f-3f84f23d54ca" start_index="0" end="faa588b0-967c-46a1-8276-6d5e95a7df28" end_index="7" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

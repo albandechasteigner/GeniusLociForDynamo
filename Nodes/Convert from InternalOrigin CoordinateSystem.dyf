@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="68.1856975131012" Y="152.526930124868" zoom="0.594053315602365" ScaleFactor="1" Name="Convert from InternalOrigin CoordinateSystem" Description="Get the location point in the 3 coordinate systems : Shared Coordinates, Project Coordinates, Relative Origin Coordinates.&#xD;&#xA;Based on a Daniel Woodcock's script." ID="cfb23751-b258-4f7b-bc1a-0139bdeadb52" Category="GeniusLoci.Geometry">
+<Workspace Version="1.3.4.6666" X="68.1856975131012" Y="152.526930124868" zoom="0.594053315602365" ScaleFactor="1" Name="Convert from InternalOrigin CoordinateSystem" Description="Get the location point in the 3 coordinate systems : Shared Coordinates, Project Coordinates, Relative Origin Coordinates." ID="cfb23751-b258-4f7b-bc1a-0139bdeadb52" Category="GeniusLoci.Geometry">
   <NamespaceResolutionMap>
     <ClassMap partialName="Autodesk.DesignScript.Geometry.Point" resolvedName="Autodesk.DesignScript.Geometry.Point" assemblyName="ProtoGeometry.dll" />
   </NamespaceResolutionMap>

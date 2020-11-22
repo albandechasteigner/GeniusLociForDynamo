@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="25.7585903441312" Y="17.2244399662094" zoom="0.631317243097572" ScaleFactor="1" Name="SelectByCategoryAndView" Description="Collects elements by Category or Element Type and View in the active or given document." ID="98f14be9-1567-4dd0-af6c-da8a1d7ddb19" Category="GeniusLoci.Select">
+<Workspace Version="1.3.4.6666" X="25.7585903441312" Y="17.2244399662094" zoom="0.631317243097572" ScaleFactor="1" Name="SelectByCategoryAndView" Description="Collects elements by Category, Element Type or Family Type and View in the active or given document." ID="98f14be9-1567-4dd0-af6c-da8a1d7ddb19" Category="GeniusLoci.Select">
   <NamespaceResolutionMap>
     <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
     <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
@@ -22,6 +22,7 @@ from Autodesk.Revit.DB import *
 clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
+import System
 
 def tolist(x):
     if hasattr(x,'__iter__'): return x
@@ -30,13 +31,20 @@ def tolist(x):
 views = tolist(UnwrapElement(IN[0]))
 cats = tolist(UnwrapElement(IN[1]))
 
+provider = ParameterValueProvider(ElementId(BuiltInParameter.ELEM_FAMILY_PARAM))
+evaluator = FilterNumericEquals()
+
 linkedEl,elements = [],[]
 for view in views:
 	doc=view.Document
 	for cat in cats:
 		if isinstance(cat, Category):
 			collector = FilteredElementCollector(doc,view.Id).OfCategoryId(cat.Id).ToElements()
-		else: collector = FilteredElementCollector(doc,view.Id).OfClass(cat).ToElements()
+		elif isinstance(cat, System.Type): 
+			collector = FilteredElementCollector(doc,view.Id).OfClass(cat).ToElements()
+		elif isinstance(cat, FamilySymbol):
+			filter = ElementParameterFilter(FilterElementIdRule(provider, evaluator, cat.Id))	
+			collector = FilteredElementCollector(doc, view.Id).OfCategoryId(cat.Category.Id).WherePasses(filter).ToElements()
 		linkedEl.append(collector)
 	elements.append(linkedEl)
 

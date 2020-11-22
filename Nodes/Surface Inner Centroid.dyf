@@ -1,0 +1,250 @@
+<Workspace Version="1.3.4.6666" X="127.583392579862" Y="196.337089700689" zoom="0.429234719989881" ScaleFactor="1" Name="Surface Inner Centroid" Description="Finds pole of inaccessibility for a given polygon. &#xD;&#xA;Calculates the visual center of a polygon (inside the polygon).&#xD;&#xA;Based on Vladimir Agafonkin's algorithm Polylabel." ID="789a7c8d-0e9a-4679-a27b-94333dbf371f" Category="GeniusLoci.Geometry">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Geometry.Surface" resolvedName="Autodesk.DesignScript.Geometry.Surface" assemblyName="ProtoGeometry.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="47f61f7e-204c-434b-b173-3e635c72a8bb" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="114.164938857204" y="292.13480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="surface:Geometry.Surface" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9b43cc70-6ba3-48e6-a8e0-4261f2481c7e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="114.164938857204" y="376.13480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number of probes&#xD;&#xA;debug:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="8c6a3564-7396-4db2-bd5a-5102037932fd" type="PythonNodeModels.PythonNode" nickname="Python Script" x="442.564938857204" y="353.13480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+
+"""Finds pole of inaccessibility for a given polygon. Based on Vladimir Agafonkin's https://github.com/mapbox/polylabel"""
+
+import clr
+clr.AddReference('ProtoGeometry')
+from Autodesk.DesignScript.Geometry import *
+
+from math import sqrt
+import time
+
+import sys
+sys.path.append(r"C:\Program Files (x86)\IronPython 2.7\Lib")
+from Queue import PriorityQueue
+inf = float("inf")
+
+mess=[]
+
+def _point_to_polygon_distance(x, y, polygon):
+    inside = False
+    min_dist_sq = inf
+
+    for ring in polygon:
+        b = ring[-1]
+        for a in ring:
+
+            if ((a[1] &gt; y) != (b[1] &gt; y) and
+                    (x &lt; (b[0] - a[0]) * (y - a[1]) / (b[1] - a[1]) + a[0])):
+                inside = not inside
+
+            min_dist_sq = min(min_dist_sq, _get_seg_dist_sq(x, y, a, b))
+            b = a
+
+    result = sqrt(min_dist_sq)
+    if not inside:
+        return -result
+    return result
+
+
+def _get_seg_dist_sq(px, py, a, b):
+    x = a[0]
+    y = a[1]
+    dx = b[0] - x
+    dy = b[1] - y
+
+    if dx != 0 or dy != 0:
+        t = ((px - x) * dx + (py - y) * dy) / (dx * dx + dy * dy)
+
+        if t &gt; 1:
+            x = b[0]
+            y = b[1]
+
+        elif t &gt; 0:
+            x += dx * t
+            y += dy * t
+
+    dx = px - x
+    dy = py - y
+
+    return dx * dx + dy * dy
+
+
+class Cell(object):
+    def __init__(self, x, y, h, polygon):
+        self.h = h
+        self.y = y
+        self.x = x
+        self.d = _point_to_polygon_distance(x, y, polygon)
+        self.max = self.d + self.h * sqrt(2)
+
+    def __lt__(self, other):
+        return self.max &lt; other.max
+
+    def __lte__(self, other):
+        return self.max &lt;= other.max
+
+    def __gt__(self, other):
+        return self.max &gt; other.max
+
+    def __gte__(self, other):
+        return self.max &gt;= other.max
+
+    def __eq__(self, other):
+        return self.max == other.max
+
+
+def _get_centroid_cell(polygon):
+    area = 0
+    x = 0
+    y = 0
+    points = polygon[0]
+    b = points[-1]  # prev
+    for a in points:
+        f = a[0] * b[1] - b[0] * a[1]
+        x += (a[0] + b[0]) * f
+        y += (a[1] + b[1]) * f
+        area += f * 3
+        b = a
+    if area == 0:
+        return Cell(points[0][0], points[0][1], 0, polygon)
+    return Cell(x / area, y / area, 0, polygon)
+    pass
+
+def polylabel(polygon, precision=1.0, debug=IN[1], with_distance=IN[2]):
+    # find bounding box
+    first_item = polygon[0][0]
+    min_x = first_item[0]
+    min_y = first_item[1]
+    max_x = first_item[0]
+    max_y = first_item[1]
+    for p in polygon[0]:
+        if p[0] &lt; min_x:
+            min_x = p[0]
+        if p[1] &lt; min_y:
+            min_y = p[1]
+        if p[0] &gt; max_x:
+            max_x = p[0]
+        if p[1] &gt; max_y:
+            max_y = p[1]
+
+    width = max_x - min_x
+    height = max_y - min_y
+    cell_size = min(width, height)
+    h = cell_size / 2.0
+
+    cell_queue = PriorityQueue()
+
+    if cell_size == 0:
+        if with_distance:
+            return [min_x, min_y], None
+        else:
+            return [min_x, min_y]
+
+    # cover polygon with initial cells
+    x = min_x
+    while x &lt; max_x:
+        y = min_y
+        while y &lt; max_y:
+            c = Cell(x + h, y + h, h, polygon)
+            y += cell_size
+            cell_queue.put((-c.max, time.time(), c))
+        x += cell_size
+
+    best_cell = _get_centroid_cell(polygon)
+
+    bbox_cell = Cell(min_x + width / 2, min_y + height / 2, 0, polygon)
+    if bbox_cell.d &gt; best_cell.d:
+        best_cell = bbox_cell
+
+    num_of_probes = cell_queue.qsize()
+    while not cell_queue.empty():
+        _, __, cell = cell_queue.get()
+
+        if cell.d &gt; best_cell.d:
+            best_cell = cell
+
+            if debug:
+                mess.append('found best {} after {} probes'.format(
+                    round(1e4 * best_cell.d) / 1e4, num_of_probes))
+
+        if cell.max - best_cell.d &lt;= precision:
+            continue
+
+        h = cell.h / 2
+        c = Cell(cell.x - h, cell.y - h, h, polygon)
+        cell_queue.put((-c.max, time.time(), c))
+        c = Cell(cell.x + h, cell.y - h, h, polygon)
+        cell_queue.put((-c.max, time.time(), c))
+        c = Cell(cell.x - h, cell.y + h, h, polygon)
+        cell_queue.put((-c.max, time.time(), c))
+        c = Cell(cell.x + h, cell.y + h, h, polygon)
+        cell_queue.put((-c.max, time.time(), c))
+        num_of_probes += 4
+
+    if debug:
+        mess.append('num probes: {}'.format(num_of_probes))
+        mess.append('best distance: {}'.format(best_cell.d))
+    if with_distance:
+        return Point.ByCoordinates(best_cell.x, best_cell.y,z),mess, best_cell.d
+    else:
+        return Point.ByCoordinates(best_cell.x, best_cell.y,z), mess
+
+surfaces = IN[0] if isinstance(IN[0],list) else [IN[0]]
+curves,points=[],[]
+
+for srf in surfaces:
+	curves = Surface.PerimeterCurves(srf)
+	for curve in curves :
+		points.append([curve.StartPoint.X,curve.StartPoint.Y])
+		z=curve.StartPoint.Z	
+
+OUT = curves,polylabel([points])</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="46450a6f-7dee-4ee2-9bbc-5781e93f1046" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="666.964938857203" y="357.348140649323" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1][0];&#xA;x[1][1];&#xA;x[1][2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="09d2fbf8-d552-4e0e-8af0-2ebc4b62f312" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="114.164938857204" y="469.13480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//returns also distance&#xD;&#xA;with_distance:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="c577008c-c04d-489f-b36e-5dfd80109563" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="882.564938857204" y="254.49480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Curves" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e7355f18-acb5-4d96-bba9-ee568738de15" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="882.564938857204" y="337.49480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Centroid" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b75e8fd2-82ab-44c6-8a5b-71a341e5cc7b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="882.564938857204" y="421.49480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="debug" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0809e3c2-ec72-4a13-8bbc-78c41a82b55e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="882.564938857204" y="504.49480731599" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Distance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="47f61f7e-204c-434b-b173-3e635c72a8bb" start_index="0" end="8c6a3564-7396-4db2-bd5a-5102037932fd" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9b43cc70-6ba3-48e6-a8e0-4261f2481c7e" start_index="0" end="8c6a3564-7396-4db2-bd5a-5102037932fd" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8c6a3564-7396-4db2-bd5a-5102037932fd" start_index="0" end="46450a6f-7dee-4ee2-9bbc-5781e93f1046" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="46450a6f-7dee-4ee2-9bbc-5781e93f1046" start_index="0" end="c577008c-c04d-489f-b36e-5dfd80109563" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="46450a6f-7dee-4ee2-9bbc-5781e93f1046" start_index="1" end="e7355f18-acb5-4d96-bba9-ee568738de15" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="46450a6f-7dee-4ee2-9bbc-5781e93f1046" start_index="2" end="b75e8fd2-82ab-44c6-8a5b-71a341e5cc7b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="46450a6f-7dee-4ee2-9bbc-5781e93f1046" start_index="3" end="0809e3c2-ec72-4a13-8bbc-78c41a82b55e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="09d2fbf8-d552-4e0e-8af0-2ebc4b62f312" start_index="0" end="8c6a3564-7396-4db2-bd5a-5102037932fd" end_index="2" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

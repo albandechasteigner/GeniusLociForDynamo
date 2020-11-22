@@ -1,21 +1,17 @@
-<Workspace Version="1.3.4.6666" X="275.773149896455" Y="-285.95079308918" zoom="0.770879480427312" ScaleFactor="1" Name="Print PDF (multiple formats)" Description="This node will allow you to initiate a printing routine from a set of views/sheets, filename, printer name, print settings with many formats and print range.&#xD;&#xA;Based on an archilab node." ID="8a5bdf4a-7aaa-483e-88de-ca0fdf28479f" Category="GeniusLoci.Printing">
+<Workspace Version="1.3.4.6666" X="195.570431165454" Y="66.9903011250366" zoom="0.469359739850143" ScaleFactor="1" Name="Print PDF (multiple formats)" Description="Initiate a printing routine from a set of views/sheets, filename, printer name, print settings with many formats and print range.&#xD;&#xA;Note: With identical names, existing PDF files will be overwritten.&#xD;&#xA;Based on an archilab node." ID="8a5bdf4a-7aaa-483e-88de-ca0fdf28479f" Category="GeniusLoci.Printing">
   <NamespaceResolutionMap />
   <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8a21623a-8d7b-4e78-8ad0-ec0f75b385e4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="581.232056122967" y="597.968200224448" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8a21623a-8d7b-4e78-8ad0-ec0f75b385e4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="467.625479425542" y="402.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Succeed" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="da3af66d-3f82-45cd-859e-6b800e1b70d4" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-342.742616928999" y="855.326361560743" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//As many filepaths as views&#xD;&#xA;//Must include : Directory + name + .pdf extension&#xD;&#xA;FilePaths" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <PythonNodeModels.PythonNode guid="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="356.432056122967" y="597.968200224448" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="7">
+    <PythonNodeModels.PythonNode guid="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="243.225479425542" y="402.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="6">
       <PortInfo index="0" default="False" />
       <PortInfo index="1" default="False" />
       <PortInfo index="2" default="False" />
       <PortInfo index="3" default="False" />
       <PortInfo index="4" default="False" />
       <PortInfo index="5" default="False" />
-      <PortInfo index="6" default="False" />
       <Script>#Copyright(c) 2015, Konrad K Sobon
 # @arch_laboratory, http://archi-lab.net
 # Revised by viktor_kuzev
@@ -23,47 +19,30 @@
 # Revised by Alban de Chasteigner
 
 import clr
-clr.AddReference('ProtoGeometry')
-from Autodesk.DesignScript.Geometry import *
-
-# Import Element wrapper extension methods
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.Elements)
-
-# Import geometry conversion extension methods
-clr.ImportExtensions(Revit.GeometryConversion)
-
 # Import DocumentManager and TransactionManager
 clr.AddReference("RevitServices")
 import RevitServices
 from RevitServices.Persistence import DocumentManager
 from RevitServices.Transactions import TransactionManager
-
 doc = DocumentManager.Instance.CurrentDBDocument
-uiapp = DocumentManager.Instance.CurrentUIApplication
-app = uiapp.Application
 
 # Import RevitAPI
 clr.AddReference("RevitAPI")
 import Autodesk
 from Autodesk.Revit.DB import *
 
-import sys
-pyt_path = r'C:\Program Files (x86)\IronPython 2.7\Lib'
-sys.path.append(pyt_path)
 import System
+import sys
+sys.path.append(r"C:\Program Files (x86)\IronPython 2.7\Lib")
+import os
 
-# The inputs to this node will be stored as a list in the IN variable.
-dataEnteringNode = IN
-
-sheets = IN[0]
-pRange = System.Enum.Parse(Autodesk.Revit.DB.PrintRange, IN[1])
-combined = IN[2]
+filePath = IN[0]
+sheets = IN[1]
+printSettings = IN[2]
 printerName = IN[3]
-printSettings = IN[4]
-filePath = IN[5]
-runIt = IN[6]
+pRange = System.Enum.Parse(Autodesk.Revit.DB.PrintRange, IN[4])
+combined = True
+runIt = IN[5]
 
 if isinstance(filePath, list):
 	s_length = len(sheets)
@@ -133,6 +112,9 @@ def PrintView(doc, sheet, pRange, printerName, combined, filePath, printSetting)
 		printManager.Apply()
 	# set file path
 	printManager.PrintToFileName = filePath
+	# delete file. will prevent prompt for override existing
+	if os.path.exists(filePath):
+		os.remove(filePath)
 	printManager.Apply()
 	# apply print setting
 	try:
@@ -148,9 +130,7 @@ def PrintView(doc, sheet, pRange, printerName, combined, filePath, printSetting)
 	printManager.SubmitPrint()
 	viewSheetSetting.Delete()
 	TransactionManager.Instance.TransactionTaskDone()
-
 	return True
-
 
 try:
 	viewSets = FilteredElementCollector(doc).OfClass(ViewSheetSet)
@@ -186,39 +166,38 @@ if errorReport is None:
 else:
 	OUT = errorReport</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7c5e18c6-1b19-463b-a2d6-3ef57fa90ed1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-186.767943877033" y="403.968200224448" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d9e8c899-26af-446b-82d4-81eacc7aaf1f" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-299.574520574458" y="227.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//As many filepaths as views&#xD;&#xA;//Must include : Directory + name + .pdf extension&#xD;&#xA;FilePaths" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="fb881e7f-811e-4909-937a-150910885711" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-299.574520574458" y="337.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="views" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="605a0ac7-64bb-4bc4-abda-576b1e1157e0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-186.767943877033" y="763.968200224448" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bc18394b-0bdb-46c4-aa6b-3452cd12d165" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-299.574520574458" y="420.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//As many printsettings as views&#xD;&#xA;PrintSetting" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="fc8b6599-1320-4f58-ac8f-9eb108f54ed3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-186.767943877033" y="680.968200224448" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bbc7620c-3a5c-4926-b84d-54aff3676a1c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-299.574520574458" y="513.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//String&#xD;&#xA;PrinterName" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="965c31f9-4bd3-4500-9495-21c43793dd49" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-186.767943877033" y="487.968200224448" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//String&#xD;&#xA;PrintRange" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bbeb1bcb-b4d0-477f-9fa3-855177b1fbfb" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-299.574520574458" y="606.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Select, Current, Visible&#xD;&#xA;PrintRange:string=&quot;Select&quot;" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ccaad3ea-25c9-4fc7-9b1e-faa0b4bf23f2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-186.767943877033" y="966.968200224448" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="098bbb2d-bb92-4cf4-8eba-f11d7e80d0a8" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-299.574520574458" y="699.005345291434" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="RunIt:bool=false" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <CoreNodeModels.Input.BoolSelector guid="d2ef61d9-9918-4e56-8ee2-6f48e9cd54c8" type="CoreNodeModels.Input.BoolSelector" nickname="Boolean" x="-186.505353361798" y="586.798331742381" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <System.Boolean>True</System.Boolean>
-    </CoreNodeModels.Input.BoolSelector>
   </Elements>
   <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="da3af66d-3f82-45cd-859e-6b800e1b70d4" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="5" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" start_index="0" end="8a21623a-8d7b-4e78-8ad0-ec0f75b385e4" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="7c5e18c6-1b19-463b-a2d6-3ef57fa90ed1" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="605a0ac7-64bb-4bc4-abda-576b1e1157e0" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="4" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="fc8b6599-1320-4f58-ac8f-9eb108f54ed3" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="3" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="965c31f9-4bd3-4500-9495-21c43793dd49" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="1" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="ccaad3ea-25c9-4fc7-9b1e-faa0b4bf23f2" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="6" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="d2ef61d9-9918-4e56-8ee2-6f48e9cd54c8" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d9e8c899-26af-446b-82d4-81eacc7aaf1f" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="fb881e7f-811e-4909-937a-150910885711" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="bc18394b-0bdb-46c4-aa6b-3452cd12d165" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="bbc7620c-3a5c-4926-b84d-54aff3676a1c" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="bbeb1bcb-b4d0-477f-9fa3-855177b1fbfb" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="098bbb2d-bb92-4cf4-8eba-f11d7e80d0a8" start_index="0" end="0d3c923c-2e4f-4126-a5b8-621b6b8c484d" end_index="5" portType="0" />
   </Connectors>
   <Notes />
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

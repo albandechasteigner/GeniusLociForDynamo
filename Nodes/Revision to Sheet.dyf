@@ -1,57 +1,45 @@
-<Workspace Version="1.3.4.6666" X="179.2" Y="-24.8" zoom="1" ScaleFactor="1" Name="Revision to Sheet" Description="Returns the ViewSheets where this RevisionCloud appears." ID="aadb7ca2-fe47-4f1d-9306-a2c3c50c0579" Category="GeniusLoci.Sheet">
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Revision to Sheet" Description="Returns the ViewSheets where this Revision participates in the sheet's revision schedule. " ID="20211dfb-5ab9-4e01-807b-18a22f28d525" Category="GeniusLoci.Sheet">
   <NamespaceResolutionMap />
   <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9ed01981-aee5-4a47-ba98-258915a2a326" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="290.4" y="444" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <PythonNodeModels.PythonNode guid="73e77f85-60c8-44ad-ba06-74fc07c2d256" type="PythonNodeModels.PythonNode" nickname="Python Script" x="389.2" y="353.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
       <PortInfo index="0" default="False" />
-      <Symbol value="Sheet" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e341dce3-5edb-44e5-8269-24a2eaf4e472" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-44.8" y="442.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="revisionCloud" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <PythonNodeModels.PythonNode guid="c7d844dc-42e7-4e2f-a0d9-1a8985122453" type="PythonNodeModels.PythonNode" nickname="Python Script" x="144.8" y="444" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
-      <PortInfo index="0" default="False" />
-      <Script>import clr
-# Import RevitAPI Classes
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+ 
+import clr
 clr.AddReference('RevitAPI')
 import Autodesk
+from Autodesk.Revit.DB import FilteredElementCollector,ViewSheet
 
-import System
-# Load System.Core assembly that contains HashSet
-clr.AddReference("System.Core")
-from System.Collections.Generic import HashSet
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
 
-def flatten_list(a, result=None):
-	if result is None:
-		result = []
-	for x in a:
-		for y in x:
-			if isinstance(y, list):
-				flatten_list(y, result)
-			else:
-				result.append(y)
-	return result
+revision = UnwrapElement(IN[0])
 
-revisions = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+sheets = FilteredElementCollector(doc).OfClass(ViewSheet).ToElements().FindAll(lambda x :  x.GetAllRevisionIds().Contains(revision.Id))
 
-iSet=[]
-for elem in revisions:
-	iSet.append(elem.GetSheetIds())
-	sheets=[]
-	for iSe in flatten_list(iSet):
-		hashSet = HashSet[Autodesk.Revit.DB.ElementId]()
-		hashSet.Add(iSe)
-		for id in hashSet :
-			sheets.append(elem.Document.GetElement(id))
-
-if isinstance(IN[0], list): OUT = sheets
-else: OUT = sheets[0]</Script>
+OUT = sheets</Script>
     </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="5d3ca297-be30-4330-ae0e-177b3238c0bf" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="216.8" y="354.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="revision:var" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="c3dbd023-dc87-48d1-a0f7-dc2c8be0bdc2" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="545.2" y="353.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Sheets" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
   </Elements>
   <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="e341dce3-5edb-44e5-8269-24a2eaf4e472" start_index="0" end="c7d844dc-42e7-4e2f-a0d9-1a8985122453" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="c7d844dc-42e7-4e2f-a0d9-1a8985122453" start_index="0" end="9ed01981-aee5-4a47-ba98-258915a2a326" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="73e77f85-60c8-44ad-ba06-74fc07c2d256" start_index="0" end="c3dbd023-dc87-48d1-a0f7-dc2c8be0bdc2" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5d3ca297-be30-4330-ae0e-177b3238c0bf" start_index="0" end="73e77f85-60c8-44ad-ba06-74fc07c2d256" end_index="0" portType="0" />
   </Connectors>
   <Notes />
   <Annotations />
   <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
 </Workspace>

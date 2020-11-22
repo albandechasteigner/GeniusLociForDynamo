@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="-247.790244761069" Y="69.8590141198049" zoom="0.823465932541053" ScaleFactor="1" Name="Collector of Views" Description="Collects all views in the active or given document." ID="c8e81411-6f5c-461e-8b9e-4bccecc03328" Category="GeniusLoci.View">
+<Workspace Version="1.3.4.6666" X="-369.301050985452" Y="128.239445412157" zoom="0.713270132042076" ScaleFactor="1" Name="Collector of Views" Description="Collects all views in the active or given document." ID="c8e81411-6f5c-461e-8b9e-4bccecc03328" Category="GeniusLoci.View">
   <NamespaceResolutionMap>
     <ClassMap partialName="DSCore.String" resolvedName="DSCore.String" assemblyName="DSCoreNodes.dll" />
     <ClassMap partialName="DSCore.List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
@@ -61,18 +61,18 @@ for i in views:
 		else:
 			continue
 
-OUT = allViews, legends, schedules, drawingSheets, (allViews+legends+schedules)</Script>
+OUT = allViews, schedules, legends, drawingSheets, (allViews+legends+schedules)</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="02809fea-a815-42e5-9f3b-6c42293edbd3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="218.555677668829" y="204.586274983739" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="6d9e72c8-0f26-46b3-b862-4aff177525aa" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1152.15567766883" y="156.732941650406" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
-      <Symbol value="Legend" />
+      <Symbol value="Schedule" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="db770308-0747-4388-b1a8-a4bf6cca9e33" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1152.15567766883" y="239.732941650406" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
-      <Symbol value="Schedule" />
+      <Symbol value="Legend" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="11425644-fe05-4739-95c5-8e83358b620b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1152.15567766883" y="322.732941650406" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
