@@ -1,7 +1,7 @@
-<Workspace Version="1.3.4.6666" X="-111.868324461178" Y="64.6157919547037" zoom="0.712594832628488" ScaleFactor="1" Name="Collector of Levels" Description="Collects the levels in the active or given document and sort them by elevation." ID="66193239-c79c-4e99-895b-d36dc41eb89d" Category="GeniusLoci.Level">
+<Workspace Version="1.3.4.6666" X="-191.540214433942" Y="108.054619762516" zoom="0.679007436100057" ScaleFactor="1" Name="Collector of Levels" Description="Collects the levels in the active or given document and sort them by elevation." ID="66193239-c79c-4e99-895b-d36dc41eb89d" Category="GeniusLoci.Level">
   <NamespaceResolutionMap />
   <Elements>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="46db900e-131c-4689-9749-79ddda79e975" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="815.419853632713" y="209.03770619663" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="46db900e-131c-4689-9749-79ddda79e975" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="813.735867242335" y="210.160363790215" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];" ShouldFocus="false">
       <PortInfo index="0" default="False" />
     </Dynamo.Graph.Nodes.CodeBlockNodeModel>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="7dc1ac10-7bbc-4b56-88c4-5231430fcff3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1006.61985363271" y="73.9710395299636" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
@@ -53,14 +53,20 @@ sortedLevels = sorted(levels,key=lambda level : level.Elevation, reverse=True)
 
 names=[level.Name for level in sortedLevels]
 elevations=[round(UnitUtils.ConvertFromInternalUnits(level.Elevation,UIunit),6) for level in sortedLevels]
+projectElevations=[round(UnitUtils.ConvertFromInternalUnits(level.ProjectElevation,UIunit),6) for level in sortedLevels]
 
-OUT = sortedLevels, names, elevations</Script>
+OUT = sortedLevels, names, elevations, projectElevations</Script>
     </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9e9b21be-ce63-4a18-bf7b-3b09794f499f" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1004.28997813723" y="311.521667825028" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Elevation relative to project origin&#xD;&#xA;ProjectElevation" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
   </Elements>
   <Connectors>
     <Dynamo.Graph.Connectors.ConnectorModel start="46db900e-131c-4689-9749-79ddda79e975" start_index="0" end="7dc1ac10-7bbc-4b56-88c4-5231430fcff3" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="46db900e-131c-4689-9749-79ddda79e975" start_index="1" end="47ab9e1d-ed6a-49fb-8049-03e35768c36e" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="46db900e-131c-4689-9749-79ddda79e975" start_index="2" end="444342de-6969-43be-afeb-0fc539ff3b5a" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="46db900e-131c-4689-9749-79ddda79e975" start_index="3" end="9e9b21be-ce63-4a18-bf7b-3b09794f499f" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="beb40e5f-b0f8-4c5c-aeb7-87d4e345d2bb" start_index="0" end="00aa70b2-9522-4c8c-b904-2866dfa64f5c" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="00aa70b2-9522-4c8c-b904-2866dfa64f5c" start_index="0" end="46db900e-131c-4689-9749-79ddda79e975" end_index="0" portType="0" />
   </Connectors>

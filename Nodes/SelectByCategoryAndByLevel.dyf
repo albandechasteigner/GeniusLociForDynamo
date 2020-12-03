@@ -25,7 +25,7 @@ import Revit
 clr.ImportExtensions(Revit.Elements)
 
 clr.AddReference('RevitAPI')
-from Autodesk.Revit.DB import FilteredElementCollector, Document, RevitLinkInstance, ElementMulticategoryFilter, ElementId, BuiltInCategory
+from Autodesk.Revit.DB import FilteredElementCollector, Document, RevitLinkInstance, ElementMulticategoryFilter, ElementId, BuiltInCategory,BuiltInParameter, Level
 
 from System.Collections.Generic import List
 
@@ -86,17 +86,19 @@ def GetLevel(item):
 			try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.INSTANCE_SCHEDULE_ONLY_LEVEL_PARAM).AsElementId())
 			except: 
 				try: return item.Document.GetElement(item.get_Parameter(BuiltInParameter.SCHEDULE_LEVEL_PARAM).AsElementId())
-				except: return None
-#levels=[GetLevel(col) for col in coll]
+				except:
+					#if item is work plane based
+					collector = FilteredElementCollector(item.Document).OfClass(Level).ToElements()
+					try: return [level for level in collector if item.get_Parameter(BuiltInParameter.SKETCH_PLANE_PARAM).AsString().split(": ")[-1] == level.Name][0]
+					except: return None
 
 for col in coll :
-	if GetLevel(col) :
-		if GetLevel(col).Id == SelectedLevel.Id :
-			try:
-				elem.append(col.ToDSType(True))
-			except:
-				if ueWrapper:
-					elem.append(ueWrapper.Invoke(None,(col, True)))
+	if GetLevel(col) and GetLevel(col).Id == SelectedLevel.Id:
+		try:
+			elem.append(col.ToDSType(True))
+		except:
+			if ueWrapper:
+				elem.append(ueWrapper.Invoke(None,(col, True)))
 			#elem.append(col.ToDSType(True))
 
 OUT = elem
