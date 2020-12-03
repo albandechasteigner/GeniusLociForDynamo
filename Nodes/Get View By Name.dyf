@@ -53,15 +53,14 @@ for view in views_all:
 for name in names:
 	for key in views.keys():
 		if cont:
-			if name in key:
-				outList.append(views[name])
-				break
+			if name in key :
+				outList.append(views[key])
 		else:
 			if key == name:
-				outList.append(views[name])
+				outList.append(views[key])
 				break
-
-if isinstance(IN[0], list): OUT = outList
+				
+if len(outList)&gt;1 : OUT = outList
 else: OUT = outList[0]</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6b59b49b-7ecc-4194-a7c6-373dba36eab0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="186.130577991007" y="543.438638948575" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">

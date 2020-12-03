@@ -39,12 +39,12 @@ for d in docs:
 		cPath = doc.GetWorksharingCentralModelPath()
 		central.append(ModelPathUtils.ConvertModelPathToUserVisiblePath(cPath))
 	else:
-		central.append(None)
+		central.append("")
 	version.append(doc.Application.VersionNumber)
 	number.append(Document.GetDocumentVersion(doc).NumberOfSaves)
 	if doc.PathName :
 		sizes.append(str(round(os.path.getsize(doc.PathName)/1000000.0,2))+ " Mo")
-	else :sizes.append(None)
+	else :sizes.append("")
 if isinstance(IN[0], list): OUT = titles,paths,fams,linked,workshared,central,version,number,sizes
 else: OUT = titles[0],paths[0],fams[0],linked[0],workshared[0],central[0],version[0],number[0],sizes[0]</Script>
     </PythonNodeModels.PythonNode>
