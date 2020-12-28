@@ -1,14 +1,14 @@
-<Workspace Version="1.3.4.6666" X="105.549776183782" Y="114.667118390227" zoom="0.551520311464878" ScaleFactor="1" Name="View SetElementOverrides" Description="Overrides element graphics settings in the given view.&#xD;&#xA;For use with the Create OverrideGraphicSettings node.&#xD;&#xA;Can also be used to hide or unhide elements." ID="cda4150e-bb89-46c8-83b2-1d23f3fdfe53" Category="GeniusLoci.Graphics">
+<Workspace Version="1.3.4.6666" X="124.789495966781" Y="49.7415747032811" zoom="0.597487094815786" ScaleFactor="1" Name="View SetElementOverrides" Description="Overrides element graphics settings in the given view.&#xD;&#xA;For use with the Create OverrideGraphicSettings node.&#xD;&#xA;Can also be used to hide or unhide elements." ID="cda4150e-bb89-46c8-83b2-1d23f3fdfe53" Category="GeniusLoci.Graphics">
   <NamespaceResolutionMap>
     <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
     <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
   </NamespaceResolutionMap>
   <Elements>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="cb27fe74-ac54-4eac-94d0-ab6417fe24cc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-206.8" y="222" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
+      <Symbol value="view:var = Revit.Application.Document.Current.ActiveView" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bc5c26c8-be4f-4155-82e3-a05c86eca082" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="217.090801186944" y="292.904451038576" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="elements" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bc5c26c8-be4f-4155-82e3-a05c86eca082" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="185.679401201478" y="295.687739644883" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="elements:var" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <PythonNodeModels.PythonNode guid="854bdddb-957d-4755-810b-74aeb129b118" type="PythonNodeModels.PythonNode" nickname="Python Script" x="384" y="245.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="4">
       <PortInfo index="0" default="False" />
@@ -58,7 +58,6 @@ views = tolist(UnwrapElement(IN[0]))
 elems = tolist(UnwrapElement(IN[1]))
 ogs = IN[2]
 hide = IN[3]
-output = []
 
 TransactionManager.Instance.EnsureInTransaction(doc)
 for v in views:
@@ -72,7 +71,7 @@ if isinstance(IN[1], list): OUT = views
 else: OUT = views[0]</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3e057db0-c083-411f-a510-521441f378f9" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-5.40415430267058" y="364.878338278932" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Revit.DB.OverrideGraphicSettings&#xD;&#xA;//Optional input&#xD;&#xA;overrides:var[]..[]=null" />
+      <Symbol value="//Revit.DB.OverrideGraphicSettings&#xD;&#xA;//Optional input&#xD;&#xA;overrides:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="01c1ad8b-1fbd-488e-9afb-a6299660cdf3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-31.767359050445" y="465.192878338279" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//True to hide the given element&#xD;&#xA;//False to unhide the given element&#xD;&#xA;hide:bool=false" />

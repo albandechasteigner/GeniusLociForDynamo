@@ -1,8 +1,9 @@
-<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="SelectByType" Description="Get the instances of the given type. Works with ElementType, FamilyType, ViewFamilyType, Wall/Floor/Roof/CeilingType, GroupType, FilledRegionType and TextNoteType." ID="f9f082e0-fb32-4837-9d7e-abcb49670e2c" Category="GeniusLoci.Select">
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="SelectByType" Description="Get the instances of the given type. Works with ElementType, FamilyType, ViewFamilyType, Wall/Floor/Roof/CeilingType, GroupType, FilledRegionType and TextNoteType." ID="112c4aec-7e86-4278-b3cf-275124e60b27" Category="GeniusLoci.Select">
   <NamespaceResolutionMap />
   <Elements>
-    <PythonNodeModels.PythonNode guid="1cea2b92-71e2-48fb-860b-73bc1a7aca73" type="PythonNodeModels.PythonNode" nickname="Python Script" x="240.8" y="287.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+    <PythonNodeModels.PythonNode guid="1cea2b92-71e2-48fb-860b-73bc1a7aca73" type="PythonNodeModels.PythonNode" nickname="Python Script" x="240.8" y="287.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
       <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
       <Script>#Alban de Chasteigner 2020
 #twitter : @geniusloci_bim
 #geniusloci.bim@gmail.com
@@ -15,7 +16,6 @@ from Autodesk.Revit.DB import *
 clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
-doc = DocumentManager.Instance.CurrentDBDocument
 import System
 
 def tolist(x):
@@ -23,6 +23,17 @@ def tolist(x):
     else : return [x]
 
 cats = tolist(UnwrapElement(IN[0]))
+inputdocs = tolist(UnwrapElement(IN[1]))
+
+#Inspired by Clockwork
+for inputdoc in inputdocs :
+	if inputdoc == None:
+		doc = DocumentManager.Instance.CurrentDBDocument
+	elif isinstance (inputdoc, Document):
+		doc = inputdoc
+	elif isinstance (inputdoc, RevitLinkInstance):
+		doc = inputdoc.GetLinkDocument()
+	else: doc = DocumentManager.Instance.CurrentDBDocument
 
 provider = ParameterValueProvider(ElementId(BuiltInParameter.ELEM_FAMILY_PARAM))
 provider2 = ParameterValueProvider(ElementId(BuiltInParameter.ELEM_TYPE_PARAM))
@@ -31,7 +42,7 @@ elements = []
 
 for cat in cats:
 	if isinstance(cat, Category) :
-		collector = FilteredElementCollector(doc).OfCategoryId(cat.Id).ToElements()
+		collector = FilteredElementCollector(doc).OfCategoryId(cat.Id).WhereElementIsNotElementType().ToElements()
 	elif isinstance(cat, System.Type) : 
 		collector = FilteredElementCollector(doc).OfClass(cat).ToElements()
 	elif isinstance(cat, FamilySymbol) or isinstance(cat,Autodesk.Revit.DB.FilledRegionType) :
@@ -60,10 +71,14 @@ else: OUT = elements[0]</Script>
       <PortInfo index="0" default="False" />
       <Symbol value="elements" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ff2cee78-ad77-49ac-988a-2e7901845214" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-206.4" y="358.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
   </Elements>
   <Connectors>
     <Dynamo.Graph.Connectors.ConnectorModel start="1cea2b92-71e2-48fb-860b-73bc1a7aca73" start_index="0" end="d331487c-6f9c-46d1-aba3-587503b88bcf" end_index="0" portType="0" />
     <Dynamo.Graph.Connectors.ConnectorModel start="d8b61266-f41b-4005-b585-c4a16befc70c" start_index="0" end="1cea2b92-71e2-48fb-860b-73bc1a7aca73" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ff2cee78-ad77-49ac-988a-2e7901845214" start_index="0" end="1cea2b92-71e2-48fb-860b-73bc1a7aca73" end_index="1" portType="0" />
   </Connectors>
   <Notes />
   <Annotations />

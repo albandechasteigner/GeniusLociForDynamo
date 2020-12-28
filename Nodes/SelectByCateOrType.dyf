@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="17.858237000274" Y="44.3225421442085" zoom="0.521806476424933" ScaleFactor="1" Name="SelectByCateOrType" Description="Collect elements by Category or Element Type in the given document.&#xD;&#xA;The transform CS is returned only with a LinkInstance input." ID="a2133ea9-fc86-425c-958c-f7d8334a0739" Category="GeniusLoci.Select">
+<Workspace Version="1.3.4.6666" X="17.858237000274" Y="44.3225421442085" zoom="0.521806476424933" ScaleFactor="1" Name="SelectByCateOrType" Description="Collect elements by Category, Element Type or Family Type in the given document.&#xD;&#xA;The transform CS is returned only with a LinkInstance input." ID="a2133ea9-fc86-425c-958c-f7d8334a0739" Category="GeniusLoci.Select">
   <NamespaceResolutionMap>
     <ClassMap partialName="DSCore.List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
   </NamespaceResolutionMap>
@@ -25,7 +25,7 @@ clr.AddReference('RevitServices')
 from RevitServices.Persistence import DocumentManager
 
 clr.AddReference('RevitAPI')
-from Autodesk.Revit.DB import Category, FilteredElementCollector, Document, RevitLinkInstance, ElementMulticategoryFilter,ElementMulticlassFilter, ElementId
+from Autodesk.Revit.DB import Category, FilteredElementCollector, Document, RevitLinkInstance, ElementMulticategoryFilter,ElementMulticlassFilter, ElementId, FamilySymbol, ParameterValueProvider, BuiltInParameter, FilterNumericEquals, ElementParameterFilter, FilterElementIdRule
 
 import System
 from System.Collections.Generic import List
@@ -60,15 +60,20 @@ for w in wrappers:
 		ueWrapper = w
 		break
 
-for c in cats :
-	if isinstance(c, Category):
+for cat in cats :
+	if isinstance(cat, Category):
 		catId = List[ElementId](x.Id for x in cats)
 		filter = ElementMulticategoryFilter(catId)
 		fec = FilteredElementCollector(doc).WhereElementIsNotElementType()
-	elif isinstance(c, System.Type):
+	elif isinstance(cat, System.Type):
 		catId = List[System.Type](cats)
 		filter = ElementMulticlassFilter(catId)	
 		fec = FilteredElementCollector(doc)
+	elif isinstance(cat, FamilySymbol):
+		provider = ParameterValueProvider(ElementId(BuiltInParameter.ELEM_FAMILY_PARAM))
+		evaluator = FilterNumericEquals()
+		filter = ElementParameterFilter(FilterElementIdRule(provider, evaluator, cat.Id))	
+		fec = FilteredElementCollector(doc).OfCategoryId(cat.Category.Id)
 		
 coll = fec.WherePasses(filter)
 for c in coll :

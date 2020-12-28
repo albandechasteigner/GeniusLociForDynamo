@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="211.837738033276" Y="-220.466972851824" zoom="0.579934013136286" ScaleFactor="1" Name="Create OverrideGraphicSettings" Description="Create a OverrideGraphicSettings (All graphic inputs are optional).&#xD;&#xA;Unlike the OOTB OverrideGraphicSettings.ByProperties node, the Foreground and background patterns are available.&#xD;&#xA;Note : Prior to Revit 2019, the materials have only one surface pattern and one cut pattern." ID="111955b8-2162-49d0-b809-fca3d28c3639" Category="GeniusLoci.Graphics">
+<Workspace Version="1.3.4.6666" X="450.033685430775" Y="-131.858748900334" zoom="0.671637979689957" ScaleFactor="1" Name="Create OverrideGraphicSettings" Description="Create a OverrideGraphicSettings (All graphic inputs are optional).&#xD;&#xA;Unlike the OOTB OverrideGraphicSettings.ByProperties node, the Foreground and background patterns are available.&#xD;&#xA;Note : Prior to Revit 2019, the materials have only one surface pattern and one cut pattern." ID="111955b8-2162-49d0-b809-fca3d28c3639" Category="GeniusLoci.Graphics">
   <NamespaceResolutionMap>
     <ClassMap partialName="DSCore.Color" resolvedName="DSCore.Color" assemblyName="DSCoreNodes.dll" />
     <ClassMap partialName="FillPatternElement" resolvedName="Revit.Elements.FillPatternElement" assemblyName="RevitNodes.dll" />
@@ -7,16 +7,16 @@
   </NamespaceResolutionMap>
   <Elements>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9e4a4b56-2c07-4055-8d92-36b8d326dedc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-435.939511959355" y="351.237644137486" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="ProjectionLinePattern:var[]..[]=null" />
+      <Symbol value="ProjectionLinePattern:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f8fa5e71-b526-42fd-936a-7628b34c3913" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-442.310822033372" y="452.095449130538" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Dynamo Color&#xD;&#xA;ProjectionLineColor:var[]..[]=null" />
+      <Symbol value="//Dynamo Color&#xD;&#xA;ProjectionLineColor:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="46d30b73-d42e-4b4f-aeb5-676b140b1d7c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-454.143255027974" y="534.507082677193" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Integer within the range 1-16&#xD;&#xA;ProjectionLineWeight:var[]..[]=null" />
+      <Symbol value="//Integer within the range 1-16&#xD;&#xA;ProjectionLineWeight:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="eb4a7b71-80a6-49d2-bfed-26df3fab1fab" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-448.682132107389" y="617.173203289366" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="SurfaceForegroundPattern:var[]..[]=null" />
+      <Symbol value="SurfaceForegroundPattern:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="885fb2bd-4057-4a1d-92a8-23d5dffa01d3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="440.280862347506" y="714.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
@@ -192,40 +192,40 @@ for projLinePat, projLineColor,projLineWeight,surfaceForePat,surfaceForePatcolor
 OUT = ogs</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1cfb29fd-9d33-4a58-9a05-8dab123be499" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="710.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Dynamo Color&#xD;&#xA;SurfaceForegroundPatternColor:var[]..[] = null" />
+      <Symbol value="//Dynamo Color&#xD;&#xA;SurfaceForegroundPatternColor:var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2b57a3b3-13d5-4836-bfdb-6220c8e10c4b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="803.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="SurfaceBackgroundPattern:var[]..[]=null" />
+      <Symbol value="SurfaceBackgroundPattern:var =null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="94853710-0ce2-43cb-a953-e9a15b837d38" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="886.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Dynamo Color&#xD;&#xA;SurfaceBackgroundColor:var[]..[] = null" />
+      <Symbol value="//Dynamo Color&#xD;&#xA;SurfaceBackgroundColor:var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9ff3b0fb-a114-461a-8e45-0e007309cd47" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="979.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="CutLinePattern:var[]..[]=null" />
+      <Symbol value="CutLinePattern:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="683dfd3a-58eb-450a-b826-603730687f7a" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1062.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Dynamo Color&#xD;&#xA;CutLineColor:var[]..[]=null" />
+      <Symbol value="//Dynamo Color&#xD;&#xA;CutLineColor:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8a6c3431-5a12-45ce-b579-d27e8ec94bb0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1155.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Integer within the range 1-16&#xD;&#xA;CutLineWeight:var[]..[]=null" />
+      <Symbol value="//Integer within the range 1-16&#xD;&#xA;CutLineWeight:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e97d72d4-e2d8-45ff-af34-61fad0162b45" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1248.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="CutForegroundPattern:var[]..[]=null" />
+      <Symbol value="CutForegroundPattern:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6748b4fe-f7c8-44d3-b3f1-d00502b1ec45" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1332.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Dynamo Color&#xD;&#xA;CutForegroundPatternColor:var[]..[] = null" />
+      <Symbol value="//Dynamo Color&#xD;&#xA;CutForegroundPatternColor:var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="00efcd44-d569-4f45-bffb-7efc7443b8c2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1425.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="CutBackgroundPattern:var[]..[]=null" />
+      <Symbol value="CutBackgroundPattern:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="31581f83-c97e-4a04-827c-b7ddfaf4a78e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1508.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Dynamo Color&#xD;&#xA;CutBackgroundPatternColor:var[]..[] = null" />
+      <Symbol value="//Dynamo Color&#xD;&#xA;CutBackgroundPatternColor:var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="afae4af2-5a84-45e9-bf55-6a21ca32d168" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1601.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Integer &#xD;&#xA;Transparency:var[]..[]=null" />
+      <Symbol value="//Integer &#xD;&#xA;Transparency:var=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="86b920f6-b284-44d7-b261-4e514aec893a" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-434.119137652494" y="1694.34617232715" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Boolean. True = halftone&#xD;&#xA;Halftone:var[]..[] = null" />
+      <Symbol value="//Boolean. True = halftone&#xD;&#xA;Halftone:var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
   </Elements>
   <Connectors>

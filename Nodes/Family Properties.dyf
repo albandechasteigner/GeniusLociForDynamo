@@ -1,0 +1,89 @@
+<Workspace Version="1.3.4.6666" X="71.2216671101635" Y="9.15344140540699" zoom="0.538046297688571" ScaleFactor="1" Name="Family Properties" Description="Queries the family properties. (IsInPlace, IsShared...)" ID="1c197281-684f-4d56-8ee1-bbe80a8be674" Category="GeniusLoci.Family">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="69363302-1707-4d15-a66e-86adb00147eb" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="488.108138917109" y="647.292656289667" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];&#xA;x[5];&#xA;x[6];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <PythonNodeModels.PythonNode guid="a4c6622f-112d-4d00-8148-df69a3fcebd5" type="PythonNodeModels.PythonNode" nickname="Python Script" x="263.708138917109" y="643.079322956333" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+clr.AddReference('RevitNodes')
+import Revit
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc=DocumentManager.Instance.CurrentDBDocument
+
+families=UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+categories,names,placements,hosting,shared,inPlace,calculation = [],[],[],[],[],[],[]
+
+for fam in families:
+	categories.append(Revit.Elements.Category.ById(fam.FamilyCategoryId.IntegerValue))
+	names.append(fam.Name)
+	placements.append(fam.FamilyPlacementType)
+	hosting.append(fam.get_Parameter(BuiltInParameter.FAMILY_HOSTING_BEHAVIOR).AsValueString())
+	shared.append(fam.get_Parameter(BuiltInParameter.FAMILY_SHARED).AsValueString())
+	inPlace.append(fam.IsInPlace)
+	calculation.append(fam.get_Parameter(BuiltInParameter.ROOM_CALCULATION_POINT).AsValueString())
+	
+if isinstance(IN[0], list): OUT = categories,names,placements,hosting,shared,inPlace,calculation
+else: OUT = categories[0],names[0],placements[0],hosting[0],shared[0],inPlace[0],calculation[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d45560cf-0086-4d66-be17-7aa45a2dcf42" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="83.7081389171093" y="643.079322956333" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="family" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="68528ba2-023c-4dd1-9c6d-f629e907cbf6" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.308138917109" y="435.799322956334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Category" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4d82c10e-0ca1-41f0-a587-c9fb2a659f04" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.308138917109" y="518.799322956334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Name" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b9607394-3814-4b32-ac30-8ff5a07a2342" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.308138917109" y="601.799322956334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Type of placement required&#xD;&#xA;PlacementType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="48a81f46-bc75-45a2-a533-fbd798ad065e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.308138917109" y="695.799322956334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Expected host class (if any)&#xD;&#xA;HostingBehavior" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7c138030-d89f-4c7b-89cc-8cf2c1b7afd6" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.308138917109" y="788.799322956334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="IsShared" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="f126a1c6-915f-4ae8-969c-fd4cc99961cf" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.308138917109" y="871.799322956334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Is it an in-place family ?&#xD;&#xA;IsInPlace" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="d6e76fc4-9c4f-4325-9086-1f966262d47b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="679.308138917109" y="964.799322956334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="//Is the room calculation point activated ?&#xD;&#xA;HasRoomCalculationPoint" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="69363302-1707-4d15-a66e-86adb00147eb" start_index="0" end="68528ba2-023c-4dd1-9c6d-f629e907cbf6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69363302-1707-4d15-a66e-86adb00147eb" start_index="1" end="4d82c10e-0ca1-41f0-a587-c9fb2a659f04" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69363302-1707-4d15-a66e-86adb00147eb" start_index="2" end="b9607394-3814-4b32-ac30-8ff5a07a2342" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69363302-1707-4d15-a66e-86adb00147eb" start_index="3" end="48a81f46-bc75-45a2-a533-fbd798ad065e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69363302-1707-4d15-a66e-86adb00147eb" start_index="4" end="7c138030-d89f-4c7b-89cc-8cf2c1b7afd6" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69363302-1707-4d15-a66e-86adb00147eb" start_index="5" end="f126a1c6-915f-4ae8-969c-fd4cc99961cf" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="69363302-1707-4d15-a66e-86adb00147eb" start_index="6" end="d6e76fc4-9c4f-4325-9086-1f966262d47b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="a4c6622f-112d-4d00-8148-df69a3fcebd5" start_index="0" end="69363302-1707-4d15-a66e-86adb00147eb" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d45560cf-0086-4d66-be17-7aa45a2dcf42" start_index="0" end="a4c6622f-112d-4d00-8148-df69a3fcebd5" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
