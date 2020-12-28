@@ -52,11 +52,14 @@ for element,location in zip(elements,locations):
 			else :
 				box = element.get_BoundingBox(None)
 				loca = (box.Min+box.Max)/2
+			ElementTransformUtils.MoveElement(doc,element.Id,location.ToRevitType()-loca)
 	elif hasattr(element, "OwnerViewId"):
 		view=element.Document.GetElement(element.OwnerViewId)
 		box = element.BoundingBox[view]
 		loca = (box.Min+box.Max)/2
-	ElementTransformUtils.MoveElement(doc,element.Id,location.ToRevitType()-loca)
+		ElementTransformUtils.MoveElement(doc,element.Id,location.ToRevitType()-loca)
+	elif isinstance(element,Leader):
+		element.End=location.ToXyz()
 TransactionManager.Instance.TransactionTaskDone()
 
 OUT=elements</Script>

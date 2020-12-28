@@ -1,0 +1,63 @@
+<Workspace Version="1.3.4.6666" X="-60.0504783509057" Y="51.4532661598038" zoom="0.803321593462598" ScaleFactor="1" Name="TextNote AddLeader" Description="Adds a leader to the text note." ID="d27da304-8c51-40b3-ba75-16fdd6ff9d42" Category="GeniusLoci.TextNote">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="56fc49a4-d0ab-417f-ae29-ed489ecde9de" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="828" y="351" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Leader" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="e4b4f4a9-54af-40ca-ad15-e079770d7731" type="PythonNodeModels.PythonNode" nickname="Python Script" x="603.6" y="351" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import TextNote,TextNoteLeaderTypes,LeaderAtachement
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+leader=[]
+Elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+leaders = IN[1]
+if isinstance(leaders, basestring):
+	exec("leaderTypes = TextNoteLeaderTypes.%s" % leaders)
+else:
+	leaderTypes = leaders
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for textNote in Elements:
+	leader.append(textNote.AddLeader(leaderTypes))
+	textNote.LeaderLeftAttachment=LeaderAtachement.Midpoint
+	textNote.LeaderRightAttachment=LeaderAtachement.Midpoint
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = leader
+else: OUT = leader[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="df7b656c-9290-4841-aa02-3e6933e96982" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="374" y="322" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="textNote" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1b799e74-017b-4c3e-abe4-c2abededbc91" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="235.076807958112" y="410.134068069585" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or DB.TextNoteLeaderTypes&#xD;&#xA;TextNoteLeaderTypes" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="e4b4f4a9-54af-40ca-ad15-e079770d7731" start_index="0" end="56fc49a4-d0ab-417f-ae29-ed489ecde9de" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="df7b656c-9290-4841-aa02-3e6933e96982" start_index="0" end="e4b4f4a9-54af-40ca-ad15-e079770d7731" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1b799e74-017b-4c3e-abe4-c2abededbc91" start_index="0" end="e4b4f4a9-54af-40ca-ad15-e079770d7731" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

@@ -1,0 +1,27 @@
+<Workspace Version="1.3.4.6666" X="49.95081" Y="93.2492925" zoom="0.70823125" ScaleFactor="1" Name="Enumerate TextNoteLeaderTypes" Description="Enumerates the types of text-note leaders.&#xD;&#xA;For use with the TextNote AddLeader node." ID="7d0677d6-4426-4e87-8d18-d4d33619eedc" Category="GeniusLoci.TextNote">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="d80d5fd2-fad5-47b0-88bc-3fba81627bf6" type="PythonNodeModels.PythonNode" nickname="Python Script" x="478.4" y="310.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false" inputcount="0">
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import TextNoteLeaderTypes
+import System
+
+OUT = System.Enum.GetValues(Autodesk.Revit.DB.TextNoteLeaderTypes)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0beeadbb-ec36-49dd-8560-6dbe43089fa2" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="613.993226082582" y="311.692978105668" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="TextNoteLeaderTypes" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="d80d5fd2-fad5-47b0-88bc-3fba81627bf6" start_index="0" end="0beeadbb-ec36-49dd-8560-6dbe43089fa2" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
