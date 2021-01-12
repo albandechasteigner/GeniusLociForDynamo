@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="150.942528380109" Y="242.032011461297" zoom="0.496186487382813" ScaleFactor="1" Name="Element SetRotation" Description="Set the angle of the element around its local Z-axis.&#xD;&#xA;(Same as the Rotate command in Revit)" ID="b7d53942-f5f1-46b5-b32c-8da905c94724" Category="GeniusLoci.Element">
+<Workspace Version="1.3.4.6666" X="62.6069770811057" Y="-0.233245396953436" zoom="0.729950825270786" ScaleFactor="1" Name="Element SetRotation" Description="Set the angle of the element around its local Z-axis.&#xD;&#xA;(Same as the Rotate command in Revit)" ID="b7d53942-f5f1-46b5-b32c-8da905c94724" Category="GeniusLoci.Element">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="6dab0607-a1c2-4ffb-9308-0c71c5558a0b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="260.4" y="334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
@@ -30,9 +30,9 @@ angles = [i* math.pi/180 for i in IN[1]] if isinstance(IN[1],list) else [IN[1]* 
 
 TransactionManager.Instance.EnsureInTransaction(doc)
 for angle, element in zip(angles, elements):
-	if angle&gt;math.pi:
-		angle=abs(angle-2*math.pi)
-	else:angle
+	#if angle&gt;math.pi:
+		#angle=abs(angle-2*math.pi)
+	#else:angle
 	#Get initial Rotation Angle using transform
 	#transform=element.GetTransform()
 	#vectorTran = transform.OfVector(transform.BasisX)
@@ -57,6 +57,22 @@ for angle, element in zip(angles, elements):
 			elif isinstance(loc,LocationCurve):
 				loca=loc.Curve.Evaluate(0.5,True)
 				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
+			# CropBox
+			elif element.Category == None :
+				view=doc.GetElement(element.get_Parameter(BuiltInParameter.ID_PARAM).AsElementId())
+				box = view.CropBox
+				loca = (box.Min+box.Max)/2
+				rot = 0	
+			# ViewSection Marker
+			elif ElementId(BuiltInCategory.OST_Viewers) == element.Category.Id :
+				viewSection = doc.GetElement(ElementId(element.Id.IntegerValue + 1))
+				loca = viewSection.Origin
+				rot = 0
+			# SectionBox
+			elif ElementId(BuiltInCategory.OST_SectionBox) == element.Category.Id:
+				box = doc.GetElement(ElementId(element.Id.IntegerValue + 1)).GetSectionBox()
+				loca = (box.Min+box.Max)/2
+				rot = 0
 			else:
 				box = element.get_BoundingBox(None)
 				loca = (box.Min+box.Max)/2
@@ -75,7 +91,7 @@ for angle, element in zip(angles, elements):
 				else:rot = 0
 	# view specific elements (e.g. filled regions)
 	elif hasattr(element, "OwnerViewId"):
-		view=element.Document.GetElement(element.OwnerViewId)
+		view=doc.GetElement(element.OwnerViewId)
 		box = element.BoundingBox[view]
 		loca = (box.Min+box.Max)/2
 		rot = 0
@@ -84,7 +100,8 @@ for angle, element in zip(angles, elements):
 	Autodesk.Revit.DB.ElementTransformUtils.RotateElement(doc, element.Id, line, angle-rot)
 TransactionManager.Instance.TransactionTaskDone()
 
-OUT = elements</Script>
+if isinstance(IN[0], list): OUT = elements
+else: OUT = elements[0]</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="f3a1c5ee-8c88-4f48-bff9-a9fe80024312" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="484.8" y="334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />

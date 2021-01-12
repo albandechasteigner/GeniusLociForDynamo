@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Element GetRotation" Description="Calculates the rotation angle between the given element and the X axis.&#xD;&#xA;Works for point, line, sketch based elements and link instances." ID="1e33ecff-42cd-41a3-8cac-d414dcc8fde9" Category="GeniusLoci.Element">
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Element GetRotation" Description="Calculates the rotation angle between the given element and the X axis.&#xD;&#xA;Works for point/ line/ sketch based elements and link instances." ID="1e33ecff-42cd-41a3-8cac-d414dcc8fde9" Category="GeniusLoci.Element">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="b8acc724-744e-4a99-b3e8-2022c971aa6f" type="PythonNodeModels.PythonNode" nickname="Python Script" x="276" y="228.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
@@ -23,24 +23,31 @@ def GetRotation(item):
 	# Dynamo lines
 	if hasattr(item, "Explode"):
 		vector = item.ToRevitType().Direction
-		rotationAngle = math.degrees(vector.AngleTo(XYZ.BasisX))
+		rotationAngle = math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
+	# CropBox	
+	elif item.Category == None :
+		view=item.Document.GetElement(item.get_Parameter(BuiltInParameter.ID_PARAM).AsElementId())
+		line=view.GetCropRegionShapeManager().GetCropShape()
+		vector = [l.Direction for l in line[0]]
+		rotationAngle = math.degrees(vector[1].AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
 	elif hasattr(item, "Location"):
 		loc = item.Location
 		if loc:	
-			# Annotation symbol, importInstance and linkInstance
-			if hasattr(item, "GetTotalTransform"):
-				trans=item.GetTotalTransform()
-				rotationAngle = math.degrees(trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
 			# point-based elements (e.g. most loadable families)
-			elif isinstance(loc,LocationPoint):
+			if isinstance(loc,LocationPoint):
 				if hasattr(loc, "Rotation"):
 					rotationAngle = math.degrees(loc.Rotation)
 				# Group, assembly
 				else:rotationAngle = 0
+			# Annotation symbol, importInstance and linkInstance
+			elif hasattr(item, "GetTotalTransform"):
+				trans=item.GetTotalTransform()
+				rotationAngle = math.degrees(trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
+				rotationAngle=abs(rotationAngle-360)
 			# line-based elements (e.g. walls)
 			elif isinstance(loc,LocationCurve):
 				vector = loc.Curve.Direction
-				rotationAngle = math.degrees(vector.AngleTo(XYZ.BasisX))
+				rotationAngle = math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
 			else:
 				# sketch-based elements (ceiling, floor and roof)
 				if hasattr(item, "FindInserts"):
@@ -58,17 +65,14 @@ def GetRotation(item):
 					rotationAngle=0
 		else:
 			rotationAngle=0
-	if rotationAngle==180:
+	if round(rotationAngle,3)==360:
 		rotationAngle=0
-	elif rotationAngle&gt;180:
-		rotationAngle=abs(rotationAngle-360)
-	else:
-		rotationAngle
 	return round(rotationAngle,3)
 	
 rotations = [GetRotation(x) for x in items]
 
-OUT = rotations</Script>
+if isinstance(IN[0], list): OUT = rotations
+else: OUT = rotations[0]</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="45294bf0-4385-499a-adf0-1599385cd2e2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="29.1999999999999" y="225.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//element or Dynamo line&#xD;&#xA;element" />
