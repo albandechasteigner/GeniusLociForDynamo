@@ -45,7 +45,7 @@ for item in elements:
 			corner = cv.GetEndPoint(end)
 		#Check for model surfacepattern
 		mat=doc.GetElement(extFace.MaterialElementId)
-		patternType = doc.GetElement(mat.SurfacePatternId)
+		patternType = doc.GetElement(mat.SurfaceForegroundPatternId)
 		pattern = patternType.GetFillPattern()
 		#Get number of gridLines in pattern                
 		gridCount = pattern.GridCount
@@ -114,6 +114,6 @@ OUT="Success"</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>
