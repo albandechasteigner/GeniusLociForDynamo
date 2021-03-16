@@ -11,7 +11,7 @@
       <Symbol value="Element" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="db90481d-c255-4d4a-a0e9-aed081568afe" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-28.2177537036043" y="511.188421146987" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var[]..[] = null" />
+      <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <PythonNodeModels.PythonNode guid="8f4d13af-cce8-4528-9cb1-be0df500d31b" type="PythonNodeModels.PythonNode" nickname="SelectByCategory" x="489.382246296396" y="456.188421146987" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
       <PortInfo index="0" default="False" />

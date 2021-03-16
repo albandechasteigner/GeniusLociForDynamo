@@ -1,0 +1,91 @@
+<Workspace Version="1.3.4.6666" X="135.094888316753" Y="60.530123067349" zoom="0.576033703577123" ScaleFactor="1" Name="Delete Elements" Description="Delete the input list of elements from the given Revit document.&#xD;&#xA;The node returns the number of successfully deleted elements and their Ids as a string.&#xD;&#xA;Based on a Springs node" ID="e823f3d3-5aff-406d-8460-e96987f8ebfb" Category="GeniusLoci.Element">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="8718af5b-123b-48bf-a4f5-b2a1baabd210" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="437.6786913623" y="250.479349143154" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="d[0];&#xA;d[1];&#xA;d[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="06430993-7cd2-40dc-a9d4-3e67099c08a4" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="565.640794494994" y="217.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="count" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="80c639a2-6abf-406f-a00d-ab41415c9d74" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="114.793236355553" y="250.905011687664" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9ea7f891-a5c3-42e1-a1b8-ddc10205d72c" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="562.646113948482" y="277.890781870075" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="deletedIds(str)" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b6b41900-92cf-4a48-909d-2dd14e0647c9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="559.197041033033" y="341.459624959628" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="failedIds(str)" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="d58babed-3f42-4442-8bcd-06aa4aeb962d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="290.518967096911" y="255.541639670218" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Copyright(c) 2016, Dimitar Venkov
+# @5devene, dimitar.ven@gmail.com
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import*
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+
+elems = UnwrapElement(tolist(IN[0]))
+inputdocs = tolist(UnwrapElement(IN[1]))
+
+#Part of script from Clockwork
+for inputdoc in inputdocs :
+	if inputdoc == None:
+		doc = DocumentManager.Instance.CurrentDBDocument
+	elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.Document":
+		doc = inputdoc
+	elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
+		doc = inputdoc.GetLinkDocument()
+	else: doc = None
+	
+	TransactionManager.Instance.ForceCloseTransaction()
+	t = Transaction(doc,'delete')
+	t.Start()
+
+deleted, failed = [], []
+
+for e in elems:
+	id = None
+	try:
+		id = e.Id
+		del_id = doc.Delete(id)
+		deleted.extend([d.ToString() for d in del_id])
+	except:
+		if id is not None:
+			failed.append(id.ToString() )
+s = set(deleted)
+failed1 = [x for x in failed if x not in s]
+t.Commit()
+OUT = len(deleted), ';'.join(deleted), ';'.join(failed1)</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="571d4324-a1ad-42d6-b508-0179b2aad9cc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-148.730280723039" y="331.15011675398" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="// Use only if you want to query a document&#xD;&#xA;document : var = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="8718af5b-123b-48bf-a4f5-b2a1baabd210" start_index="0" end="06430993-7cd2-40dc-a9d4-3e67099c08a4" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8718af5b-123b-48bf-a4f5-b2a1baabd210" start_index="1" end="9ea7f891-a5c3-42e1-a1b8-ddc10205d72c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8718af5b-123b-48bf-a4f5-b2a1baabd210" start_index="2" end="b6b41900-92cf-4a48-909d-2dd14e0647c9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="80c639a2-6abf-406f-a00d-ab41415c9d74" start_index="0" end="d58babed-3f42-4442-8bcd-06aa4aeb962d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d58babed-3f42-4442-8bcd-06aa4aeb962d" start_index="0" end="8718af5b-123b-48bf-a4f5-b2a1baabd210" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="571d4324-a1ad-42d6-b508-0179b2aad9cc" start_index="0" end="d58babed-3f42-4442-8bcd-06aa4aeb962d" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

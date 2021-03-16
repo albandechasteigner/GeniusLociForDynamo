@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="-140.8629825677" Y="20.8042963953129" zoom="0.784369328044827" ScaleFactor="1" Name="All Elements of System" Description="Returns every element of the duct or piping network, including ducts, pipes, fittings, fixtures, equipments etc." ID="396a3440-1cf0-4d84-bfc0-78f5dd69d949" Category="GeniusLoci.MEP">
+<Workspace Version="1.3.4.6666" X="1.53701743229999" Y="12.4042963953129" zoom="0.784369328044827" ScaleFactor="1" Name="All Elements of System" Description="Returns every element of the duct or piping network, including ducts, pipes, fittings, fixtures, equipments etc." ID="396a3440-1cf0-4d84-bfc0-78f5dd69d949" Category="GeniusLoci.MEP">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="60f34dae-d8fb-4e98-9f35-5599a3113af7" type="PythonNodeModels.PythonNode" nickname="Python Script" x="412.4" y="332" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
@@ -49,8 +49,8 @@ for e in elems:
 	
 OUT = networkElements,systems</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4eef9657-b303-41a6-86a3-a2d26646c1b0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="174.444193747785" y="332.089313093035" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//System or element&#xD;&#xA;element" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4eef9657-b303-41a6-86a3-a2d26646c1b0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-15.7723211839071" y="330.55942155203" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//MechanicalSystem, PipingSystem or element&#xD;&#xA;system" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="c57df7e6-37b9-4079-b623-588f346d8233" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="723.221669054568" y="317.768836715042" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
