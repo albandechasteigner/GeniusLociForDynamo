@@ -43,10 +43,10 @@ for element,location in zip(elements,locations):
 				loca = element.GetTotalTransform().Origin
 			elif hasattr(element, "Origin"):
 				loca = element.Origin
-			#Section Marker
+			##Section Marker and ReferenceElevationMarker(Doesn't work for ReferenceElevationMarker)
 			elif ElementId(BuiltInCategory.OST_Viewers) == element.Category.Id :
-				box=element.BoundingBox[doc.ActiveView]
-				loca = (box.Min+box.Max)/2
+				viewSection = doc.GetElement(ElementId(element.Id.IntegerValue + 1))
+				loca = viewSection.Origin
 			#Elevation Marker
 			elif isinstance(element,Autodesk.Revit.DB.ElevationMarker) :
 				marker = doc.GetElement(ElementId(element.Id.IntegerValue + 1))

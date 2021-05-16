@@ -18,7 +18,6 @@ from Autodesk.Revit.DB import *
 clr.AddReference('RevitNodes')
 import Revit
 clr.ImportExtensions(Revit.GeometryConversion)
-from Revit.Elements import *
 
 elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
 	
@@ -27,7 +26,7 @@ horizontal,vertical, slope =[],[],[]
 for element in elements:
 	if hasattr(element, "Explode"):
 		curve=element.ToRevitType()
-	elif hasattr(element, "Location"):
+	elif hasattr(element, "Location") and isinstance(element.Location, Autodesk.Revit.DB.LocationCurve):
 		curve=element.Location.Curve
 	if round(curve.GetEndPoint(0).Z,2) == round(curve.GetEndPoint(1).Z,2):
 		horizontal.append(element)
@@ -65,6 +64,6 @@ else: OUT = vertical[0],horizontal[0],slope[0]</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

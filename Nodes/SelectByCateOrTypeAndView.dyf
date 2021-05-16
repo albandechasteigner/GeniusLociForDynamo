@@ -32,6 +32,7 @@ views = tolist(UnwrapElement(IN[0]))
 cats = tolist(UnwrapElement(IN[1]))
 
 provider = ParameterValueProvider(ElementId(BuiltInParameter.ELEM_FAMILY_PARAM))
+provider2 = ParameterValueProvider(ElementId(BuiltInParameter.ELEM_TYPE_PARAM))
 evaluator = FilterNumericEquals()
 
 linkedEl,elements = [],[]
@@ -44,6 +45,13 @@ for view in views:
 			collector = FilteredElementCollector(doc,view.Id).OfClass(cat).ToElements()
 		elif isinstance(cat, FamilySymbol):
 			filter = ElementParameterFilter(FilterElementIdRule(provider, evaluator, cat.Id))	
+			collector = FilteredElementCollector(doc, view.Id).OfCategoryId(cat.Category.Id).WherePasses(filter).ToElements()
+		elif isinstance(cat, TextNoteType):
+			collector = FilteredElementCollector(doc, view.Id).OfClass(TextNote).WhereElementIsNotElementType().ToElements().FindAll(lambda x : x.GetTypeId() == cat.Id)
+		elif isinstance(cat, ModelTextType):
+			collector = FilteredElementCollector(doc, view.Id).OfClass(ModelText).WhereElementIsNotElementType().ToElements().FindAll(lambda x : x.GetTypeId() == cat.Id)
+		elif isinstance(cat, HostObjAttributes):
+			filter = ElementParameterFilter(FilterElementIdRule(provider2, evaluator, cat.Id))	
 			collector = FilteredElementCollector(doc, view.Id).OfCategoryId(cat.Category.Id).WherePasses(filter).ToElements()
 		linkedEl.append(collector)
 	elements.append(linkedEl)

@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="SelectByType" Description="Get the instances of the given type. Works with ElementType, FamilyType, ViewFamilyType, Wall/Floor/Roof/CeilingType, GroupType, FilledRegionType and TextNoteType." ID="112c4aec-7e86-4278-b3cf-275124e60b27" Category="GeniusLoci.Select">
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="All Elements of Type+" Description="Get the instances of the given type. Works with ElementType, FamilyType, ViewFamilyType, Wall/Floor/Roof/CeilingType, GroupType, FilledRegionType and TextNoteType." ID="112c4aec-7e86-4278-b3cf-275124e60b27" Category="GeniusLoci.Select">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="1cea2b92-71e2-48fb-860b-73bc1a7aca73" type="PythonNodeModels.PythonNode" nickname="Python Script" x="240.8" y="287.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
@@ -59,7 +59,8 @@ for cat in cats:
 		collector = FilteredElementCollector(doc).OfClass(View).WhereElementIsNotElementType().ToElements().FindAll(lambda x : x.GetTypeId() == cat.Id)
 	elif isinstance(cat, GroupType):
 		collector = [c for c in cat.Groups]
-	elements.append(collector)
+	col = collector if len(collector)&gt;1 else collector[0]
+	elements.append(col)
 
 if isinstance(IN[0], list) : OUT = elements
 else: OUT = elements[0]</Script>
