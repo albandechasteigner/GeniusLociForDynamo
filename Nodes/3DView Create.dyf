@@ -56,19 +56,16 @@ elif inputdoc.GetType().ToString() == "Autodesk.Revit.DB.RevitLinkInstance":
 else :
 	doc = DocumentManager.Instance.CurrentDBDocument
 
-#get ViewFamilyType for a 3D View
-viewTypeColl = FilteredElementCollector(doc).OfClass(ViewFamilyType)
-for i in viewTypeColl:
-	if i.ViewFamily == ViewFamily.ThreeDimensional:
-		viewType = i
-	else:
-		continue
+#Get 3D View ViewFamilyType
+viewType = FilteredElementCollector(doc).OfClass(ViewFamilyType).ToElements().Find(lambda x : x.ViewFamily == ViewFamily.ThreeDimensional)
 
 def CreateView(name):
 	view = View3D.CreateIsometric(doc, viewType.Id)
-	view.Name = name
+	try:view.Name = name
+	except:pass
 	return view
 
+TransactionManager.Instance.ForceCloseTransaction()
 t = Transaction(doc,'Create3D')
 t.Start()
 views=ProcessParallelLists(CreateView, viewNames)
@@ -90,6 +87,6 @@ OUT = views, doc</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>
