@@ -18,14 +18,20 @@ import RevitServices
 from RevitServices.Persistence import DocumentManager
 from RevitServices.Transactions import TransactionManager
 doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
 
 clr.AddReference("RevitAPI")
 import Autodesk
 from Autodesk.Revit.DB import *
 #import System
 
-UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Piping_Temperature).DisplayUnits
-
+if version &lt; 2021:
+	UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Piping_Temperature).DisplayUnits
+else:
+	UIunit = Document.GetUnits(doc).GetFormatOptions(SpecTypeId.PipingTemperature).GetUnitTypeId()
+	
 elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
 calculations = IN[1]
 if isinstance(calculations, basestring):

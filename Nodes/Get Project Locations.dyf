@@ -54,7 +54,10 @@ elif isinstance(inputdoc[0],RevitLinkInstance):
     doc = inputdoc[0].GetLinkDocument()
 else: doc = DocumentManager.Instance.CurrentDBDocument
 
-angleUnit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Angle).DisplayUnits
+if version &lt; 2021:
+	angleUnit = doc.GetUnits().GetFormatOptions(UnitType.UT_Angle).DisplayUnits
+else:
+	angleUnit = doc.GetUnits().GetFormatOptions(SpecTypeId.Angle).GetUnitTypeId()
 
 outProjBasePt, outProjSurvPt, outProjLoc = [],[],[]
 

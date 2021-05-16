@@ -1,0 +1,135 @@
+<Workspace Version="1.3.4.6666" X="149.748736740375" Y="95.9174271248019" zoom="0.400111094285321" ScaleFactor="1" Name="Set ViewRange" Description="Set the view range of the given plan view." ID="67a60879-a708-4aa8-8e8e-aa3ac271335c" Category="GeniusLoci.View">
+  <NamespaceResolutionMap>
+    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
+  </NamespaceResolutionMap>
+  <Elements>
+    <PythonNodeModels.PythonNode guid="ea93b29d-a5fc-4a40-994e-d264e6a04a48" type="PythonNodeModels.PythonNode" nickname="Set View Range" x="922.4" y="431.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="9">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <PortInfo index="8" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+clr.AddReference('RevitServices')
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
+if version &lt; 2021:
+	UIunit = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+else:
+	UIunit = doc.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()
+
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+
+views = tolist(UnwrapElement(IN[0]))
+topLs = tolist(UnwrapElement(IN[1]))
+tops = tolist(IN[2])
+cutLs = tolist(UnwrapElement(IN[3]))
+cuts = tolist(IN[4])
+botLs = tolist(UnwrapElement(IN[5]))
+bots = tolist(IN[6])
+depLs = tolist(UnwrapElement(IN[7]))
+deps = tolist(IN[8])
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for v,topL,top,cutL,cut,botL,bot,depL,dep in zip(views,topLs,tops,cutLs,cuts,botLs,bots,depLs,deps):
+	#setting the viewrange of the view
+	viewrange = v.GetViewRange()
+	asslvl = v.GenLevel
+
+	#Setting top clip plane of the viewrange
+	if topL is None:
+		viewrange.SetLevelId(PlanViewPlane.TopClipPlane,viewrange.Unlimited)
+	else :
+		viewrange.SetLevelId(PlanViewPlane.TopClipPlane,topL.Id)
+	viewrange.SetOffset(PlanViewPlane.TopClipPlane,UnitUtils.ConvertToInternalUnits(top,UIunit))
+
+	#setting offset of cut plane
+	if cutL is None:
+		viewrange.SetLevelId(PlanViewPlane.CutPlane,viewrange.Unlimited)
+	else:	
+		viewrange.SetLevelId(PlanViewPlane.CutPlane,cutL.Id)
+	viewrange.SetOffset(PlanViewPlane.CutPlane,UnitUtils.ConvertToInternalUnits(cut,UIunit))
+	#Setting bottom clip plane of the viewrange
+	if botL is None:
+		viewrange.SetLevelId(PlanViewPlane.BottomClipPlane,viewrange.Unlimited)
+	else:
+		viewrange.SetLevelId(PlanViewPlane.BottomClipPlane,botL.Id)
+	viewrange.SetOffset(PlanViewPlane.BottomClipPlane,UnitUtils.ConvertToInternalUnits(bot,UIunit))
+
+	#Setting view depth plane of the viewrange
+	if depL is None:
+		viewrange.SetLevelId(PlanViewPlane.ViewDepthPlane,viewrange.Unlimited)
+	else:
+		viewrange.SetLevelId(PlanViewPlane.ViewDepthPlane,depL.Id)
+	viewrange.SetOffset(PlanViewPlane.ViewDepthPlane,UnitUtils.ConvertToInternalUnits(dep,UIunit))
+
+	#Applying the viewrange to the view
+	v.SetViewRange(viewrange)
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = IN[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6fa67de1-6b9e-410f-94ad-124bafa618e5" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="171.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view:var[]..[] = Revit.Application.Document.Current.ActiveView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6ac09afc-aa27-4293-a94e-3f7a2543f244" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="255.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Level&#xD;&#xA;TopLevel" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a6294479-e82f-45a6-af74-5bf48494ae6c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="348.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number&#xD;&#xA;Top" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3859998a-fa58-4781-83f7-f381a7a44965" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="441.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Level&#xD;&#xA;CutLevel" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b643d40f-6c8b-420e-88e3-39aa635e6847" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="534.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number&#xD;&#xA;CutPlane" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8fe57847-6617-49d9-847f-544c3d470038" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="627.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Level&#xD;&#xA;BottomLevel" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="950aa6ce-7d1b-4909-8589-405c5dfd4618" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="720.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number&#xD;&#xA;Bottom" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4295a209-00e8-419c-a1b9-21054ae0d574" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="813.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Level&#xD;&#xA;DepthLevel" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9b23d02e-a437-4422-91f6-94eb07a54838" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="280.4" y="906.255715762518" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Number&#xD;&#xA;ViewDepth" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e5b1174a-d696-49e7-949e-e4822ceefd3b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1139.82221809217" y="434.474897860003" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="View" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="ea93b29d-a5fc-4a40-994e-d264e6a04a48" start_index="0" end="e5b1174a-d696-49e7-949e-e4822ceefd3b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6fa67de1-6b9e-410f-94ad-124bafa618e5" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6ac09afc-aa27-4293-a94e-3f7a2543f244" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="a6294479-e82f-45a6-af74-5bf48494ae6c" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="3859998a-fa58-4781-83f7-f381a7a44965" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b643d40f-6c8b-420e-88e3-39aa635e6847" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8fe57847-6617-49d9-847f-544c3d470038" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="950aa6ce-7d1b-4909-8589-405c5dfd4618" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="4295a209-00e8-419c-a1b9-21054ae0d574" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="7" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9b23d02e-a437-4422-91f6-94eb07a54838" start_index="0" end="ea93b29d-a5fc-4a40-994e-d264e6a04a48" end_index="8" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

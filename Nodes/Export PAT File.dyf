@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="-133.27223619699" Y="18.839232838819" zoom="0.674831658426865" ScaleFactor="1" Name="Export PAT File" Description="Exports as string a Fill Pattern Element in a .pat (pattern) file ." ID="44b8e723-1dd6-481f-9401-b9aa3241c03e" Category="GeniusLoci.FillPattern">
+<Workspace Version="1.3.4.6666" X="-126.334194555524" Y="-3.15712583131199" zoom="0.765829392851552" ScaleFactor="1" Name="Export PAT File" Description="Exports as string a Fill Pattern Element in a .pat (pattern) file ." ID="44b8e723-1dd6-481f-9401-b9aa3241c03e" Category="GeniusLoci.FillPattern">
   <NamespaceResolutionMap />
   <Elements>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="682adf40-eeea-4e58-ab25-8437ba400e24" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="225.200871671092" y="244.7" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
@@ -8,7 +8,7 @@
       <Symbol value="//Desired units : &quot;MM&quot; or &quot;INCH&quot;&#xD;&#xA;units :string= &quot;MM&quot;" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a8205859-dd56-4e18-ab28-5d51b7fc7710" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="225.200871671092" y="421.7" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//desired name+.pat&#xD;&#xA;filePath" />
+      <Symbol value="//Desired name + .pat&#xD;&#xA;filePath" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <PythonNodeModels.PythonNode guid="8c382666-7395-4cfe-b6a7-31bad4e9f984" type="PythonNodeModels.PythonNode" nickname="Python Script" x="619.600871671091" y="305.7" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
       <PortInfo index="0" default="False" />
@@ -23,6 +23,13 @@ clr.AddReference('RevitAPI')
 import Autodesk
 from Autodesk.Revit.DB import *
 
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
+
 import sys
 sys.path.append(r'C:\Program Files (x86)\IronPython 2.7\Lib')
 import codecs
@@ -32,21 +39,28 @@ units=IN[1]
 filePath = IN[2]
 result,segments = [],[]
 
-ut_degrees = DisplayUnitType.DUT_DECIMAL_DEGREES
-if units == "MM":
-	ut_units = DisplayUnitType.DUT_MILLIMETERS
-else:
-	ut_units = DisplayUnitType.DUT_DECIMAL_INCHES
-	
 for fillPattern in fillPatterns:
-	UIunit = fillPattern.Document.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+	if version &lt; 2021:
+		UIunit = fillPattern.Document.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+		ut_degrees = DisplayUnitType.DUT_DECIMAL_DEGREES
+		if units == "MM":
+			ut_units = DisplayUnitType.DUT_MILLIMETERS
+		else:
+			ut_units = DisplayUnitType.DUT_DECIMAL_INCHES
+	else:
+		UIunit = fillPattern.Document.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()
+		ut_degrees = UnitTypeId.Degrees
+		if units == "MM":
+			ut_units = UnitTypeId.Millimeters
+		else:
+			ut_units = UnitTypeId.Inches
 	pattern=fillPattern.GetFillPattern()
 	target=pattern.Target
 	fillgrids=pattern.GetFillGrids()
 	name=fillPattern.Name
 	for fillG in fillgrids:
-		result.append([UnitUtils.ConvertFromInternalUnits(fillG.Angle,ut_degrees),UnitUtils.ConvertFromInternalUnits(fillG.Origin.U,ut_units),UnitUtils.ConvertFromInternalUnits(fillG.Origin.V,ut_units),UnitUtils.ConvertFromInternalUnits(fillG.Shift,ut_units), UnitUtils.ConvertFromInternalUnits(fillG.Offset,ut_units)])
-		segments.append([UnitUtils.ConvertFromInternalUnits(fill,ut_units) if fillG.GetSegments() else [None,None] for fill in fillG.GetSegments()])
+		result.append([UnitUtils.ConvertFromInternalUnits(fillG.Angle,ut_degrees),round(UnitUtils.ConvertFromInternalUnits(fillG.Origin.U,ut_units),4),round(UnitUtils.ConvertFromInternalUnits(fillG.Origin.V,ut_units),4),round(UnitUtils.ConvertFromInternalUnits(fillG.Shift,ut_units),4), round(UnitUtils.ConvertFromInternalUnits(fillG.Offset,ut_units),4)])
+		segments.append([round(UnitUtils.ConvertFromInternalUnits(fill,ut_units),4) if fillG.GetSegments() else [None,None] for fill in fillG.GetSegments()])
 		segments2=[[p*-1 if i%2 else p for i,p in enumerate(seg)] for seg in segments]
 		output=list(map(lambda x, y:x + y, result, segments2))
 		output2="\n".join(map(str, output))
@@ -73,6 +87,6 @@ OUT = final</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

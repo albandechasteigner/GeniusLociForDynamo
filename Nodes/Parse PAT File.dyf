@@ -16,15 +16,20 @@ clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
 doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
 
 import sys
 sys.path.append(r'C:\Program Files (x86)\IronPython 2.7\Lib')
 import codecs
 import re
 
-UIUnits = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
-#ut_millimeters = DisplayUnitType.DUT_MILLIMETERS
-
+if version &lt; 2021:
+	UIUnits = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+else:
+	UIUnits = doc.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()
+	
 filepath = IN[0]
 
 with codecs.open(filepath, 'r', encoding = 'UTF-8') as file:
@@ -44,7 +49,7 @@ with codecs.open(filepath, 'r', encoding = 'UTF-8') as file:
 OUT = final</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6bfb5ad4-6774-4d9d-966c-1ab2f1e73936" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-62.8496695111942" y="327.300148727317" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Revit .pat file&#xD;&#xA;filePath" />
+      <Symbol value="//Revit .pat file&#xD;&#xA;filePath:var" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="583cfe28-91c3-4be7-a4d3-5fe79ff9b11c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="432.350330488806" y="331.51348206065" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];&#xA;x[4];&#xA;x[5];&#xA;x[6];&#xA;x[7];" ShouldFocus="false">
       <PortInfo index="0" default="False" />
@@ -98,6 +103,6 @@ OUT = final</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

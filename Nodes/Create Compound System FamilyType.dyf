@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="176.007598671003" Y="24.0728829146802" zoom="0.541716480397302" ScaleFactor="1" Name="Create Compound System FamilyType" Description="Creates a new compound wall, floor, roof or ceiling Type and assigns material, width and function." ID="6ea48024-7006-44ba-9771-c4ef1763497f" Category="GeniusLoci.CompoundStructure">
+<Workspace Version="1.3.4.6666" X="267.385986419214" Y="-23.0619877633227" zoom="0.853164136581595" ScaleFactor="1" Name="Create Compound System FamilyType" Description="Creates a new compound wall, floor, roof or ceiling Type and assigns material, width and function." ID="6ea48024-7006-44ba-9771-c4ef1763497f" Category="GeniusLoci.CompoundStructure">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="66e7d252-9b2c-42b8-8c5e-0cee66f79e9b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="442.573796817752" y="340.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="7">
@@ -27,16 +27,21 @@ clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
 from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
 
 import sys
 pyt_path = r'C:\Program Files (x86)\IronPython 2.7\Lib'
 sys.path.append(pyt_path)
 import System
 
-doc = DocumentManager.Instance.CurrentDBDocument
-
-UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
-
+if version &lt; 2021:
+	UIunit = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+else:
+	UIunit = doc.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()
+	
 def tolist(obj1):
     if hasattr(obj1,"__iter__"): return obj1
     else: return [obj1]
@@ -105,13 +110,13 @@ else: OUT = newfamTypes[0]</Script>
       <Symbol value="NewName:string[]..[]" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="70c1424b-46d8-4104-ac35-6d75b751d56b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-135.832619859471" y="308.899373908213" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//String or MaterialFunctionAssignement&#xD;&#xA;//Use the Enumerate LayerFunction node&#xD;&#xA;LayerFunction" />
+      <Symbol value="//String or MaterialFunctionAssignement&#xD;&#xA;//Use the Enumerate LayerFunction node&#xD;&#xA;LayerFunction:var[]..[]=&quot;Structure&quot;" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1dbbd1ab-019d-4cd7-8a32-d2eee02ee320" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.23738815104548" y="412.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//One material per layer&#xD;&#xA;material" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="cb885746-e806-4a85-bcd6-659cde179def" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.82620318224758" y="505.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//One thickness per layer&#xD;&#xA;Thickness:double[]..[]" />
+      <Symbol value="//One thickness per layer&#xD;&#xA;//In Document Units&#xD;&#xA;Thickness:double[]..[]" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="e73b0afd-9232-49bf-b7ce-f86a4d1a3f1c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-9.82620318224758" y="615.498044469849" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="NumberOfLayersExterior:int=0" />
@@ -134,6 +139,6 @@ else: OUT = newfamTypes[0]</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

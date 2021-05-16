@@ -1,25 +1,25 @@
 <Workspace Version="1.3.4.6666" X="-191.540214433942" Y="108.054619762516" zoom="0.679007436100057" ScaleFactor="1" Name="Collector of Levels" Description="Collects the levels in the active or given document and sort them by elevation." ID="66193239-c79c-4e99-895b-d36dc41eb89d" Category="GeniusLoci.Level">
   <NamespaceResolutionMap />
   <Elements>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="46db900e-131c-4689-9749-79ddda79e975" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="813.735867242335" y="210.160363790215" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];" ShouldFocus="false">
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="46db900e-131c-4689-9749-79ddda79e975" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="806.666725220019" y="213.694934801373" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];" ShouldFocus="false">
       <PortInfo index="0" default="False" />
     </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7dc1ac10-7bbc-4b56-88c4-5231430fcff3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1006.61985363271" y="73.9710395299636" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7dc1ac10-7bbc-4b56-88c4-5231430fcff3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1008.97623430682" y="122.276843349123" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Element" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="47ab9e1d-ed6a-49fb-8049-03e35768c36e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1006.61985363271" y="156.971039529964" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="47ab9e1d-ed6a-49fb-8049-03e35768c36e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1008.97623430682" y="205.276843349124" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Name" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="444342de-6969-43be-afeb-0fc539ff3b5a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1006.61985363271" y="239.971039529964" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="444342de-6969-43be-afeb-0fc539ff3b5a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1008.97623430682" y="288.276843349124" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Elevation" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="beb40e5f-b0f8-4c5c-aeb7-87d4e345d2bb" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="166.401767037339" y="209.715753699098" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <PythonNodeModels.PythonNode guid="00aa70b2-9522-4c8c-b904-2866dfa64f5c" type="PythonNodeModels.PythonNode" nickname="Python Script" x="627.380811634734" y="215.808761169437" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+    <PythonNodeModels.PythonNode guid="00aa70b2-9522-4c8c-b904-2866dfa64f5c" type="PythonNodeModels.PythonNode" nickname="Python Script" x="625.024430960629" y="209.917809484174" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
       <PortInfo index="0" default="False" />
       <Script>#Alban de Chasteigner 2018
 #twitter : @geniusloci_bim
@@ -29,12 +29,16 @@ import clr
 # Import RevitAPI
 clr.AddReference("RevitAPI")
 import Autodesk
-from Autodesk.Revit.DB import Level, Document, RevitLinkInstance,UnitType, FilteredElementCollector, UnitUtils
+from Autodesk.Revit.DB import *
 
 # Import DocumentManager and TransactionManager
 clr.AddReference("RevitServices")
 import RevitServices
 from RevitServices.Persistence import DocumentManager
+
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
 
 #Part of script from Clockwork
 inputdoc = UnwrapElement(IN[0])
@@ -46,7 +50,10 @@ elif isinstance (inputdoc, Document) :
 	doc = inputdoc
 else: doc = None
 
-UIunit = Document.GetUnits(doc).GetFormatOptions(UnitType.UT_Length).DisplayUnits
+if version &lt;2021:
+	UIunit = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+else:
+	UIunit = doc.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()
 
 levels = FilteredElementCollector(doc).OfClass(Level).ToElements()
 sortedLevels = sorted(levels,key=lambda level : level.Elevation, reverse=True)
@@ -57,7 +64,7 @@ projectElevations=[round(UnitUtils.ConvertFromInternalUnits(level.ProjectElevati
 
 OUT = sortedLevels, names, elevations, projectElevations</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9e9b21be-ce63-4a18-bf7b-3b09794f499f" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1004.28997813723" y="311.521667825028" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9e9b21be-ce63-4a18-bf7b-3b09794f499f" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1006.64635881134" y="359.827471644188" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="//Elevation relative to project origin&#xD;&#xA;ProjectElevation" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>

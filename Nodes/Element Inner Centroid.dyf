@@ -19,6 +19,9 @@ from Autodesk.Revit.DB import *
 clr.AddReference('RevitServices')
 from RevitServices.Persistence import DocumentManager
 doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
 
 clr.AddReference('RevitNodes')
 import Revit
@@ -32,8 +35,10 @@ sys.path.append(r"C:\Program Files (x86)\IronPython 2.7\Lib")
 from Queue import PriorityQueue
 inf = float("inf")
 
-UIUnit = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
-mess=[]
+if version &lt; 2021:
+	UIUnit = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+else:
+	UIUnit = doc.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()
 
 def _point_to_polygon_distance(x, y, polygon):
     inside = False
@@ -122,6 +127,7 @@ def _get_centroid_cell(polygon):
 
 
 def polylabel(polygon, precision=1.0, debug=IN[1], with_distance=IN[2]):
+    mess=[]
     # find bounding box
     first_item = polygon[0][0]
     min_x = first_item[0]
@@ -201,29 +207,37 @@ def polylabel(polygon, precision=1.0, debug=IN[1], with_distance=IN[2]):
         return XYZ(best_cell.x, best_cell.y,z).ToPoint(), mess
 
 items = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
-curves,points=[],[]
-
+curveList,surfaces,pointList=[],[],[]
 #opt = Options()
 #opt.IncludeNonVisibleObjects = True
 #opt.View = doc.ActiveView
 for item in items:
+	curves,points=[],[]
 	geoEle=item.get_Geometry(Options())
 	for geo in geoEle:
 		if isinstance(geo, Autodesk.Revit.DB.Solid):
-			sorted_faces=[sorted(geo.Faces,key=lambda face:face.Area, reverse=True) for face in geo.Faces][0]
-			surface=sorted_faces[0].ToProtoType()
-			for edges in sorted_faces[0].EdgeLoops:
+			#sorted_faces=[sorted(geo.Faces,key=lambda face:face.Area, reverse=True) for face in geo.Faces][0]
+			for face in geo.Faces:
+				if face.FaceNormal.IsAlmostEqualTo(XYZ(0,0,-1)) : 
+					downFace = face
+					surfaces.append(downFace.ToProtoType()[0])
+			for edges in downFace.EdgeLoops:
 				for edg in edges:
 					curves.append(edg.AsCurve().ToProtoType())
 					points.append([edg.AsCurve().GetEndPoint(0).X,edg.AsCurve().GetEndPoint(0).Y])
 					z=edg.AsCurve().GetEndPoint(0).Z
+				pointList.append(points)
+				curveList.append(curves)
 
-OUT = surface,curves,polylabel([points])</Script>
+centroids = [polylabel([listPoint]) for listPoint in pointList]
+
+if isinstance(IN[0], list): OUT = surfaces, curveList, map(list, zip(*centroids))
+else: OUT = surfaces[0], curveList[0], centroids[0]</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="f0a1755f-8844-4c4f-84d2-5f62b0511b6e" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="829.44432457376" y="234.386496291565" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2][0];&#xA;x[2][1];&#xA;x[2][2];" ShouldFocus="false">
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="f0a1755f-8844-4c4f-84d2-5f62b0511b6e" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="761.669851193773" y="225.3498998409" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2][0];&#xA;x[2][1];&#xA;x[2][2];" ShouldFocus="false">
       <PortInfo index="0" default="False" />
     </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="fa56052d-f98c-4665-b464-777900da588c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="382.8" y="189.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="fa56052d-f98c-4665-b464-777900da588c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="387.318298225333" y="185.646489052834" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="element" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="dbb1b16e-3d2d-4b09-952e-88e044f2fa21" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="298" y="252.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
@@ -232,23 +246,23 @@ OUT = surface,curves,polylabel([points])</Script>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="936d2d25-6cf5-47c1-b0fe-6db61cda90c2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="290" y="324.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//returns also distance&#xD;&#xA;with_distance:bool=false" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e3d45d60-eef8-4e01-b4a4-62cdec4f1afd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1014.8" y="216.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e3d45d60-eef8-4e01-b4a4-62cdec4f1afd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="998.985956211336" y="147.49595206368" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Surface" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9b0a4e26-83f8-43e3-9e42-f57bc1a6012e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1002.8" y="288" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9b0a4e26-83f8-43e3-9e42-f57bc1a6012e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="999.411276331001" y="219.09595206368" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Curves" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="58161f0f-5ddd-4632-85dc-e806097a101a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1000" y="364" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="58161f0f-5ddd-4632-85dc-e806097a101a" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="996.611276331001" y="295.09595206368" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Centroid" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7aea3161-2910-48d9-abdc-9f4320560a41" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1006.8" y="439.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7aea3161-2910-48d9-abdc-9f4320560a41" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="997.763403549335" y="368.436802951014" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="debug" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="52613690-900c-48e1-a367-dacc71a46453" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="998" y="510.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="52613690-900c-48e1-a367-dacc71a46453" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="994.611276331001" y="441.49595206368" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Distance" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
@@ -268,6 +282,6 @@ OUT = surface,curves,polylabel([points])</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Background Preview" eyeX="-53419.712101172" eyeY="63349.1171169006" eyeZ="82214.5624172304" lookX="27854.301944922" lookY="-63646.0663356506" lookZ="-62888.3046047304" upX="0.204929473740009" upY="0.862513668301408" upZ="-0.462681387214662" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

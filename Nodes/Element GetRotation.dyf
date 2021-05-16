@@ -33,21 +33,21 @@ def GetRotation(item):
 	elif hasattr(item, "Location"):
 		loc = item.Location
 		if loc:	
+			# Generic Annotation, importInstance and linkInstance
+			if hasattr(item, "GetTotalTransform"):
+				trans=item.GetTotalTransform()
+				rotationAngle = math.degrees(trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
+				rotationAngle=abs(rotationAngle-360)
 			# point-based elements (e.g. most loadable families)
-			if isinstance(loc,LocationPoint):
+			elif isinstance(loc,LocationPoint):
 				if hasattr(loc, "Rotation"):
 					rotationAngle = math.degrees(loc.Rotation)
 				# Group, assembly
 				else:rotationAngle = 0
-			# Annotation symbol, importInstance and linkInstance
-			elif hasattr(item, "GetTotalTransform"):
-				trans=item.GetTotalTransform()
-				rotationAngle = math.degrees(trans.BasisX.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
-				rotationAngle=abs(rotationAngle-360)
 			# line-based elements (e.g. walls)
 			elif isinstance(loc,LocationCurve):
 				vector = loc.Curve.Direction
-				rotationAngle = math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))
+				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-360)
 			else:
 				# sketch-based elements (ceiling, floor and roof)
 				if hasattr(item, "FindInserts"):
