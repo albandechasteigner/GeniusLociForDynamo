@@ -3,7 +3,7 @@
   <Elements>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="f5c2bb73-e7f4-4ec3-8eb7-ee8f552365f0" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="417.833828993002" y="241.504254436669" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
-      <Symbol value="3D views" />
+      <Symbol value="3DViews" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ed5375a0-594e-4b3f-bfaa-7a8d3518798c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-210.4" y="244.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var = null" />
@@ -18,36 +18,32 @@ from RevitServices.Persistence import DocumentManager
 # Import RevitAPI
 clr.AddReference("RevitAPI")
 import Autodesk
-from Autodesk.Revit.DB import *
-# Import ToDSType(bool) extension method
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.Elements)
+from Autodesk.Revit.DB import View, ViewType, FilteredElementCollector, RevitLinkInstance, Document
 
-#Part of script from Clockwork
-inputdoc = UnwrapElement(IN[0])
-if inputdoc == None:
-	doc = DocumentManager.Instance.CurrentDBDocument
-elif isinstance (inputdoc, RevitLinkInstance) :
-	doc = inputdoc.GetLinkDocument()
-elif isinstance (inputdoc, Document) :
-	doc = inputdoc
-else: doc = None
-
-#collect all views in the model
-views = FilteredElementCollector(doc).OfClass(View).ToElements()
-
-#sort views into separate lists based on view type
 threeD = []
-for i in views:
-	if not i.IsTemplate:
-		if i.ViewType == ViewType.ThreeD:
-			threeD.append(i.ToDSType(True))
-		else:
-			continue
+#Part of script from Clockwork
+inputdocs = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+for inputdoc in inputdocs:
+	if inputdoc == None:
+		doc = DocumentManager.Instance.CurrentDBDocument
+	elif isinstance (inputdoc, RevitLinkInstance) :
+		doc = inputdoc.GetLinkDocument()
+	elif isinstance (inputdoc, Document) :
+		doc = inputdoc
+	else: doc = DocumentManager.Instance.CurrentDBDocument
 
-#Assign your output to the OUT variable
-OUT = threeD</Script>
+	#collect all views in the model
+	views = FilteredElementCollector(doc).OfClass(View).ToElements()
+	#sort views into separate lists based on view type
+	for i in views:
+		if not i.IsTemplate:
+			if i.ViewType == ViewType.ThreeD:
+				threeD.append(i)
+			else:
+				continue
+				
+if len(threeD)&gt;1 : OUT = threeD
+else: OUT = threeD[0]</Script>
     </PythonNodeModels.PythonNode>
   </Elements>
   <Connectors>

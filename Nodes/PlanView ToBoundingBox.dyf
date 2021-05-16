@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="137.118832429659" Y="200.975330952677" zoom="0.555002712934566" ScaleFactor="1" Name="PlanView To BoundingBox" Description="Create boundingBox from plan view based on the view range settings. (Z is calculed from ProjectElevation)" ID="c174f797-c6aa-41e9-9deb-1a2e4fbd632a" Category="GeniusLoci.View">
+<Workspace Version="1.3.4.6666" X="137.118832429659" Y="200.975330952677" zoom="0.555002712934566" ScaleFactor="1" Name="PlanView ToBoundingBox" Description="Create boundingBox from plan view based on the view range settings. (Z is calculed from ProjectElevation)" ID="c174f797-c6aa-41e9-9deb-1a2e4fbd632a" Category="GeniusLoci.View">
   <NamespaceResolutionMap>
     <ClassMap partialName="Revit.Elements.Views.View3D" resolvedName="Revit.Elements.Views.View3D" assemblyName="RevitNodes.dll" />
     <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />

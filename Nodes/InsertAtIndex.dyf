@@ -1,0 +1,44 @@
+<Workspace Version="1.3.4.6666" X="262.648436775" Y="65.2483270749999" zoom="0.593767140625" ScaleFactor="1" Name="InsertAtIndex" Description="Inserts items into lists at specified indices." ID="197facff-cc84-404d-a6b2-1fd2887ec32f" Category="GeniusLoci.Utilities">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b3ff7a28-09d1-41da-8cc0-ef052df8427c" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="38.0000000000001" y="115" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="list:var[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f0b68849-e361-49a5-bf54-42145dc14187" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-288.053745237933" y="195.305340948447" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//As many elements as the maximum number of indexes&#xD;&#xA;element:var[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="7f6b3689-d666-430d-b1d1-ac982bc9ebbb" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="38.0000000000001" y="281" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="index:var[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="84a46dad-481d-4871-901c-524598b20e6b" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="500.4" y="172" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="list" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="7f2875c1-afff-404e-826b-bd56700b6009" type="PythonNodeModels.PythonNode" nickname="Python Script" x="276" y="172" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>import clr
+originalList = IN[0]
+newItems = IN[1]
+indices = IN[2]
+
+for newItem,index in zip(newItems,indices):
+	originalList.insert(index,newItem)
+
+OUT = originalList</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="b3ff7a28-09d1-41da-8cc0-ef052df8427c" start_index="0" end="7f2875c1-afff-404e-826b-bd56700b6009" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f0b68849-e361-49a5-bf54-42145dc14187" start_index="0" end="7f2875c1-afff-404e-826b-bd56700b6009" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7f6b3689-d666-430d-b1d1-ac982bc9ebbb" start_index="0" end="7f2875c1-afff-404e-826b-bd56700b6009" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7f2875c1-afff-404e-826b-bd56700b6009" start_index="0" end="84a46dad-481d-4871-901c-524598b20e6b" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
