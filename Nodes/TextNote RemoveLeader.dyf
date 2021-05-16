@@ -1,0 +1,49 @@
+<Workspace Version="1.3.4.6666" X="97.1352452325937" Y="109.428294940453" zoom="0.496186487382813" ScaleFactor="1" Name="TextNote RemoveLeader" Description="Removes all leaders attached to the text note." ID="c95cc636-ea1d-4bd0-8d21-509a2e26e387" Category="GeniusLoci.TextNote">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="38e8de0d-e3b3-431c-8a4f-8a1dde9ea639" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="264" y="276.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="textNote" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="45ebab82-0d71-48e9-858d-4ccc5028604f" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="580.954752438598" y="276.378653457585" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="TextNote" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="ed9c50ff-a420-4ad7-bbc0-787596772453" type="PythonNodeModels.PythonNode" nickname="Python Script" x="408.847802037975" y="276.048841599896" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="true" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import TextNote
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+Elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for textNote in Elements:
+	textNote.RemoveLeaders()
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = IN[0]</Script>
+    </PythonNodeModels.PythonNode>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="38e8de0d-e3b3-431c-8a4f-8a1dde9ea639" start_index="0" end="ed9c50ff-a420-4ad7-bbc0-787596772453" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ed9c50ff-a420-4ad7-bbc0-787596772453" start_index="0" end="45ebab82-0d71-48e9-858d-4ccc5028604f" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-10.2201454271704" eyeY="61.8437205266019" eyeZ="24.629222557885" lookX="5.22014542717037" lookY="-50.8437205266019" lookZ="-32.629222557885" upX="0.110922528083581" upY="0.712026045990997" upZ="-0.693336211800578" />
+  </Cameras>
+</Workspace>

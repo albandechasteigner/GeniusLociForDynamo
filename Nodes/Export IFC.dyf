@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="-555.117965304875" Y="-490.162758796267" zoom="0.552324359524568" ScaleFactor="1" Name="Export IFC" Description="Export View to IFC file.&#xD;&#xA;For use with the Select Phase node.&#xD;&#xA;Some other IFC options are embedded inside the python script." ID="b6f62bca-c938-4d9d-91fd-71b0352fff3b" Category="GeniusLoci.Export">
+<Workspace Version="1.3.4.6666" X="-555.117965304875" Y="-490.162758796267" zoom="0.552324359524568" ScaleFactor="1" Name="Export IFC" Description="Export View to IFC file in the active document.&#xD;&#xA;For use with the Select Phase node.&#xD;&#xA;Some other IFC options are embedded inside the python script." ID="b6f62bca-c938-4d9d-91fd-71b0352fff3b" Category="GeniusLoci.Export">
   <NamespaceResolutionMap>
     <ClassMap partialName="DSCore.List" resolvedName="DSCore.List" assemblyName="DSCoreNodes.dll" />
     <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
