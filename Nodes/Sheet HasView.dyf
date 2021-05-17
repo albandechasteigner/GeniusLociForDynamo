@@ -1,0 +1,64 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Sheet HasView" Description="Checks if the sheet has a placed view." ID="c49be83e-8bd9-4327-b238-a21ca7f5be0c" Category="GeniusLoci.Sheet">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="6125c8e0-4d07-4106-ae96-42ea7d7de9b6" type="PythonNodeModels.PythonNode" nickname="Python Script" x="169.6" y="245.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import ViewSheet, FilteredElementCollector,ScheduleSheetInstance
+clr.AddReference('RevitServices')
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+sheets = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+withV, temp, without = [],[],[]
+
+for s in sheets :
+	viewsId = s.GetAllPlacedViews()
+	if viewsId :
+		withV.append(s)
+	else:
+		temp.append(s)
+		sched=FilteredElementCollector(doc, s.Id).OfClass(ScheduleSheetInstance)
+		sched2 = [sc for sc in sched if not sc.IsTitleblockRevisionSchedule]
+		if sched2 :
+			withV.append(s)
+		else:
+			without.append(s)
+
+OUT = withV, without</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="2d1d8ad4-c908-402b-8094-d5eb93f681a1" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="331.8" y="249.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f21301ce-3b10-43b7-beac-3e1794a8eb73" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="73.6000000000001" y="246.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="sheet" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5111b2ec-a95d-40d9-bce9-365cfe54a2aa" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="478.4" y="235.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="WithView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="8df2ce83-8435-49d6-b790-feb073ac8ad9" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="476.8" y="307.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="WithoutView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="6125c8e0-4d07-4106-ae96-42ea7d7de9b6" start_index="0" end="2d1d8ad4-c908-402b-8094-d5eb93f681a1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2d1d8ad4-c908-402b-8094-d5eb93f681a1" start_index="0" end="5111b2ec-a95d-40d9-bce9-365cfe54a2aa" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2d1d8ad4-c908-402b-8094-d5eb93f681a1" start_index="1" end="8df2ce83-8435-49d6-b790-feb073ac8ad9" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f21301ce-3b10-43b7-beac-3e1794a8eb73" start_index="0" end="6125c8e0-4d07-4106-ae96-42ea7d7de9b6" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

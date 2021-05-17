@@ -1,0 +1,66 @@
+<Workspace Version="1.3.4.6666" X="108.6546825" Y="77.3770725" zoom="0.70823125" ScaleFactor="1" Name="View SetDetailLevel" Description="Sets the detail level of a given view." ID="a0dd960d-5912-4660-9f08-e16fb8328cac" Category="GeniusLoci.View">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="3fb30f80-448e-4aaa-988f-4b7329cd11a0" type="PythonNodeModels.PythonNode" nickname="Python Script" x="286.8" y="292.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import ViewDetailLevel
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+views = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+detailLevel = IN[1]
+
+if isinstance(detailLevel , basestring):
+	exec("viewDetail = ViewDetailLevel.%s" % detailLevel )
+else:
+	viewDetail = detailLevel 
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for view in views:
+	try:
+		view.DetailLevel=viewDetail
+		success=True
+	except:success=False
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT=views,success</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="40a0c917-e593-45f3-b2b9-cf13700e7ef4" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="442.2" y="297.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f50af35c-2e89-4089-aac5-19fc76ea9abf" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="158" y="295.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2fa883b7-45a8-48f7-b9ef-c8c08fb3dc1e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-29.9333127421306" y="362.352127218334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//String or DB.ViewDetailLevel&#xD;&#xA;detailLevel" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="bc446fa6-a3a8-455e-a065-8b62f5fc5bec" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="580.799029271865" y="291.659355613015" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="View" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="7d5fbe5e-73cf-4c75-ac03-835dd3e65dcb" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="575.514766539884" y="366.842337866339" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Success" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="3fb30f80-448e-4aaa-988f-4b7329cd11a0" start_index="0" end="40a0c917-e593-45f3-b2b9-cf13700e7ef4" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="40a0c917-e593-45f3-b2b9-cf13700e7ef4" start_index="0" end="bc446fa6-a3a8-455e-a065-8b62f5fc5bec" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="40a0c917-e593-45f3-b2b9-cf13700e7ef4" start_index="1" end="7d5fbe5e-73cf-4c75-ac03-835dd3e65dcb" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f50af35c-2e89-4089-aac5-19fc76ea9abf" start_index="0" end="3fb30f80-448e-4aaa-988f-4b7329cd11a0" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2fa883b7-45a8-48f7-b9ef-c8c08fb3dc1e" start_index="0" end="3fb30f80-448e-4aaa-988f-4b7329cd11a0" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

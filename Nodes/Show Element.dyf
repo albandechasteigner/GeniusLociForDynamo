@@ -1,0 +1,47 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Show Element" Description="Shows the given elements by zoom to fit in a view and select them." ID="ee3685c0-f9f6-4ca3-97ba-770c5d11ac49" Category="GeniusLoci.Element">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="d18d4bf7-64ee-407e-9f01-0fc0c59cc88f" type="PythonNodeModels.PythonNode" nickname="Python Script" x="389" y="353" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import ElementId
+
+clr.AddReference('RevitAPIUI')
+from Autodesk.Revit.UI import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+uidoc = DocumentManager.Instance.CurrentUIApplication.ActiveUIDocument
+
+import System
+from System.Collections.Generic import List
+
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+elemId = List[ElementId](x.Id for x in elements)
+uidoc.ShowElements(elemId)
+uidoc.Selection.SetElementIds(elemId)	
+OUT = IN[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="fc3ca364-7ca0-41aa-9ad3-fc9726904857" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="221.8" y="352.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b701b7f4-5028-44d7-8a6b-2db946b2639d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="613.4" y="353" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="d18d4bf7-64ee-407e-9f01-0fc0c59cc88f" start_index="0" end="b701b7f4-5028-44d7-8a6b-2db946b2639d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="fc3ca364-7ca0-41aa-9ad3-fc9726904857" start_index="0" end="d18d4bf7-64ee-407e-9f01-0fc0c59cc88f" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

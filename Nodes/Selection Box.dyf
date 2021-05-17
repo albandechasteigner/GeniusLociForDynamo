@@ -1,0 +1,100 @@
+<Workspace Version="1.3.4.6666" X="52.676352199865" Y="-3.98842298662828" zoom="0.910063803931439" ScaleFactor="1" Name="Selection Box" Description="Isolates the selected linked elements in the current view (if it's a 3D view) or creates a new 3D view." ID="4ca14fb3-3315-49fc-bccf-6f0346d31df7" Category="GeniusLoci.View">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="db696b93-425c-48e7-8da6-b7396b10a129" type="PythonNodeModels.PythonNode" nickname="Python Script" x="395.615453037656" y="443.256999779583" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Inspired by https://forum.dynamobim.com/t/zoom-to-selected-element-in-a-linked-document/61279/6
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitAPIUI')
+from Autodesk.Revit.UI import *
+from Autodesk.Revit.UI.Selection import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+doc = DocumentManager.Instance.CurrentDBDocument
+uidoc = DocumentManager.Instance.CurrentUIApplication.ActiveUIDocument
+
+def SumBoxes(boxes):
+	minx = min([b.Min.X for b in boxes])
+	miny = min([b.Min.Y for b in boxes])
+	minz = min([b.Min.Z for b in boxes])
+	maxx = max([b.Max.X for b in boxes])
+	maxy = max([b.Max.Y for b in boxes])
+	maxz = max([b.Max.Z for b in boxes])
+	bb = BoundingBoxXYZ()
+	bb.Min = XYZ(minx,miny,minz)
+	bb.Max = XYZ(maxx,maxy,maxz)
+	return bb
+
+#Get 3D View ViewFamilyType
+viewType = FilteredElementCollector(doc).OfClass(ViewFamilyType).ToElements().Find(lambda x : x.ViewFamily == ViewFamily.ThreeDimensional)
+bbx,elemInLinks=[],[]
+TaskDialog.Show("Selection", "Select the linked elements and press Finish")
+reflnk = uidoc.Selection.PickObjects(ObjectType.LinkedElement, "Select linked elements")
+for ref in reflnk :
+	lnkinst=doc.GetElement(ref)
+	tfLnk = lnkinst.GetTotalTransform()
+	doclnk =  lnkinst.GetLinkDocument()
+	elemInLink = doclnk.GetElement(ref.LinkedElementId)
+	elemInLinks.append(elemInLink)
+	box = elemInLink.get_BoundingBox(None)
+	box.Min = tfLnk.OfPoint(box.Min)
+	box.Max = tfLnk.OfPoint(box.Max)	
+	#box.Transform = tfLnk
+	bbx.append(box)
+	sumBox = SumBoxes(bbx)
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+if doc.ActiveView.ViewType == ViewType.ThreeD:
+	view = doc.ActiveView
+else:
+	view = View3D.CreateIsometric(doc, viewType.Id)
+view.SetSectionBox(sumBox)
+TransactionManager.Instance.TransactionTaskDone()	
+
+TransactionManager.Instance.ForceCloseTransaction()
+uidoc.RequestViewChange(view)
+#Impossible to set the uidoc.ActiveView in Revit’s Idling event since Dynamo operates inside this event
+#uidoc.ActiveView = view
+
+if len(elemInLinks)&gt;1: OUT = view, elemInLinks, lnkinst
+else:OUT = view, elemInLinks[0], lnkinst</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="22470075-0506-4283-a882-720b262c4be0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="116.415453037656" y="443.256999779583" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="refresh:bool= true" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="d1b4f432-7225-443e-9590-79e1626860cd" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="620.015453037656" y="447.470333112917" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0027c914-601d-4923-ba12-db63c695ab6e" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="811.215453037656" y="377.830333112917" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="3DView" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="a9a2209c-6c0d-4bae-ae7f-bf19fcface79" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="811.215453037656" y="460.830333112917" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5908178b-61a8-4c55-a220-7fe03018e446" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="811.215453037656" y="543.830333112917" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="RevitLinkInstance" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="db696b93-425c-48e7-8da6-b7396b10a129" start_index="0" end="d1b4f432-7225-443e-9590-79e1626860cd" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="22470075-0506-4283-a882-720b262c4be0" start_index="0" end="db696b93-425c-48e7-8da6-b7396b10a129" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d1b4f432-7225-443e-9590-79e1626860cd" start_index="0" end="0027c914-601d-4923-ba12-db63c695ab6e" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d1b4f432-7225-443e-9590-79e1626860cd" start_index="1" end="a9a2209c-6c0d-4bae-ae7f-bf19fcface79" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="d1b4f432-7225-443e-9590-79e1626860cd" start_index="2" end="5908178b-61a8-4c55-a220-7fe03018e446" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+</Workspace>

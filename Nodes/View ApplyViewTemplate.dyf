@@ -1,0 +1,50 @@
+<Workspace Version="1.3.4.6666" X="232.262521069183" Y="63.0233790622248" zoom="0.642869557405948" ScaleFactor="1" Name="View ApplyViewTemplate" Description="Applies to the given view the properties that are not controlled by the assigned view template. (Similar to the &quot;Apply Template Properties&quot; command of Revit)" ID="5bb00330-a640-4841-8998-09ab7955ea13" Category="GeniusLoci.View">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="7c02c948-4b3c-4c9a-ae54-df1b79e2d6b7" type="PythonNodeModels.PythonNode" nickname="Python Script" x="151.881422910949" y="224.532342013996" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+views = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+viewTemplate = UnwrapElement(IN[1])
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for view in views:
+	view.ApplyViewTemplateParameters(viewTemplate)
+TransactionManager.Instance.TransactionTaskDone()
+
+if isinstance(IN[0], list): OUT = views
+else: OUT = views[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="70b2ba96-0a61-48f4-9c56-249d9f149b1e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-77.7185770890511" y="195.532342013996" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="view" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5b36facf-fa0a-4448-9c27-a0935d878505" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="376.281422910949" y="224.532342013996" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="View" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a9f476e9-8a49-481b-94e5-2946514ec436" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-305.923638420936" y="280.12508243304" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Source view from which to take properties&#xD;&#xA;viewTemplate" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="7c02c948-4b3c-4c9a-ae54-df1b79e2d6b7" start_index="0" end="5b36facf-fa0a-4448-9c27-a0935d878505" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="70b2ba96-0a61-48f4-9c56-249d9f149b1e" start_index="0" end="7c02c948-4b3c-4c9a-ae54-df1b79e2d6b7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="a9f476e9-8a49-481b-94e5-2946514ec436" start_index="0" end="7c02c948-4b3c-4c9a-ae54-df1b79e2d6b7" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-10.0928364144648" eyeY="5.18774918474673" eyeZ="21.3929681059332" lookX="4.78869155515085" lookY="-5.18774918474675" lookZ="-23.1453425165624" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

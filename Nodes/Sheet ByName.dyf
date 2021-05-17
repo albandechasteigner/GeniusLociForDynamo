@@ -1,0 +1,61 @@
+<Workspace Version="1.3.4.6666" X="63.0937489583483" Y="186.361355689848" zoom="0.640131292421426" ScaleFactor="1" Name="Sheet ByName" Description="Collects sheets by name or number in the active or given document." ID="8c962c55-909f-4282-a9fc-b5731ec68a19" Category="GeniusLoci.Sheet">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="a383e2a3-c1c5-4f22-8460-17290116ee09" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="43.0853014070829" y="183.496731448957" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="NameOrNumber : string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="9bb7e648-9edc-4f69-b366-984f4f2f5985" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="43.0853014070829" y="267.496731448958" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="7b4e776c-829c-4d59-972c-eb003260c85d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="553.085301407083" y="212.496731448958" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import Document, RevitLinkInstance, FilteredElementCollector, ViewSheet
+
+namnums = IN[0] if isinstance(IN[0],list) else [IN[0]]
+inputdoc = (UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])])[0]
+
+#Inspired by Clockwork
+if inputdoc == None:
+	doc = DocumentManager.Instance.CurrentDBDocument
+elif isinstance (inputdoc, Document):
+	doc = inputdoc
+elif isinstance (inputdoc, RevitLinkInstance):
+	doc = inputdoc.GetLinkDocument()
+else: doc = DocumentManager.Instance.CurrentDBDocument
+
+collector = FilteredElementCollector(doc).OfClass(Autodesk.Revit.DB.ViewSheet)
+
+sheets=[s for s in collector for namnum in namnums if namnum in s.SheetNumber or namnum in s.Name]
+
+if len(sheets)&gt;1 : OUT = sheets
+else: OUT = sheets[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="03a52d00-1ee3-4ae0-ac61-4fdded570ef3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="777.485301407083" y="212.496731448958" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Sheet" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a383e2a3-c1c5-4f22-8460-17290116ee09" start_index="0" end="7b4e776c-829c-4d59-972c-eb003260c85d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="9bb7e648-9edc-4f69-b366-984f4f2f5985" start_index="0" end="7b4e776c-829c-4d59-972c-eb003260c85d" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="7b4e776c-829c-4d59-972c-eb003260c85d" start_index="0" end="03a52d00-1ee3-4ae0-ac61-4fdded570ef3" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

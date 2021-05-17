@@ -1,0 +1,54 @@
+<Workspace Version="1.3.4.6666" X="-151.976213693316" Y="-19.2162365483313" zoom="0.888789228297156" ScaleFactor="1" Name="Sheet Size" Description="Returns the width and the height of the given sheet." ID="de3aa393-b271-4562-b127-5372640f6bcb" Category="GeniusLoci.Sheet">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="a378ab76-8fec-4296-a741-4c6971bf0e51" type="PythonNodeModels.PythonNode" nickname="Python Script" x="387.897504161126" y="421.983596189809" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import FilteredElementCollector,BuiltInParameter,BuiltInCategory
+
+sheets = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+width,height=[],[]
+for sheet in sheets:
+	doc=sheet.Document
+	title=FilteredElementCollector(doc,sheet.Id).OfCategory(BuiltInCategory.OST_TitleBlocks).FirstElement()
+	width.append(title.get_Parameter(BuiltInParameter.SHEET_WIDTH).AsValueString())
+	height.append(title.get_Parameter(BuiltInParameter.SHEET_HEIGHT).AsValueString())
+
+if isinstance(IN[0], list): OUT = width,height
+else: OUT = width[0],height[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="33c4999f-0250-44df-81a5-53a63f0c9fae" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="803.497504161126" y="388.770262856476" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Width" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="66f6d2c0-4161-4d34-a508-6ee041dfdba3" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="803.497504161126" y="472.770262856476" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Height" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="8acb9c14-366a-4d8c-bf65-db452e58348b" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="612.297504161126" y="426.196929523142" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="58d7b2d9-284b-43bb-99f1-47ea52534fc2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="215.897504161126" y="421.983596189809" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="sheet" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a378ab76-8fec-4296-a741-4c6971bf0e51" start_index="0" end="8acb9c14-366a-4d8c-bf65-db452e58348b" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8acb9c14-366a-4d8c-bf65-db452e58348b" start_index="0" end="33c4999f-0250-44df-81a5-53a63f0c9fae" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8acb9c14-366a-4d8c-bf65-db452e58348b" start_index="1" end="66f6d2c0-4161-4d34-a508-6ee041dfdba3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="58d7b2d9-284b-43bb-99f1-47ea52534fc2" start_index="0" end="a378ab76-8fec-4296-a741-4c6971bf0e51" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

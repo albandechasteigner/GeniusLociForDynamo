@@ -1,0 +1,113 @@
+<Workspace Version="1.3.4.6666" X="215.259552060788" Y="105.905038627187" zoom="0.565293988808902" ScaleFactor="1" Name="String PrintPDF" Description="Write the text content to a PDF file specified by the path. &#xD;&#xA;By Keith Sowinski on Dynamo Forum" ID="b279ccf1-0f64-4a22-8e84-2c45f3d3b34d" Category="GeniusLoci.Printing">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="448e2576-5253-48d5-99c1-7ec2e83a95ce" type="PythonNodeModels.PythonNode" nickname="Python Script" x="362.929245601776" y="352.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="9">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <PortInfo index="3" default="False" />
+      <PortInfo index="4" default="False" />
+      <PortInfo index="5" default="False" />
+      <PortInfo index="6" default="False" />
+      <PortInfo index="7" default="False" />
+      <PortInfo index="8" default="False" />
+      <Script>#by Keith Sowinski on Dynamo Forum
+
+import clr
+import System
+import math
+
+clr.AddReference('System.Drawing')
+
+from System.Drawing.Printing import *
+from System.Drawing import Brushes, Font, StringFormat, SizeF, StringAlignment
+
+file = IN[0]
+string = IN[1]
+ltMargin = IN[2]
+rtMargin = IN[3]
+tpMargin = IN[4]
+btmMargin = IN[5]
+font = IN[6]
+size = IN[7]
+run = IN[8]
+
+def printPDF():
+	pd = PrintDocument()
+	pd.PrinterSettings.PrinterName = "Microsoft Print to PDF"
+	pd.PrinterSettings.PrintToFile = True
+	pd.PrinterSettings.PrintFileName = file
+	pd.DefaultPageSettings.Margins.Left = ltMargin
+	pd.DefaultPageSettings.Margins.Right = rtMargin
+	pd.DefaultPageSettings.Margins.Top = tpMargin
+	pd.DefaultPageSettings.Margins.Bottom = btmMargin
+	pd.PrintPage += PrintPageEventHandler(print_page)
+	pd.Print()
+#	return file
+
+def print_page(sender, e):
+	global string
+	
+	fnt = Font(font, size)
+	charactersOnPage = clr.Reference[System.Int32]()
+	linesPerPage = clr.Reference[System.Int32]()
+	e.Graphics.MeasureString(string, fnt, SizeF(e.MarginBounds.Size), StringFormat.GenericDefault, charactersOnPage, linesPerPage)
+	
+	e.Graphics.DrawString(string, fnt, Brushes.Black, e.MarginBounds)
+	string = string.Substring(charactersOnPage.Value)
+	e.HasMorePages = string.Length &gt; 0
+
+if run:
+	OUT = printPDF()</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8890e84b-4820-4393-97ab-a57bbf7606dd" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="112.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Must include: Directory + name + .pdf extension&#xD;&#xA;filePath" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ac08689e-cfb9-420b-b123-af64bbe0c1c2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="206.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="text:string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="02fd69c8-208d-410d-bb83-2a130d4e96fd" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="289.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="LeftMargins:var[]..[]=1" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="66f90acc-1b01-4254-b8f1-3f7b4678b087" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="372.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RightMargins:var[]..[]=1" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ffd1bb2a-8988-46f7-a776-a9748935b0dc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="455.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="TopMargins:var[]..[]=1" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f013b068-0502-44fc-a855-17434416fc2b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="538.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="BottomMargins:var[]..[]=1" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c2da72d7-ce01-4051-a963-c110627822a5" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="621.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Monospaced font&#xD;&#xA;Font:var[]..[]=&quot;Courier New&quot;" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="39b6475a-5164-4624-ac20-dda8240c3ee2" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="714.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="FontSize:var[]..[]=5" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="5186b8c0-5fd0-49b7-95d8-b74c5b210697" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-179.870754398224" y="797.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="RunIt:bool=false" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="860f0156-74fb-494b-ac7d-c454ac62d889" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="587.329245601775" y="352.826532383492" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="void" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="448e2576-5253-48d5-99c1-7ec2e83a95ce" start_index="0" end="860f0156-74fb-494b-ac7d-c454ac62d889" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8890e84b-4820-4393-97ab-a57bbf7606dd" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ac08689e-cfb9-420b-b123-af64bbe0c1c2" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="02fd69c8-208d-410d-bb83-2a130d4e96fd" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="66f90acc-1b01-4254-b8f1-3f7b4678b087" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="3" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ffd1bb2a-8988-46f7-a776-a9748935b0dc" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="4" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="f013b068-0502-44fc-a855-17434416fc2b" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="5" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="c2da72d7-ce01-4051-a963-c110627822a5" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="6" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="39b6475a-5164-4624-ac20-dda8240c3ee2" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="7" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="5186b8c0-5fd0-49b7-95d8-b74c5b210697" start_index="0" end="448e2576-5253-48d5-99c1-7ec2e83a95ce" end_index="8" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
