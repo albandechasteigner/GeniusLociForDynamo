@@ -1,0 +1,84 @@
+<Workspace Version="1.3.4.6666" X="-115.667326144445" Y="75.698239866941" zoom="0.712594832628488" ScaleFactor="1" Name="Get SystemType Properties" Description="Returns the Calculations, Fluid Type, Fluid Temperature and Flow Conversion Method of the given System Type." ID="8c071a1e-9133-428a-b658-e201fc5b2e82" Category="GeniusLoci.MEP">
+  <NamespaceResolutionMap />
+  <Elements>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="028b7525-662a-40d9-8a6d-8807ad6e22ff" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="857.4917890719" y="161.582451475051" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Calculations" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="fd8de1be-5491-4cbf-a6b6-e3ec8bcbc973" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="336.389542274282" y="167.798437771786" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="SystemType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <PythonNodeModels.PythonNode guid="ab390678-62d7-481a-ae43-2611b5b46894" type="PythonNodeModels.PythonNode" nickname="Get SystemType Properties" x="488.366026705714" y="166.234865669065" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
+
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+if version &lt; 2021:
+	UIunit = doc.GetUnits().GetFormatOptions(UnitType.UT_Piping_Temperature).DisplayUnits
+else:
+	UIunit = doc.GetUnits().GetFormatOptions(SpecTypeId.PipingTemperature).GetUnitTypeId()
+	
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+calculations,fluids,temp,flow=[],[],[],[]
+
+for elem in elements:
+	calculations.append(elem.CalculationLevel)
+	if isinstance(elem,Autodesk.Revit.DB.Plumbing.PipingSystemType):
+		fluids.append(doc.GetElement(elem.FluidType))
+		temp.append(round(UnitUtils.ConvertFromInternalUnits(elem.FluidTemperature,UIunit),4))
+		flow.append(elem.FlowConversionMethod)
+	else:
+		fluids.append(None)
+		temp.append(None)
+		flow.append(None)
+		
+if isinstance(IN[0], list): OUT = calculations,fluids,temp,flow
+else: OUT = calculations[0],fluids[0],temp[0],flow[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="268caa56-6136-4b67-8080-763f7395edfd" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="713.732122664515" y="167" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="40bc9dd3-29ee-423e-a5cc-c2ae6ce2e198" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="858.158373870542" y="228.676450241093" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FluidType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="673771ec-60bd-49f1-abe4-c0491038c666" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="860.299770715445" y="313.894509011307" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FluidTemperature" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="0e74e52b-5ad3-4a8b-8b9a-c8cd00ddeca0" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="846.723961250154" y="397.989910187935" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="FlowConversionMethod" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="fd8de1be-5491-4cbf-a6b6-e3ec8bcbc973" start_index="0" end="ab390678-62d7-481a-ae43-2611b5b46894" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="ab390678-62d7-481a-ae43-2611b5b46894" start_index="0" end="268caa56-6136-4b67-8080-763f7395edfd" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="268caa56-6136-4b67-8080-763f7395edfd" start_index="0" end="028b7525-662a-40d9-8a6d-8807ad6e22ff" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="268caa56-6136-4b67-8080-763f7395edfd" start_index="1" end="40bc9dd3-29ee-423e-a5cc-c2ae6ce2e198" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="268caa56-6136-4b67-8080-763f7395edfd" start_index="2" end="673771ec-60bd-49f1-abe4-c0491038c666" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="268caa56-6136-4b67-8080-763f7395edfd" start_index="3" end="0e74e52b-5ad3-4a8b-8b9a-c8cd00ddeca0" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
