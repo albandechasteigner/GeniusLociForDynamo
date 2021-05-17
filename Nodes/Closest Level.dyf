@@ -1,0 +1,75 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Closest Level" Description="Return the closest level below the given element." ID="d1760333-ad7e-4e5f-8076-1448b0b7467e" Category="GeniusLoci.Level">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="d255d7aa-7246-4455-b64f-47b9da43769c" type="PythonNodeModels.PythonNode" nickname="Python Script" x="299.4" y="300" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import Level, FilteredElementCollector, HostObjectUtils, UV
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+items = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+search = []
+
+levels = FilteredElementCollector(doc).OfClass(Level).ToElements()
+sortedLevels = sorted(levels,key=lambda level : level.Elevation, reverse=True)
+
+def closest(sortedLevels, number): 
+	try:
+		result= min([level for level in sortedLevels if level.Elevation &lt;= number], key=lambda x: abs(x.Elevation-number))
+	except:
+		result= min([level for level in sortedLevels if level.Elevation &gt;= number], key=lambda x: abs(x.Elevation-number))
+	return result
+	
+for item in items:
+	#Thanks to the Clockwork package
+	if hasattr(item, "Location") :
+		loc = item.Location
+		if loc:
+			# line-based elements (e.g. walls)
+			if loc.ToString() == 'Autodesk.Revit.DB.LocationCurve':
+				elementZ=loc.Curve.Evaluate(0.5, True).Z
+			# point-based elements (e.g. most loadable families)
+			elif loc.ToString() == 'Autodesk.Revit.DB.LocationPoint':
+				elementZ=loc.Point.Z
+			# some elements have a location property but don't return curves or points
+			elif loc.ToString() == 'Autodesk.Revit.DB.Location':
+				try:
+					for ref in HostObjectUtils.GetBottomFaces(item):
+						uv = UV(0.5,0.5)
+						elementZ = item.GetGeometryObjectFromReference(ref).Evaluate(uv).Z
+				except: elementZ = None
+		else: elementZ = None
+		search.append(closest(sortedLevels, elementZ))
+
+OUT = search</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="b91ba998-880e-40fa-a16c-02c2c24757f0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="111" y="300" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9690f69c-5752-404f-a133-b4e22642db18" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="523.8" y="300" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Level" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="d255d7aa-7246-4455-b64f-47b9da43769c" start_index="0" end="9690f69c-5752-404f-a133-b4e22642db18" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="b91ba998-880e-40fa-a16c-02c2c24757f0" start_index="0" end="d255d7aa-7246-4455-b64f-47b9da43769c" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
