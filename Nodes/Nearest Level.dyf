@@ -1,0 +1,166 @@
+{
+  "Uuid": "9356a534-94a1-4bc1-af25-2b2857cf3cdb",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Level",
+  "Description": "Works only in Revit 2022 and later.\r\nReturns the closest level to the specified elevation.",
+  "Name": "NearestLevel",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2021\r\n#twitter : @geniusloci_bim\r\n#geniusloci.bim@gmail.com\r\n#https://github.com/albandechasteigner/GeniusLociForDynamo\r\n  \r\nimport clr\r\n# Import RevitAPI Classes\r\nclr.AddReference('RevitAPI')\r\nimport Autodesk\r\nfrom Autodesk.Revit.DB import *\r\n# Import DocumentManager and TransactionManager\r\nclr.AddReference(\"RevitServices\")\r\nimport RevitServices\r\nfrom RevitServices.Persistence import DocumentManager\r\n\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\nUIunit = Document.GetUnits(doc).GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()\r\n\r\nnumbers = IN[0] if isinstance(IN[0],list) else [IN[0]]\r\nresult=[]\r\nfor number in numbers:\r\n\tresult.append(doc.GetElement(Autodesk.Revit.DB.Level.GetNearestLevelId(doc,UnitUtils.ConvertToInternalUnits(number,UIunit))))\r\n\r\nif isinstance(IN[0], list): OUT = result\r\nelse: OUT = result[0]",
+      "Engine": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "4fe3e05ca3904c12809a5787e59f3fab",
+      "Inputs": [
+        {
+          "Id": "811b0349f14d40f29c154409e0bb08e3",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "f65abee9cb944527aa7785625240761b",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Level",
+      "Id": "80d064fc268744bbb833c1cfc11d1aca",
+      "Inputs": [
+        {
+          "Id": "cf03d095c54543f3812564fd51023a1d",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "elevation",
+        "TypeName": "double",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "2933073827b24430841f617b1d41ab7a",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "db15412917c74e2f9474248bf007560b",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "f65abee9cb944527aa7785625240761b",
+      "End": "cf03d095c54543f3812564fd51023a1d",
+      "Id": "ce294f9a808246fda971ed942d7fb2a9"
+    },
+    {
+      "Start": "db15412917c74e2f9474248bf007560b",
+      "End": "811b0349f14d40f29c154409e0bb08e3",
+      "Id": "a597d93c542141be81cc4e6d21aa7ae2"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.10.1.3976",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "NodeViews": [
+      {
+        "ShowGeometry": true,
+        "Name": "Python Script",
+        "Id": "4fe3e05ca3904c12809a5787e59f3fab",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 276.80000000000007,
+        "Y": 155.20000000000002
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Output",
+        "Id": "80d064fc268744bbb833c1cfc11d1aca",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 442.40000000000003,
+        "Y": 158.40000000000006
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "2933073827b24430841f617b1d41ab7a",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 5.60000000000008,
+        "Y": 156.8
+      }
+    ],
+    "Annotations": [],
+    "X": 0.0,
+    "Y": 0.0,
+    "Zoom": 1.0
+  }
+}

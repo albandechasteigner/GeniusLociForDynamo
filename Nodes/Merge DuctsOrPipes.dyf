@@ -1,0 +1,82 @@
+<Workspace Version="1.3.4.6666" X="67.221" Y="51.03" zoom="0.8425" ScaleFactor="1" Name="Merge DuctsOrPipes" Description="Turns pipe or duct segments into a single straight one.&#xD;&#xA;By Cyril Poupin on the Dynamo Forum" ID="8fd9f509-012d-48b3-a0b1-e69502f5d964" Category="GeniusLoci.MEP">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="27a6e50d-4a36-4574-b365-ce580daa9240" type="PythonNodeModels.PythonNode" nickname="Python Script" x="262" y="310.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#By Cyril Poupin https://forum.dynamobim.com/t/turn-pipe-segments-into-single-pipe/55159/2
+
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+clr.AddReference('RevitServices')
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+
+import System
+from System.Collections.Generic import List
+
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def getConnectTo(connector):
+    elemOwner = connector.Owner
+    for refCon in connector.AllRefs:
+        if  refCon.Owner.Id != elemOwner.Id and refCon.ConnectorType == ConnectorType.End:
+            return refCon
+    return None     
+
+def getConnecDistant(group):
+    lstCon = []
+    for elem in group:
+        if isinstance(elem, MEPCurve):
+            connects = elem.ConnectorManager.Connectors
+        else:
+            connects = elem.MEPModel.ConnectorManager.Connectors        
+        lstCon.extend(connects)
+    pairLst = [[x, y] for x in lstCon for y in lstCon ]
+    pairLst.sort(key = lambda x : x[0].Origin.DistanceTo(x[1].Origin))
+    return  pairLst[-1]
+
+toGroup = lambda x : x if hasattr(x[0] , '__iter__') else [x]
+lstGoupPipe = toGroup(UnwrapElement(IN[0]))
+
+TransactionManager.Instance.EnsureInTransaction(doc)
+for group in lstGoupPipe:
+    con2DistanA, con2DistanB = getConnecDistant(group)
+    pipeA = con2DistanA.Owner 
+    #prepare list to delete
+    lstgroupId = List[ElementId]([x.Id for x in group if x.Id != pipeA.Id])
+    #get connector to move
+    seconConPipeA = [ x for x in pipeA.ConnectorManager.Connectors if x.Id !=  con2DistanA.Id][0]
+    conToConnect = getConnectTo(con2DistanB)
+    if conToConnect:
+        seconConPipeA.ConnectTo(conToConnect)
+        seconConPipeA.Origin = conToConnect.Origin
+    else:
+        seconConPipeA.Origin = con2DistanB.Origin   
+    doc.Delete(lstgroupId)          
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = pipeA</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4a31266f-f237-4aa1-91d7-727102c6f419" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="457.241543026706" y="310.471216617211" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="DuctOrPipe" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="85ae0d5e-824d-4b3e-9ef5-e199a36dd373" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="87.8089020771514" y="311.181008902077" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="DuctsOrPipes" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="27a6e50d-4a36-4574-b365-ce580daa9240" start_index="0" end="4a31266f-f237-4aa1-91d7-727102c6f419" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="85ae0d5e-824d-4b3e-9ef5-e199a36dd373" start_index="0" end="27a6e50d-4a36-4574-b365-ce580daa9240" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
