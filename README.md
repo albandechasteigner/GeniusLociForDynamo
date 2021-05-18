@@ -5,7 +5,7 @@
 
 ![Logo Genius Loci](https://github.com/albandechasteigner/GeniusLociForDynamo/blob/master/Logo%20Genius%20Loci.png)
 
-***Genius Loci*** is a compilation of 250+ custom nodes for the [Dynamo](http://www.dynamobim.com/) environment.
+***Genius Loci*** is a compilation of 300+ custom nodes for the [Dynamo](http://www.dynamobim.com/) environment.
 The vast majority of nodes are written in Python and related to Revit.
 Particular emphasis is placed on interoperability and many nodes can handle with DWG, DWF, NWC and IFC files.
 Another goal is to interact easily with linked files and Revit documents. 
@@ -23,6 +23,9 @@ Installation is simple - just use Dynamo's built-in package manager and search f
 
 ### UPDATES
 
+###### 21.05.18 Update nodes for Revit 2022 and add Export PDF. 
+###### 21.01.12 Added CAD Block Location from DWG link, Closest Level, TextNote AddLeader, Family Properties, Documents Properties, All Elements of Family, Document Units nodes. 
+###### 20.11.08 Fixed the Print PDF(multiple formats) node which only worked for Dynamo 2.6 in previous update "20.10.15".
 ###### 20.06.18 Added Delete Compound Layer, Material Add Image and Duct Surfaces References nodes
 ###### 20.05.14 Added Link DWF, Copy DWFMarkup and Print Settings Properties nodes.
 ###### 20.04.29 Added Group Lines by Orthogonality and Element Filter By Name (equals, contains, doesn't contain) nodes
