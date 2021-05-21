@@ -42,7 +42,9 @@ if assetElem:
 					#path.append(connectedAsset["unifiedbitmap_Bitmap"].Value)
 					#path.append(connectedAsset.FindByName("unifiedbitmap_Bitmap").Value)
 					paths.append(connectedAsset.FindByName("unifiedbitmap_Bitmap").Value)
-					path=filter(None,paths)
+				elif connectedAsset.Name == "BumpMapSchema":	
+					paths.append(connectedAsset.FindByName("bumpmap_Bitmap").Value)
+				path=filter(None,paths)
 					#propertyName.append(property.Name) 
 					#library.append(connectedAsset.LibraryName)
 			#idx += 1

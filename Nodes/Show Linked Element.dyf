@@ -1,10 +1,20 @@
-<Workspace Version="1.3.4.6666" X="-36.2132500000001" Y="35.7725" zoom="0.8425" ScaleFactor="1" Name="Show Linked Element" Description="Selects the linked elements and shows them by zoom to fit in the current view.&#xD;&#xA;By Cyril Poupin on Dynamo Forum" ID="12050b47-2098-4101-af6d-79523545a310" Category="GeniusLoci.Element">
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Show Linked Element" Description="Shows the linked elements by zoom to fit in the current view." ID="36d2fd73-a1c3-4837-ae92-22a24390bfb7" Category="GeniusLoci.Element">
   <NamespaceResolutionMap />
   <Elements>
-    <PythonNodeModels.PythonNode guid="2998204f-da4b-438f-8181-643981f58714" type="PythonNodeModels.PythonNode" nickname="Python Script" x="316.5" y="283.413333333333" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="bab48c96-9463-4de9-84e8-a6ccc531005d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-14.8" y="291.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Linked element&#xD;&#xA;element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="10d0af75-b5a1-4ad4-be97-025623479d93" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="338.8" y="296.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
-      <Script>#By Cyril Poupin https://forum.dynamobim.com/t/zoom-to-selected-element-in-a-linked-document/61279/6
-#Some modifications by Alban de Chasteigner 2021, @geniusloci_bim 
+      <Symbol value="Element" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <PythonNodeModels.PythonNode guid="db01bc38-95e5-41fc-9dfc-106d2c23ab3c" type="PythonNodeModels.PythonNode" nickname="Python Script" x="176.4" y="298" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Inspired by Cyril Poupin
+#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
 
 import clr
 clr.AddReference('RevitAPI')
@@ -13,7 +23,6 @@ from Autodesk.Revit.DB import *
 
 clr.AddReference('RevitAPIUI')
 from Autodesk.Revit.UI import *
-from Autodesk.Revit.UI.Selection import *
 
 clr.AddReference('RevitServices')
 import RevitServices
@@ -37,45 +46,25 @@ def SumBoxes(boxes):
 	bb.Max = XYZ(maxx,maxy,maxz)
 	return bb
 
-bbx,elemInLinks=[],[]
-TaskDialog.Show("Selection", "Select the linked elements and press Finish")
-reflnk = uidoc.Selection.PickObjects(ObjectType.LinkedElement, "Select linked elements")
-for ref in reflnk :
-	lnkinst=doc.GetElement(ref)
+elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+bbx=[]
+
+for elem in elements :
+	lnkinst=FilteredElementCollector(doc).OfClass(RevitLinkInstance).ToElements().Find(lambda x : x.GetLinkDocument().Title == elem.Document.Title)
 	tfLnk = lnkinst.GetTotalTransform()
-	doclnk =  lnkinst.GetLinkDocument()
-	elemInLink = doclnk.GetElement(ref.LinkedElementId)
-	elemInLinks.append(elemInLink)
-	box = elemInLink.get_BoundingBox(None)
+	box = elem.get_BoundingBox(None)
 	box.Min = tfLnk.OfPoint(box.Min)
 	box.Max = tfLnk.OfPoint(box.Max)	
 	bbx.append(box)
 	sumBox = SumBoxes(bbx)	
 	uiview.ZoomAndCenterRectangle(sumBox.Min, sumBox.Max)
 
-if len(elemInLinks)&gt;1: OUT = elemInLinks, lnkinst
-else:OUT = elemInLinks[0], lnkinst</Script>
+OUT = elements</Script>
     </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="0d823c94-5c40-4d94-8cb3-76c2f6b839d7" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="540.9" y="287.626666666667" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
-      <PortInfo index="0" default="False" />
-    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ba52669a-d960-4d58-88e9-9fc13803d396" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="37.3000000000001" y="283.413333333333" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="refresh:bool=false" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="6f17bcf4-6644-43d6-8b3d-132f43af839d" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="732.1" y="250.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Element" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="3564be73-689b-4458-9e8a-7b9d2cef8a67" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="732.1" y="334.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="RevitLinkInstance" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
   </Elements>
   <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="2998204f-da4b-438f-8181-643981f58714" start_index="0" end="0d823c94-5c40-4d94-8cb3-76c2f6b839d7" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="0d823c94-5c40-4d94-8cb3-76c2f6b839d7" start_index="0" end="6f17bcf4-6644-43d6-8b3d-132f43af839d" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="0d823c94-5c40-4d94-8cb3-76c2f6b839d7" start_index="1" end="3564be73-689b-4458-9e8a-7b9d2cef8a67" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="ba52669a-d960-4d58-88e9-9fc13803d396" start_index="0" end="2998204f-da4b-438f-8181-643981f58714" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="bab48c96-9463-4de9-84e8-a6ccc531005d" start_index="0" end="db01bc38-95e5-41fc-9dfc-106d2c23ab3c" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="db01bc38-95e5-41fc-9dfc-106d2c23ab3c" start_index="0" end="10d0af75-b5a1-4ad4-be97-025623479d93" end_index="0" portType="0" />
   </Connectors>
   <Notes />
   <Annotations />
