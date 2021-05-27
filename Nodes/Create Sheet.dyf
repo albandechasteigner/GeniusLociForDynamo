@@ -1,0 +1,87 @@
+<Workspace Version="1.3.4.6666" X="202.040613881914" Y="-66.7451208465872" zoom="0.867977507649016" ScaleFactor="1" Name="Create Sheet" Description="Creates new sheets." ID="cbf07b4b-7466-4052-b816-77ce085f2824" Category="GeniusLoci.Sheet">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="3695d097-6bea-42d7-9580-b30a835e83a3" type="PythonNodeModels.PythonNode" nickname="Python Script" x="303.6" y="278" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <PortInfo index="2" default="False" />
+      <Script>#From Dynamo Forum
+import clr
+clr.AddReference('RevitAPI')
+from Autodesk.Revit.DB import ViewSheet
+
+clr.AddReference("RevitNodes")
+import Revit
+clr.ImportExtensions(Revit.Elements)
+
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+from RevitServices.Transactions import TransactionManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
+def tolist(obj1):
+	if hasattr(obj1,"__iter__"): return obj1
+	else: return [obj1]
+
+sheetnames = tolist(IN[0])
+sheetnumbers = tolist(IN[1])
+titleblock = tolist(UnwrapElement(IN[2]))
+sheetList,notCreated = [], []
+
+TransactionManager.Instance.EnsureInTransaction(doc) 
+for number in range(len(sheetnumbers)):
+	if len(titleblock) &gt; 1:
+		newsheet = ViewSheet.Create(doc,titleblock[number].Id)
+		#new sheets with different titleblocks
+	else:
+		newsheet = ViewSheet.Create(doc,titleblock[0].Id) 
+		#new sheets whith identical titleblock
+	newsheet.Name = sheetnames[number]
+	try:
+		newsheet.SheetNumber = sheetnumbers[number]
+		sheetList.append(newsheet.ToDSType(False))
+	except:
+		notCreated.append(number)
+		doc.Delete(newsheet.Id)
+
+TransactionManager.Instance.TransactionTaskDone()
+
+OUT = sheetList, notCreated</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c46aaf4c-6406-47ef-995d-2645dfbb16de" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-1.14781708848747" y="254.483698640774" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="sheetName:string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="6053c4b5-11e7-43fb-a474-0816d7fbb3bc" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-17.2859209800963" y="327.822210206397" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="sheetNumber:string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8218cce9-0663-4618-9148-ed4abf8ac9c3" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="74.1522687624985" y="406.943246076423" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//FamilyType&#xD;&#xA;titleBlock" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="421d8074-ee64-4619-b8a8-436a60c6046f" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="458" y="283" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
+      <PortInfo index="0" default="False" />
+    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="688b93e7-5814-434d-870e-52d7330ae1a7" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="580.102665492081" y="280.193107617633" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Sheets" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="1ef71f4d-fd35-4cdd-b040-7ca2b2c4e084" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="582.015663087728" y="350.059197524696" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Failed" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="3695d097-6bea-42d7-9580-b30a835e83a3" start_index="0" end="421d8074-ee64-4619-b8a8-436a60c6046f" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="c46aaf4c-6406-47ef-995d-2645dfbb16de" start_index="0" end="3695d097-6bea-42d7-9580-b30a835e83a3" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="6053c4b5-11e7-43fb-a474-0816d7fbb3bc" start_index="0" end="3695d097-6bea-42d7-9580-b30a835e83a3" end_index="1" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="8218cce9-0663-4618-9148-ed4abf8ac9c3" start_index="0" end="3695d097-6bea-42d7-9580-b30a835e83a3" end_index="2" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="421d8074-ee64-4619-b8a8-436a60c6046f" start_index="0" end="688b93e7-5814-434d-870e-52d7330ae1a7" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="421d8074-ee64-4619-b8a8-436a60c6046f" start_index="1" end="1ef71f4d-fd35-4cdd-b040-7ca2b2c4e084" end_index="0" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

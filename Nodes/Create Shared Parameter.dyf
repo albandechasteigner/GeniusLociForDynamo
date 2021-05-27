@@ -1,15 +1,15 @@
-<Workspace Version="1.3.4.6666" X="3.31281887291814" Y="105.201029028383" zoom="0.437884982559123" ScaleFactor="1" Name="Create Shared Parameter" Description="Create shared parameters in the shared parameter file and then add it to the project.&#xD;&#xA;It is possible to use an existing GUID to recreate an identical shared parameter in a new SP file. Or use the GUID input to simply add the shared parameters to the project.&#xD;&#xA;Inspired by archilab" ID="9bfc4112-8be2-42bc-865e-24b847a516c6" Category="GeniusLoci.Parameter">
+<Workspace Version="1.3.4.6666" X="-29.8518479083429" Y="-78.7576706429925" zoom="0.752987929891297" ScaleFactor="1" Name="Create Shared Parameter" Description="Create shared parameters in the shared parameter file and then add it to the project.&#xD;&#xA;It is possible to use an existing GUID to recreate an identical shared parameter in a new SP file. Or use the GUID input to simply add the shared parameters to the project.&#xD;&#xA;Inspired by archilab" ID="9bfc4112-8be2-42bc-865e-24b847a516c6" Category="GeniusLoci.Parameter">
   <NamespaceResolutionMap />
   <Elements>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="15260ed0-b7f4-4973-91b3-e01a37019f02" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="-24.64005934718" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//String&#xD;&#xA;ParameterName" />
+      <Symbol value="ParameterName:string[]..[]" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="9d4b5537-f1b0-401b-aaff-b2ab3b602334" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="956.972703833027" y="207.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
       <Symbol value="Result" />
     </Dynamo.Graph.Nodes.CustomNodes.Output>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="c876298b-680e-4372-ac15-65814bb27fbe" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="68.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//String. Group of the shared parameter&#xD;&#xA;GroupName" />
+      <Symbol value="//Group of the shared parameter&#xD;&#xA;GroupName:string[]..[]" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1bd11f7d-0c25-4e7a-8b61-1d7019b544f0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="161.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//String or DB.ParameterType&#xD;&#xA;ParameterType" />
@@ -26,7 +26,7 @@
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2a625e19-3dbb-41f7-b19b-b3c553e76761" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="523.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//Optional input. String or System Guid&#xD;&#xA;GUID:var[]..[]=null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="70a8a020-67f5-4776-8bd1-fd5ff81ec51d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="139.372703833027" y="616.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="70a8a020-67f5-4776-8bd1-fd5ff81ec51d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="147.613998261665" y="654.192712386944" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="category" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <PythonNodeModels.PythonNode guid="96424bcc-2d29-4ad2-9f45-787f5a0a77f5" type="PythonNodeModels.PythonNode" nickname="Python Script" x="732.172703833027" y="207.35994065282" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="8">
@@ -38,16 +38,17 @@
       <PortInfo index="5" default="False" />
       <PortInfo index="6" default="False" />
       <PortInfo index="7" default="False" />
-      <Script>#Inspired by an archilab node
-#Copyright(c) 2015, Konrad Sobon
-# @arch_laboratory, http://archi-lab.net
+      <Script>#Inspired by an archilab node, Copyright(c) 2015, Konrad Sobon
+#Modifications by Alban de Chasteigner 2020
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
 
 import clr
 clr.AddReference("RevitAPI")
 import Autodesk
 from Autodesk.Revit.DB import *
 
-# Import DocumentManager and TransactionManager
 clr.AddReference("RevitServices")
 import RevitServices
 from RevitServices.Persistence import DocumentManager
@@ -56,41 +57,32 @@ doc = DocumentManager.Instance.CurrentDBDocument
 uiapp = DocumentManager.Instance.CurrentUIApplication
 app = uiapp.Application
 
-# Import ToDSType(bool) extension method
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.Elements)
-
 import System
 from System.Collections.Generic import List
 from System import Guid
 
-_paramName = IN[0]
+_paramName = IN[0] if isinstance(IN[0],list) else [IN[0]]
 _groupName = IN[1]
-parameterType = IN[2]
-parameterGroup = IN[3]
-_instance = IN[4]
-_visible = IN[5]
-guid = IN[6]
-_categories = IN[7]
+parameterTypes = IN[2] if isinstance(IN[2],list) else [IN[2]]
+parameterGroups = IN[3] if isinstance(IN[3],list) else [IN[3]]
+_instance = IN[4] if isinstance(IN[4],list) else [IN[4]]
+_visible = IN[5] if isinstance(IN[5],list) else [IN[5]]
+guids = IN[6] if isinstance(IN[6],list) else [IN[6]]
+_categories = IN[7] if isinstance(IN[7],list) else [IN[7]]
 
-if not hasattr(_categories, '__iter__'):
-	_categories = [_categories]
+paramTypes_len = len(parameterTypes) == 1
+paramGroups_len = len(parameterGroups) == 1
+instance_len = len(_instance) == 1
+visible_len = len(_visible) == 1
+guid_len = len(guids) == 1
 
-if isinstance(parameterGroup, basestring):
-	exec("_paramGroup = BuiltInParameterGroup.%s" % parameterGroup)
-else:
-	_paramGroup = parameterGroup
-	
-if isinstance(parameterType, basestring):
-	exec("_paramType = ParameterType.%s" % parameterType)
-else :
-	_paramType = parameterType
+#exec("_paramGroup = BuiltInParameterGroup.%s" % parameterGroup)
+_paramGroup = [System.Enum.Parse(Autodesk.Revit.DB.BuiltInParameterGroup, parameterGroup) if isinstance(parameterGroup, basestring) else parameterGroup for parameterGroup in parameterGroups]
 
-if isinstance(guid, basestring):
-	_guid = Guid(guid)
-else :
-	_guid = guid
+#exec("_paramType = ParameterType.%s" % parameterType)
+_paramType = [System.Enum.Parse(Autodesk.Revit.DB.ParameterType, parameterType) if isinstance(parameterType, basestring) else parameterType for parameterType in parameterTypes]
+
+_guid = [Guid(guid) if isinstance(guid, basestring) else guid for guid in guids]
 
 def ParamBindingExists(_doc, _paramName, _paramType):
 	map = doc.ParameterBindings
@@ -124,8 +116,7 @@ def addParam(doc, _paramName, _paramType, _visible, _instance, _guid, _groupName
 		if not RemoveParamBinding(doc, _paramName, _paramType) == "Success":
 			message = "Param Binding Not Removed Successfully"
 		else:
-			message = None
-			
+			message = None		
 	group = app.OpenSharedParameterFile().Groups.get_Item(_groupName)
 	if group == None:
 		group = file.Groups.Create(_groupName)
@@ -137,7 +128,7 @@ def addParam(doc, _paramName, _paramType, _visible, _instance, _guid, _groupName
 		if _guid != None:
 			opt.GUID = _guid 
 		_def = group.Definitions.Create(opt)
-	param = doc.ParameterBindings.Insert(_def, bind, _paramGroup)
+		param = doc.ParameterBindings.Insert(_def, bind, _paramGroup)
 	return message
 	
 TransactionManager.Instance.EnsureInTransaction(doc)
@@ -147,22 +138,23 @@ except:
 	message = "No Shared Parameter file found."
 	pass
 
-builtInCategory=[]
-for _category in _categories :
-	builtInCategory.append(System.Enum.ToObject(BuiltInCategory, _category.Id))
-	cats=app.Create.NewCategorySet()
-	for builtIn in builtInCategory :
-		cats.Insert(doc.Settings.Categories.get_Item(builtIn))
+cats=app.Create.NewCategorySet()
+builtInCategories=[doc.Settings.Categories.get_Item(System.Enum.ToObject(BuiltInCategory, _category.Id)) for _category in _categories]
+[cats.Insert(builtInCategory) for builtInCategory in builtInCategories]
+
 if _instance:
 	bind = app.Create.NewInstanceBinding(cats)
 else:
 	bind = app.Create.NewTypeBinding(cats)
 
-if isinstance(_paramName, list) and _guid:
-	for i, j, k, l, m, n in zip(_paramName, _paramType, _visible, _instance, _guid, _paramGroup):
-		message = addParam(doc, i, j, k, l, m, _groupName, n)
-else:
-	message = addParam(doc, _paramName, _paramType, _visible, _instance, _guid, _groupName, _paramGroup)
+for number in xrange(len(_paramName)):
+	t = 0 if paramTypes_len else number
+	g = 0 if paramGroups_len else number
+	i = 0 if instance_len else number
+	v = 0 if visible_len else number
+	d = 0 if guid_len else number
+	message = addParam(doc, _paramName[number], _paramType[t], _visible[v], _instance[i], _guid[d], _groupName, _paramGroup[g])
+		
 TransactionManager.Instance.TransactionTaskDone()
 
 if message == None:
@@ -185,4 +177,7 @@ else:
   <Notes />
   <Annotations />
   <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
 </Workspace>
