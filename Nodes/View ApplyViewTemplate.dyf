@@ -4,7 +4,11 @@
     <PythonNodeModels.PythonNode guid="7c02c948-4b3c-4c9a-ae54-df1b79e2d6b7" type="PythonNodeModels.PythonNode" nickname="Python Script" x="151.881422910949" y="224.532342013996" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
       <PortInfo index="0" default="False" />
       <PortInfo index="1" default="False" />
-      <Script>import clr
+      <Script>#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+import clr
 clr.AddReference('RevitAPI')
 from Autodesk.Revit.DB import *
 
@@ -15,11 +19,14 @@ from RevitServices.Transactions import TransactionManager
 doc = DocumentManager.Instance.CurrentDBDocument
 
 views = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
-viewTemplate = UnwrapElement(IN[1])
+viewTemplates = UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])]
+viewTemp_len = len(viewTemplates) == 1
 
 TransactionManager.Instance.EnsureInTransaction(doc)
-for view in views:
-	view.ApplyViewTemplateParameters(viewTemplate)
+for number in xrange(len(views)):
+	v = 0 if viewTemp_len else number
+	try:views[number].ApplyViewTemplateParameters(viewTemplates[v])
+	except:pass
 TransactionManager.Instance.TransactionTaskDone()
 
 if isinstance(IN[0], list): OUT = views
@@ -45,6 +52,6 @@ else: OUT = views[0]</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-10.0928364144648" eyeY="5.18774918474673" eyeZ="21.3929681059332" lookX="4.78869155515085" lookY="-5.18774918474675" lookZ="-23.1453425165624" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>

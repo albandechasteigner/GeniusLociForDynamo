@@ -1,0 +1,115 @@
+{
+  "Uuid": "1d76d96d-0e63-4644-97b5-3153e21593f6",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Document",
+  "Description": "Works only in Revit 2021.1 and later.\r\nErases the shared coordinates of the host model will be erased. The shared relationship with all the linked models will be eliminated. Survey point will be reset back to startup location, where it coincides with the Internal Origin. The rotation angle between Project North and True North will be reset back to 0.",
+  "Name": "ResetSharedCoordinates",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "import clr\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import Document\n\nclr.AddReference('RevitServices')\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nfrom RevitServices.Transactions import TransactionManager\ndoc = DocumentManager.Instance.CurrentDBDocument\n\nTransactionManager.Instance.EnsureInTransaction(doc)\ndoc.ResetSharedCoordinates()\nTransactionManager.Instance.TransactionTaskDone()\n\nOUT = True",
+      "Engine": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "bae42177a2da4759ae9a3155ff22bf9e",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "d03234d006c04e4c8217568ac6684efb",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Succeed",
+      "Id": "0b196e94d0a240f8925808f2abc99d57",
+      "Inputs": [
+        {
+          "Id": "c6ba792651624027af41272e0c946225",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "d03234d006c04e4c8217568ac6684efb",
+      "End": "c6ba792651624027af41272e0c946225",
+      "Id": "bc30d8e291ea48ba9a6626fa2d1b6b18"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.10.1.3976",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "NodeViews": [
+      {
+        "Id": "bae42177a2da4759ae9a3155ff22bf9e",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "ResetSharedCoordinates()",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 155.47439221997166,
+        "Y": 242.60627756024763
+      },
+      {
+        "Id": "0b196e94d0a240f8925808f2abc99d57",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 413.60000000000008,
+        "Y": 244.0
+      }
+    ],
+    "Annotations": [],
+    "X": 0.0,
+    "Y": 0.0,
+    "Zoom": 1.0
+  }
+}

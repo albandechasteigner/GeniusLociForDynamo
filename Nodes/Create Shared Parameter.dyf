@@ -128,7 +128,7 @@ def addParam(doc, _paramName, _paramType, _visible, _instance, _guid, _groupName
 		if _guid != None:
 			opt.GUID = _guid 
 		_def = group.Definitions.Create(opt)
-		param = doc.ParameterBindings.Insert(_def, bind, _paramGroup)
+	param = doc.ParameterBindings.Insert(_def, bind, _paramGroup)
 	return message
 	
 TransactionManager.Instance.EnsureInTransaction(doc)
