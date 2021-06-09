@@ -10,13 +10,16 @@
 clr.AddReference('RevitAPI')
 from Autodesk.Revit.DB import *
 
-clr.AddReference("RevitNodes")
+clr.AddReference('RevitNodes')
 import Revit
 clr.ImportExtensions(Revit.Elements)
 
-clr.AddReference("RevitServices")
+clr.AddReference('RevitServices')
 import RevitServices
 from RevitServices.Persistence import DocumentManager
+uiapp = DocumentManager.Instance.CurrentUIApplication
+app = uiapp.Application
+version=int(app.VersionNumber)
 
 if isinstance(IN[0], list) : elements = UnwrapElement(IN[0])
 else : elements = [UnwrapElement(IN[0])]
@@ -27,6 +30,7 @@ for elem in elements:
 	doc=elem.Document
 	params=elem.Parameters
 	pname, guid, pgroup, ptype, visible, utype, dutype, stype,isshared,isreadonly, usermodifiable, hasvalue, value= [],[],[],[],[],[],[],[],[],[],[],[],[]
+	datatype= []
 	for param in params:
 		pname.append(param.Definition.Name)
 		try:guid.append(param.GUID)
@@ -34,9 +38,15 @@ for elem in elements:
 		pgroup.append(param.Definition.ParameterGroup)
 		ptype.append(param.Definition.ParameterType)
 		visible.append(param.Definition.Visible)
-		utype.append(param.Definition.UnitType)
-		try: dutype.append(param.DisplayUnitType)
-		except: dutype.append(None)
+		if version &lt; 2022:
+			utype.append(param.Definition.UnitType)
+			try: dutype.append(param.DisplayUnitType)
+			except: dutype.append(None)
+		else: 
+			try:utype.append(UnitUtils.GetTypeCatalogStringForSpec(param.Definition.GetDataType()))
+			except : utype.append(None)
+			try: dutype.append(UnitUtils.GetTypeCatalogStringForUnit(param.GetUnitTypeId()))
+			except: dutype.append(None)
 		stype.append(param.StorageType)
 		isshared.append(param.IsShared)
 		hasvalue.append(param.HasValue)
@@ -143,6 +153,6 @@ OUT = params, pname,guid,pgroup,ptype,utype,dutype,stype,visible,isshared,isread
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>
