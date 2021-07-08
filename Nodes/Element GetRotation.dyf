@@ -48,6 +48,15 @@ def GetRotation(item):
 			elif isinstance(loc,LocationCurve):
 				vector = loc.Curve.Direction
 				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-360)
+			elif isinstance(item,Grid):
+				vector = item.Curve.Direction
+				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-180)
+			elif isinstance(item,ReferencePlane):
+				doc=item.Document
+				view = doc.ActiveView
+				for crv in item.GetCurvesInView(DatumExtentType.ViewSpecific,view):
+					vector = crv.Direction
+				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-360)
 			else:
 				# sketch-based elements (ceiling, floor and roof)
 				if hasattr(item, "FindInserts"):

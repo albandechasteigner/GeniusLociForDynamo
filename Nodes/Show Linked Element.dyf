@@ -52,9 +52,26 @@ bbx=[]
 for elem in elements :
 	lnkinst=FilteredElementCollector(doc).OfClass(RevitLinkInstance).ToElements().Find(lambda x : x.GetLinkDocument().Title == elem.Document.Title)
 	tfLnk = lnkinst.GetTotalTransform()
-	box = elem.get_BoundingBox(None)
-	box.Min = tfLnk.OfPoint(box.Min)
-	box.Max = tfLnk.OfPoint(box.Max)	
+	if not isinstance(elem,DatumPlane):
+		box = elem.get_BoundingBox(None)
+		box.Min = tfLnk.OfPoint(box.Min)
+		box.Max = tfLnk.OfPoint(box.Max)
+	elif isinstance(elem,Grid):
+		line=elem.Curve
+		start=line.GetEndPoint(0)
+		end=line.GetEndPoint(1)    
+		box=BoundingBoxXYZ()
+		box.Min = tfLnk.OfPoint(start)
+		box.Max = tfLnk.OfPoint(end)	
+	elif isinstance(elem,ReferencePlane):
+		view = doc.ActiveView
+		for crv in elem.GetCurvesInView(DatumExtentType.ViewSpecific,view):
+			line = crv
+		start=line.GetEndPoint(0)
+		end=line.GetEndPoint(1)    
+		box = BoundingBoxXYZ()
+		box.Min = tfLnk.OfPoint(start)
+		box.Max = tfLnk.OfPoint(end)	
 	bbx.append(box)
 	sumBox = SumBoxes(bbx)	
 	uiview.ZoomAndCenterRectangle(sumBox.Min, sumBox.Max)

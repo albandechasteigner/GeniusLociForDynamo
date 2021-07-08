@@ -28,6 +28,12 @@ doc = DocumentManager.Instance.CurrentDBDocument
 elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
 angles = [i* math.pi/180 for i in IN[1]] if isinstance(IN[1],list) else [IN[1]* math.pi/180]
 
+def GetCropBox(view):
+	provider= ParameterValueProvider(ElementId(BuiltInParameter.ID_PARAM))
+	rule = FilterElementIdRule(provider, FilterNumericEquals(), view.Id )
+	filter= ElementParameterFilter(rule)
+	return doc.GetElement(FilteredElementCollector(view.Document).WherePasses(filter).ToElementIds().Find(lambda x: x.IntegerValue != view.Id.IntegerValue))
+
 TransactionManager.Instance.EnsureInTransaction(doc)
 for angle, element in zip(angles, elements):
 	#if angle&gt;math.pi:
@@ -57,6 +63,27 @@ for angle, element in zip(angles, elements):
 			elif isinstance(loc,LocationCurve):
 				loca=loc.Curve.Evaluate(0.5,True)
 				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
+			elif isinstance(element,Grid):
+				line=element.Curve
+				start=line.GetEndPoint(0)
+				end=line.GetEndPoint(1)   
+				box=BoundingBoxXYZ()
+				box.Min = start
+				box.Max = end
+				loca = (box.Min+box.Max)/2
+				rot = 0			
+			elif isinstance(element,ReferencePlane):
+				doc=element.Document
+				view = doc.ActiveView
+				for crv in element.GetCurvesInView(DatumExtentType.ViewSpecific,view):
+					line = crv
+				start=line.GetEndPoint(0)
+				end=line.GetEndPoint(1)   
+				box=BoundingBoxXYZ()
+				box.Min = start
+				box.Max = end
+				loca = (box.Min+box.Max)/2
+				rot = 0	
 			# CropBox
 			elif element.Category == None :
 				view=doc.GetElement(element.get_Parameter(BuiltInParameter.ID_PARAM).AsElementId())
@@ -76,6 +103,7 @@ for angle, element in zip(angles, elements):
 			else:
 				box = element.get_BoundingBox(None)
 				loca = (box.Min+box.Max)/2
+				rot = 0
 				# sketch-based elements (ceiling, floor and roof)
 				if hasattr(element, "FindInserts"):
 					for ref in HostObjectUtils.GetTopFaces(element):
@@ -89,6 +117,12 @@ for angle, element in zip(angles, elements):
 						else:
 							rot = abs(trans.BasisY.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ)-math.pi)
 				else:rot = 0
+		#PlanView, SectionView and 3D View
+		elif hasattr(element, "CropBox") :
+			box = element.CropBox
+			element = GetCropBox(element)
+			loca = (box.Min+box.Max)/2
+			rot = 0									
 	# view specific elements (e.g. filled regions)
 	elif hasattr(element, "OwnerViewId"):
 		view=doc.GetElement(element.OwnerViewId)
