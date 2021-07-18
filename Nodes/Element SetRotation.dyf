@@ -1,7 +1,7 @@
 <Workspace Version="1.3.4.6666" X="62.6069770811057" Y="-0.233245396953436" zoom="0.729950825270786" ScaleFactor="1" Name="Element SetRotation" Description="Set the angle of the element around its local Z-axis.&#xD;&#xA;(Same as the Rotate command in Revit)" ID="b7d53942-f5f1-46b5-b32c-8da905c94724" Category="GeniusLoci.Element">
   <NamespaceResolutionMap />
   <Elements>
-    <PythonNodeModels.PythonNode guid="6dab0607-a1c2-4ffb-9308-0c71c5558a0b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="260.4" y="334" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+    <PythonNodeModels.PythonNode guid="6dab0607-a1c2-4ffb-9308-0c71c5558a0b" type="PythonNodeModels.PythonNode" nickname="Python Script" x="260.4" y="335.095964238006" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
       <PortInfo index="0" default="False" />
       <PortInfo index="1" default="False" />
       <Script>#Alban de Chasteigner 2020
@@ -88,17 +88,27 @@ for angle, element in zip(angles, elements):
 			elif element.Category == None :
 				view=doc.GetElement(element.get_Parameter(BuiltInParameter.ID_PARAM).AsElementId())
 				box = view.CropBox
-				loca = (box.Min+box.Max)/2
+				transform = box.Transform
+				min = transform.OfPoint(box.Min)
+				max = transform.OfPoint(box.Max)
+				loca = (min+max)/2
 				rot = 0	
 			# ViewSection Marker
 			elif ElementId(BuiltInCategory.OST_Viewers) == element.Category.Id :
 				viewSection = doc.GetElement(ElementId(element.Id.IntegerValue + 1))
-				loca = viewSection.Origin
+				shape=viewSection.GetCropRegionShapeManager().GetCropShape()
+				#Last line of the rectangle
+				l=[s for s in shape[0]][3]
+				loca = l.Evaluate(0.5, True)
+				#loca = viewSection.Origin
 				rot = 0
 			# SectionBox
 			elif ElementId(BuiltInCategory.OST_SectionBox) == element.Category.Id:
 				box = doc.GetElement(ElementId(element.Id.IntegerValue + 1)).GetSectionBox()
-				loca = (box.Min+box.Max)/2
+				transform = box.Transform
+				min = transform.OfPoint(box.Min)
+				max = transform.OfPoint(box.Max)
+				loca = (min+max)/2
 				rot = 0
 			else:
 				box = element.get_BoundingBox(None)
@@ -121,7 +131,10 @@ for angle, element in zip(angles, elements):
 		elif hasattr(element, "CropBox") :
 			box = element.CropBox
 			element = GetCropBox(element)
-			loca = (box.Min+box.Max)/2
+			transform = box.Transform
+			min = transform.OfPoint(box.Min)
+			max = transform.OfPoint(box.Max)
+			loca = (min+max)/2
 			rot = 0									
 	# view specific elements (e.g. filled regions)
 	elif hasattr(element, "OwnerViewId"):
@@ -157,6 +170,6 @@ else: OUT = elements[0]</Script>
   <Annotations />
   <Presets />
   <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+    <Camera Name="Aperçu en arrière-plan" eyeX="-22.8618228957677" eyeY="24.7669748037483" eyeZ="110.498810662877" lookX="22.8618228957677" lookY="-24.7669748037483" lookZ="-110.498810662877" upX="0" upY="1" upZ="0" />
   </Cameras>
 </Workspace>
