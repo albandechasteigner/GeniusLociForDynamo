@@ -26,7 +26,7 @@ doc = DocumentManager.Instance.CurrentDBDocument
 elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
 
 for item in elements:
-	if item.ToString() == 'Autodesk.Revit.DB.Floor' or item.ToString() == 'Autodesk.Revit.DB.Roof' or item.ToString() == 'Autodesk.Revit.DB.FootPrintRoof':
+	if item.ToString() == 'Autodesk.Revit.DB.Floor' or item.ToString() == 'Autodesk.Revit.DB.RoofBase' or item.ToString() == 'Autodesk.Revit.DB.FootPrintRoof':
 		ext = HostObjectUtils.GetTopFaces(item)
 		end=0
 	elif item.ToString() == 'Autodesk.Revit.DB.Wall':

@@ -42,7 +42,7 @@ for x in element:
 	elif x.ToString() == 'Autodesk.Revit.DB.Floor':
 		object_param_level =  x.get_Parameter(BuiltInParameter.LEVEL_PARAM)
 		object_param_offset = x.get_Parameter(BuiltInParameter.FLOOR_HEIGHTABOVELEVEL_PARAM)
-	elif x.ToString() == 'Autodesk.Revit.DB.Roof' or x.ToString() == 'Autodesk.Revit.DB.FootPrintRoof':
+	elif x.ToString() == 'Autodesk.Revit.DB.RoofBase' or x.ToString() == 'Autodesk.Revit.DB.FootPrintRoof':
 		object_param_level =  x.get_Parameter(BuiltInParameter.ROOF_BASE_LEVEL_PARAM)
 		object_param_offset = x.get_Parameter(BuiltInParameter.ROOF_LEVEL_OFFSET_PARAM)
 	elif x.ToString() == 'Autodesk.Revit.DB.ExtrusionRoof':

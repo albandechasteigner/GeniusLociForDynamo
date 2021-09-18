@@ -56,7 +56,7 @@ for elem in elements :
 		famType = elem.WallType
 	elif isinstance(elem, Floor):
 		famType = elem.FloorType
-	elif isinstance(elem, Roof) or isinstance(elem, FootPrintRoof) or isinstance(elem, ExtrusionRoof) or isinstance(elem, RoofBase) :
+	elif isinstance(elem, FootPrintRoof) or isinstance(elem, ExtrusionRoof) or isinstance(elem, RoofBase) :
 		famType = elem.RoofType
 	elif isinstance(elem, Ceiling) or isinstance(elem, FaceWall) :
 		famType = doc.GetElement(elem.GetTypeId())
