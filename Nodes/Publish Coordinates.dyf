@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="209.886432271094" Y="105.855924170156" zoom="0.496186487382813" ScaleFactor="1" Name="Publish Coordinates" Description="Works only in Revit 2018 and later.&#xD;&#xA;Publish coordinates to the specified ProjectLocation of the Revit link instance.&#xD;&#xA;The geolocation information will be pulled from host model to the linked model.&#xD;&#xA;If the Project Location Name doesn't exist in the linked model, the node create it." ID="4edfb425-776a-4ae0-bcb2-e32dcf8050ae" Category="GeniusLoci.Document">
+<Workspace Version="1.3.4.6666" X="146.746761694154" Y="-64.9864173872144" zoom="0.91006380393144" ScaleFactor="1" Name="Publish Coordinates" Description="Works only in Revit 2018 and later.&#xD;&#xA;Publish coordinates to the specified ProjectLocation of the Revit link instance.&#xD;&#xA;The geolocation information will be pulled from host model to the linked model.&#xD;&#xA;If the Project Location Name doesn't exist in the linked model, the node create it." ID="4edfb425-776a-4ae0-bcb2-e32dcf8050ae" Category="GeniusLoci.Document">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="092b74ba-77c2-4c52-84cb-817b2d685501" type="PythonNodeModels.PythonNode" nickname="Python Script" x="277.2" y="251.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
@@ -22,16 +22,19 @@ uiapp = DocumentManager.Instance.CurrentUIApplication
 app = uiapp.Application
 
 rvtLinkInstances = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
-linkProjLocName = IN[1]
+linkProjLocNames = IN[1] if isinstance(IN[1],list) else [IN[1]]
+pln_len = len(linkProjLocNames) == 1
 result=[]
 
-for rvtLinkInstance in rvtLinkInstances:
+for i in xrange(len(rvtLinkInstances)):
+	rvtLinkInstance = rvtLinkInstances[i]
+	p = 0 if pln_len else i
 	linkDoc = rvtLinkInstance.GetLinkDocument()
 	TransactionManager.Instance.ForceCloseTransaction()
 	linkLocations = linkDoc.ProjectLocations
-	bool = any(linkLocation.Name == linkProjLocName for linkLocation in linkLocations)
+	bool = any(linkLocation.Name == linkProjLocNames[p] for linkLocation in linkLocations)
 	if bool :
-		linkLocationId = [linkLocation for linkLocation in linkLocations if linkLocation.Name == linkProjLocName][0].Id
+		linkLocationId = [linkLocation for linkLocation in linkLocations if linkLocation.Name == linkProjLocNams[p]][0].Id
 	else : 
 		filepath = linkDoc.PathName
 		linkType = doc.GetElement(rvtLinkInstance.GetTypeId())
@@ -39,7 +42,7 @@ for rvtLinkInstance in rvtLinkInstances:
 		linkDoc2 = app.OpenDocumentFile( ModelPathUtils.ConvertUserVisiblePathToModelPath(filepath), OpenOptions())
 		t = Transaction(linkDoc2, "Create Project Location")
 		t.Start()
-		linkLocationId = ProjectLocation.Create(linkDoc2, linkDoc2.SiteLocation.Id,linkProjLocName).Id
+		linkLocationId = ProjectLocation.Create(linkDoc2, linkDoc2.SiteLocation.Id,linkProjLocNames[p]).Id
 		t.Commit()
 		linkDoc2.Close(True)
 		linkType.Reload()
@@ -59,8 +62,8 @@ OUT = result</Script>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="aa3fef16-f8d3-418e-97c3-0654d3395d11" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="72.3999999999999" y="217.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="RevitLinkInstance" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3c1f7671-5efd-4ee1-a5c3-80114734b112" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-138" y="300.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="LinkProjectLocationName:string=&quot;Internal&quot;" />
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="3c1f7671-5efd-4ee1-a5c3-80114734b112" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-177.557666005923" y="297.723292643984" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="LinkProjectLocationName:string[]..[] =&quot;Internal&quot;" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Output guid="9b47c67f-1b64-44ba-8937-6b661de37760" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="464.4" y="259.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
       <PortInfo index="0" default="False" />
