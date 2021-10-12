@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="146.746761694154" Y="-64.9864173872144" zoom="0.91006380393144" ScaleFactor="1" Name="Publish Coordinates" Description="Works only in Revit 2018 and later.&#xD;&#xA;Publish coordinates to the specified ProjectLocation of the Revit link instance.&#xD;&#xA;The geolocation information will be pulled from host model to the linked model.&#xD;&#xA;If the Project Location Name doesn't exist in the linked model, the node create it." ID="4edfb425-776a-4ae0-bcb2-e32dcf8050ae" Category="GeniusLoci.Document">
+<Workspace Version="1.3.4.6666" X="146.746761694154" Y="-64.9864173872144" zoom="0.91006380393144" ScaleFactor="1" Name="Publish Coordinates" Description="Works only in Revit 2018 and later.&#xD;&#xA;Publish the current shared coordinates to the specified ProjectLocation of the Revit link instance.&#xD;&#xA;The geolocation information will be pulled from host model to the linked model.&#xD;&#xA;If the Project Location Name doesn't exist in the linked model, the node create it." ID="4edfb425-776a-4ae0-bcb2-e32dcf8050ae" Category="GeniusLoci.Document">
   <NamespaceResolutionMap />
   <Elements>
     <PythonNodeModels.PythonNode guid="092b74ba-77c2-4c52-84cb-817b2d685501" type="PythonNodeModels.PythonNode" nickname="Python Script" x="277.2" y="251.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
@@ -42,7 +42,7 @@ for i in xrange(len(rvtLinkInstances)):
 		linkDoc2 = app.OpenDocumentFile( ModelPathUtils.ConvertUserVisiblePathToModelPath(filepath), OpenOptions())
 		t = Transaction(linkDoc2, "Create Project Location")
 		t.Start()
-		linkLocationId = ProjectLocation.Create(linkDoc2, linkDoc2.SiteLocation.Id,linkProjLocNames[p]).Id
+		linkLocationId = linkDoc2.ActiveProjectLocation.Duplicate(linkProjLocNames[p]).Id
 		t.Commit()
 		linkDoc2.Close(True)
 		linkType.Reload()
