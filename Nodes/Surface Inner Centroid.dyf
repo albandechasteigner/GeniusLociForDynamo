@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="127.583392579862" Y="196.337089700689" zoom="0.429234719989881" ScaleFactor="1" Name="Surface Inner Centroid" Description="Finds pole of inaccessibility for a given polygon. &#xD;&#xA;Calculates the visual center of a polygon (inside the polygon).&#xD;&#xA;Based on Vladimir Agafonkin's algorithm Polylabel." ID="789a7c8d-0e9a-4679-a27b-94333dbf371f" Category="GeniusLoci.Geometry">
+<Workspace Version="1.3.4.6666" X="127.583392579862" Y="196.337089700689" zoom="0.429234719989881" ScaleFactor="1" Name="Surface Inner Centroid" Description="Finds pole of inaccessibility for a given polygon. &#xD;&#xA;Calculates the visual center of a polygon (inside the polygon).&#xD;&#xA;Based on Vladimir Agafonkin's algorithm Polylabel.&#xD;&#xA;Please note that the node doesn't work with ellipsoidal or circular surfaces." ID="789a7c8d-0e9a-4679-a27b-94333dbf371f" Category="GeniusLoci.Geometry">
   <NamespaceResolutionMap>
     <ClassMap partialName="Geometry.Surface" resolvedName="Autodesk.DesignScript.Geometry.Surface" assemblyName="ProtoGeometry.dll" />
   </NamespaceResolutionMap>
