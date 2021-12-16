@@ -27,8 +27,12 @@ import re
 
 if version &lt; 2021:
 	UIUnits = doc.GetUnits().GetFormatOptions(UnitType.UT_Length).DisplayUnits
+	inches = DisplayUnitType.DUT_FEET_FRACTIONAL_INCHES
+	millimeters = DisplayUnitType.DUT_MILLIMETERS
 else:
 	UIUnits = doc.GetUnits().GetFormatOptions(SpecTypeId.Length).GetUnitTypeId()
+	inches = UnitTypeId.FeetFractionalInches
+	millimeters = UnitTypeId.Millimeters
 	
 filepath = IN[0]
 
@@ -37,9 +41,9 @@ with codecs.open(filepath, 'r', encoding = 'UTF-8') as file:
 	lines2=map(list, zip(*[re.split(',', line) for line in lines[4:]]))
 	numb=[map(float, line) for line in lines2]
 	if ";%UNITS=INCH" in lines:
-		current=[map(lambda x: UnitUtils.Convert(x, DisplayUnitType.DUT_DECIMAL_INCHES, UIUnits),line) for line in numb[1:]]
+		current=[map(lambda x: UnitUtils.Convert(x, inches, UIUnits),line) for line in numb[1:]]
 	else:
-		current=[map(lambda x: UnitUtils.Convert(x, DisplayUnitType.DUT_MILLIMETERS, UIUnits),line) for line in numb[1:]]
+		current=[map(lambda x: UnitUtils.Convert(x, millimeters, UIUnits),line) for line in numb[1:]]
 	if ";%TYPE=DRAFTING" in lines:
 		target="Drafting"
 	else:
