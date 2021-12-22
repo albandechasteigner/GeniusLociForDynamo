@@ -75,12 +75,20 @@ for i,v in enumerate(view):
 	#	options.FileVersion = fileversion
 	if fileversion == "IFC4":
 		options.FileVersion = IFCVersion.IFC4
+	if fileversion == "IFC4RV":
+		options.FileVersion = IFCVersion.IFC4RV
+	if fileversion == "IFC4DTV":
+		options.FileVersion = IFCVersion.IFC4DTV
 	if fileversion == "IFC2x2":
 		options.FileVersion = IFCVersion.IFC2x2
 	if fileversion == "IFC2x3":
 		options.FileVersion = IFCVersion.IFC2x3
-	if fileversion == "IFC2x3":
+	if fileversion == "IFC2x3CV2":
 		options.FileVersion = IFCVersion.IFC2x3CV2
+	if fileversion == "IFC2x3BFM":
+		options.FileVersion = IFCVersion.IFC2x3BFM
+	if fileversion == "IFC2x3FM":
+		options.FileVersion = IFCVersion.IFC2x3FM
 	if fileversion == "IFCBCA":
 		options.FileVersion = IFCVersion.IFCBCA
 	if fileversion == "IFCCOBIE":
