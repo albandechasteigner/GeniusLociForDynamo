@@ -1,0 +1,47 @@
+<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Reference ReferenceType" Description="Obtains the type of the given reference. (Element, subelement, curve, face, mesh...)" ID="226242f4-35ea-4c92-9d00-62d44504c0f9" Category="GeniusLoci.Reference">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="a27d911a-9a13-4fab-8e16-1ed3d1a3b1c9" type="PythonNodeModels.PythonNode" nickname="Python Script" x="339.2" y="250.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
+      <PortInfo index="0" default="False" />
+      <Script>#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+ 
+import clr
+clr.AddReference('RevitAPI')
+import Autodesk
+from Autodesk.Revit.DB import *
+
+references = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
+
+refTypes =[]
+for reference in references:
+	try:
+		refTypes.append(reference.ElementReferenceType)
+	except:refTypes.append(None)
+
+if isinstance(IN[0], list): OUT = refTypes
+else: OUT = refTypes[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="773552e6-53a8-49b7-b33e-39cb3988bd57" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="26.8" y="251.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//Autodesk.Revit.DB.Reference&#xD;&#xA;reference" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="268a1671-3626-428b-8698-86f7a7487cc1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="506" y="248.4" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="ReferenceType" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="a27d911a-9a13-4fab-8e16-1ed3d1a3b1c9" start_index="0" end="268a1671-3626-428b-8698-86f7a7487cc1" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="773552e6-53a8-49b7-b33e-39cb3988bd57" start_index="0" end="a27d911a-9a13-4fab-8e16-1ed3d1a3b1c9" end_index="0" portType="0" />
+  </Connectors>
+  <Notes>
+    <Dynamo.Graph.Notes.NoteModel guid="509fb76c-e7fd-4f4d-9ec2-026543585642" text="Enumeration available on : https://apidocs.co/apps/revit/2022.1/f664c172-bb88-463b-d8ad-5dd70a11dd5a.htm" x="160.8" y="129.6" />
+  </Notes>
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>

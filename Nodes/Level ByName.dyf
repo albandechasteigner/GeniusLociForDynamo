@@ -1,0 +1,64 @@
+<Workspace Version="1.3.4.6666" X="108.43625717298" Y="113.241775105051" zoom="0.674831658426865" ScaleFactor="1" Name="Level ByName" Description="Collects Levels by name in the active or given document." ID="baa5ff93-c463-41a0-a9a8-f552bb0e3f55" Category="GeniusLoci.Level">
+  <NamespaceResolutionMap />
+  <Elements>
+    <PythonNodeModels.PythonNode guid="5b293148-bafe-44bc-8d01-21b88f71437d" type="PythonNodeModels.PythonNode" nickname="Python Script" x="422.4" y="352" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
+      <PortInfo index="0" default="False" />
+      <PortInfo index="1" default="False" />
+      <Script>#Alban de Chasteigner 2021
+#twitter : @geniusloci_bim
+#geniusloci.bim@gmail.com
+#https://github.com/albandechasteigner/GeniusLociForDynamo
+
+import clr
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+# Import RevitAPI
+clr.AddReference("RevitAPI")
+import Autodesk
+from Autodesk.Revit.DB import *
+
+names = IN[0] if isinstance(IN[0],list) else [IN[0]]
+inputdoc = (UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])])[0]
+
+#Inspired by Clockwork
+if inputdoc == None:
+	doc = DocumentManager.Instance.CurrentDBDocument
+elif isinstance (inputdoc, Document):
+	doc = inputdoc
+elif isinstance (inputdoc, RevitLinkInstance):
+	doc = inputdoc.GetLinkDocument()
+else: doc = DocumentManager.Instance.CurrentDBDocument
+
+listLevels = []
+levels = FilteredElementCollector(doc).OfClass(Level).WhereElementIsNotElementType().ToElements()
+
+for name in names :
+	listLevels.append(next((lev for lev in levels if lev.Name.lower() == name.lower()), None))
+	
+if isinstance(IN[0], list): OUT = listLevels
+else: OUT = listLevels[0]</Script>
+    </PythonNodeModels.PythonNode>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1343d077-afa2-4e67-bd49-e80642ebab28" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="153.6" y="319.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="name : string[]..[]" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="2f8b4bcf-bf15-4e86-ba66-496b0fd92cdf" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-144" y="411.2" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
+      <Symbol value="//To use with a linked model or a background opened document&#xD;&#xA;docOrRevitLinkInstance : var[]..[] = null" />
+    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
+    <Dynamo.Graph.Nodes.CustomNodes.Output guid="fb5e133f-dbd0-44db-a6a6-2cb51da51885" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="602.104156939688" y="352.396082492788" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
+      <PortInfo index="0" default="False" />
+      <Symbol value="Level" />
+    </Dynamo.Graph.Nodes.CustomNodes.Output>
+  </Elements>
+  <Connectors>
+    <Dynamo.Graph.Connectors.ConnectorModel start="5b293148-bafe-44bc-8d01-21b88f71437d" start_index="0" end="fb5e133f-dbd0-44db-a6a6-2cb51da51885" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="1343d077-afa2-4e67-bd49-e80642ebab28" start_index="0" end="5b293148-bafe-44bc-8d01-21b88f71437d" end_index="0" portType="0" />
+    <Dynamo.Graph.Connectors.ConnectorModel start="2f8b4bcf-bf15-4e86-ba66-496b0fd92cdf" start_index="0" end="5b293148-bafe-44bc-8d01-21b88f71437d" end_index="1" portType="0" />
+  </Connectors>
+  <Notes />
+  <Annotations />
+  <Presets />
+  <Cameras>
+    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
+  </Cameras>
+</Workspace>
