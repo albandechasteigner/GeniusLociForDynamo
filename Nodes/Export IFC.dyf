@@ -168,7 +168,7 @@ else:
       <Symbol value="//SharedCoordinates =&quot;0&quot;, SiteSurveyPoint =&quot;1&quot;,&#xD;&#xA;//ProjectBasePoint=&quot;2&quot;, InternalCoordinates=&quot;3&quot;&#xD;&#xA;ProjectOrigin : string = &quot;3&quot;" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="17425d4b-19a7-471a-8286-ed6514007576" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1141.17294710582" y="1270.59777246417" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//If no phase is connected, export Default phase&#xD;&#xA;Phase : var[]..[] = null" />
+      <Symbol value="//If no phase is connected, export Default phase&#xD;&#xA;phase : var[]..[] = null" />
     </Dynamo.Graph.Nodes.CustomNodes.Symbol>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d9e9536c-e361-470b-b4ef-b9eb58917456" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="1243.12200243156" y="1374.41813775612" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//FilePath&#xD;&#xA;UserDefinedPSet : var[]..[] = &quot;&quot;" />

@@ -28,7 +28,7 @@ params= []
 
 for elem in elements:
 	doc=elem.Document
-	params=elem.Parameters
+	params=elem.GetOrderedParameters()
 	pname, guid, pgroup, ptype, visible, utype, dutype, stype,isshared,isreadonly, usermodifiable, hasvalue, value= [],[],[],[],[],[],[],[],[],[],[],[],[]
 	datatype= []
 	for param in params:

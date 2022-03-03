@@ -47,7 +47,8 @@ for e in elems:
 	systems.append(system)
 	networkElements.append(networkElem)
 	
-OUT = networkElements,systems</Script>
+if isinstance(IN[0], list): OUT = networkElements,systems
+else: OUT = networkElements[0],systems[0]</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="4eef9657-b303-41a6-86a3-a2d26646c1b0" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-15.7723211839071" y="330.55942155203" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//MechanicalSystem, PipingSystem or element&#xD;&#xA;system" />

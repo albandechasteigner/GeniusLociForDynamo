@@ -19,13 +19,14 @@
       <Script>import clr
 clr.AddReference('RevitNodes')
 import Revit
+clr.ImportExtensions(Revit.GeometryConversion)
 clr.ImportExtensions(Revit.Elements)
 
 clr.AddReference('RevitServices')
 from RevitServices.Persistence import DocumentManager
 
 clr.AddReference('RevitAPI')
-from Autodesk.Revit.DB import Category, FilteredElementCollector, Document, RevitLinkInstance, ElementMulticategoryFilter,ElementMulticlassFilter, ElementId, FamilySymbol, ParameterValueProvider, BuiltInParameter, FilterNumericEquals, ElementParameterFilter, FilterElementIdRule
+from Autodesk.Revit.DB import Category, FilteredElementCollector, Document, RevitLinkInstance, ElementMulticategoryFilter,ElementMulticlassFilter, BuiltInCategory, ElementId, FamilySymbol, ParameterValueProvider, BuiltInParameter, FilterNumericEquals, ElementParameterFilter, FilterElementIdRule
 
 import System
 from System.Collections.Generic import List
@@ -64,6 +65,10 @@ for cat in cats :
 	if isinstance(cat, Category):
 		catId = List[ElementId](x.Id for x in cats)
 		filter = ElementMulticategoryFilter(catId)
+		fec = FilteredElementCollector(doc).WhereElementIsNotElementType()
+	elif isinstance(cat, BuiltInCategory):
+		catBic = List[BuiltInCategory](x for x in cats)
+		filter = ElementMulticategoryFilter(catBic)
 		fec = FilteredElementCollector(doc).WhereElementIsNotElementType()
 	elif isinstance(cat, System.Type):
 		catId = List[System.Type](cats)
