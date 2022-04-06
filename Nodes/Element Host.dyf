@@ -21,6 +21,8 @@ def GetHost(item):
 	elif hasattr(item, "WallId"): return item.Document.GetElement(item.WallId)
 	# railings, building pads
 	elif hasattr(item, "HostId"): return item.Document.GetElement(item.HostId)
+	# insulation
+	elif hasattr(item, "HostElementId"): return item.Document.GetElement(item.HostElementId)
 	# parkings
 	elif ElementId(BuiltInCategory.OST_Parking) == item.Category.Id and not item.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_PARAM).AsString().startswith("Level")  : return item.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_PARAM).AsString()
 	#if item is work plane based

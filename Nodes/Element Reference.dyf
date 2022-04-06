@@ -8,6 +8,11 @@ clr.AddReference('RevitAPI')
 import Autodesk
 from Autodesk.Revit.DB import *
 
+clr.AddReference("RevitServices")
+import RevitServices
+from RevitServices.Persistence import DocumentManager
+doc = DocumentManager.Instance.CurrentDBDocument
+
 elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
 
 ref=[]
@@ -16,6 +21,8 @@ for element in elements:
 		ref.append(element.References)
 	elif isinstance (element, Autodesk.Revit.DB.ReferencePlane):
 		ref.append(element.GetReference())
+	elif isinstance (element, Autodesk.Revit.DB.Grid) and element.Document.Title != doc.Title :
+		ref.append(element.Curve.Reference)
 	else : ref.append(Reference(element))
 
 if isinstance(IN[0], list): OUT = ref
