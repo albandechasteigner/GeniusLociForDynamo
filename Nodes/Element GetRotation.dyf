@@ -44,10 +44,9 @@ def GetRotation(item):
 					rotationAngle = math.degrees(loc.Rotation)
 				# Group, assembly
 				else:rotationAngle = 0
-			# line-based elements (e.g. walls)
-			elif isinstance(loc,LocationCurve):
-				vector = loc.Curve.Direction
-				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-360)
+			elif isinstance(item,MEPCurve):
+				for c in item.ConnectorManager.Connectors :
+					rotationAngle = math.asin(c.CoordinateSystem.BasisY.X) * 180/math.pi
 			elif isinstance(item,Grid):
 				vector = item.Curve.Direction
 				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-180)
@@ -56,6 +55,10 @@ def GetRotation(item):
 				view = doc.ActiveView
 				for crv in item.GetCurvesInView(DatumExtentType.ViewSpecific,view):
 					vector = crv.Direction
+				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-360)
+			# line-based elements (e.g. walls)
+			elif isinstance(loc,LocationCurve):
+				vector = loc.Curve.Direction
 				rotationAngle = abs(math.degrees(vector.AngleOnPlaneTo(XYZ.BasisX, XYZ.BasisZ))-360)
 			else:
 				# sketch-based elements (ceiling, floor and roof)

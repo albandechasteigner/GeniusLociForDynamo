@@ -59,10 +59,10 @@ for angle, element in zip(angles, elements):
 					rot=loc.Rotation
 				# Group, assembly
 				else:rot = 0
-			# line-based elements (e.g. walls)
-			elif isinstance(loc,LocationCurve):
+			elif isinstance(element,MEPCurve):
 				loca=loc.Curve.Evaluate(0.5,True)
-				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
+				for c in element.ConnectorManager.Connectors :
+					rot = math.asin(c.CoordinateSystem.Inverse.BasisY.X)
 			elif isinstance(element,Grid):
 				line=element.Curve
 				start=line.GetEndPoint(0)
@@ -84,6 +84,10 @@ for angle, element in zip(angles, elements):
 				box.Max = end
 				loca = (box.Min+box.Max)/2
 				rot = 0	
+			# line-based elements (e.g. walls)
+			elif isinstance(loc,LocationCurve):
+				loca=loc.Curve.Evaluate(0.5,True)
+				rot=loc.Curve.Direction.AngleTo(XYZ.BasisX)
 			# CropBox
 			elif element.Category == None :
 				view=doc.GetElement(element.get_Parameter(BuiltInParameter.ID_PARAM).AsElementId())
@@ -144,7 +148,7 @@ for angle, element in zip(angles, elements):
 		rot = 0
 	line = Line.CreateBound(loca, XYZ(loca.X,loca.Y,loca.Z+1))
 	#Set Rotation
-	Autodesk.Revit.DB.ElementTransformUtils.RotateElement(doc, element.Id, line, angle-rot)
+	Autodesk.Revit.DB.ElementTransformUtils.RotateElement(doc, element.Id, line, angle - rot)
 TransactionManager.Instance.TransactionTaskDone()
 
 if isinstance(IN[0], list): OUT = elements
