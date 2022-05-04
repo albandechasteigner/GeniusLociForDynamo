@@ -13,7 +13,7 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "#Inspired by Sean Page, 2022 https://forum.dynamobim.com/t/export-pdf-in-revit-2022-quick-example/62697\r\nimport clr\r\nclr.AddReference('RevitAPI')\r\nfrom Autodesk.Revit.DB import *\r\n\r\nclr.AddReference('System')\r\nfrom System.Collections.Generic import List\r\n\r\nclr.AddReference('RevitServices')\r\nimport RevitServices\r\nfrom RevitServices.Persistence import DocumentManager\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\n\r\nFolder = IN[0]\r\nsheets = UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])]\r\nnames = IN[2] if isinstance(IN[2],list) else [IN[2]]\r\nresult = []\r\n\r\nopts = PDFExportOptions()\r\nopts.ExportQuality = PDFExportQualityType.DPI600\r\n#This will use the TitleBlock size to create the sheet size\r\nopts.PaperFormat = ExportPaperFormat.Default\r\n#This will use a specific size for every view exported\r\n#opts.PaperFormat = ExportPaperFormat.ARCH_E1\r\nopts.ZoomType = ZoomType.Zoom\r\nopts.ZoomPercentage = 100\r\nopts.HideCropBoundaries = True\r\nopts.HideReferencePlane = True\r\nopts.HideScopeBoxes = True\r\nopts.HideUnreferencedViewTags = True\r\nopts.MaskCoincidentLines = True\r\nopts.ViewLinksInBlue = False\r\nopts.ColorDepth = ColorDepthType.Color\r\n#Don't think of this as a \"continue\" but rather as a silent mode\r\nopts.StopOnError = False\r\n#Make sure to not use these settings as they don't work if 'Default' size is used above\r\n#opts.PaperPlacement = PaperPlacementType.LowerLeft\r\n\r\nif IN[3] == True:\r\n\topts.Combine = True\r\n\topts.FileName = names[0]\r\n\tsheetId = List[ElementId](x.Id for x in sheets)\r\n\tresult=doc.Export(Folder,sheetId,opts)\r\nelse:\r\n\tfor sheet,name in zip(sheets,names):\r\n\t\topts.FileName = name\r\n\t\tsheetId = List[ElementId]()\r\n\t\tsheetId.Add(sheet.Id)\r\n\t\tresult.append(doc.Export(Folder,sheetId,opts))\r\n\t\r\nOUT = result",
+      "Code": "#Inspired by Sean Page, 2022 https://forum.dynamobim.com/t/export-pdf-in-revit-2022-quick-example/62697\r\nimport clr\r\nclr.AddReference('RevitAPI')\r\nfrom Autodesk.Revit.DB import *\r\n\r\nclr.AddReference('System')\r\nfrom System.Collections.Generic import List\r\n\r\nclr.AddReference('RevitServices')\r\nimport RevitServices\r\nfrom RevitServices.Persistence import DocumentManager\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\n\r\nFolder = IN[0]\r\nsheets = UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])]\r\nnames = IN[2] if isinstance(IN[2],list) else [IN[2]]\r\nresult = []\r\n\r\nopts = PDFExportOptions()\r\nopts.ExportQuality = PDFExportQualityType.DPI600\r\n#This will use the TitleBlock size to create the sheet size\r\nopts.PaperFormat = ExportPaperFormat.Default\r\n#This will use a specific size for every view exported\r\n#opts.PaperFormat = ExportPaperFormat.ARCH_E1\r\nopts.ZoomType = ZoomType.Zoom\r\nopts.AlwaysUseRaster = IN[4]\r\nopts.ZoomPercentage = 100\r\nopts.HideCropBoundaries = True\r\nopts.HideReferencePlane = True\r\nopts.HideScopeBoxes = True\r\nopts.HideUnreferencedViewTags = True\r\nopts.MaskCoincidentLines = True\r\nopts.ViewLinksInBlue = False\r\nopts.ColorDepth = ColorDepthType.Color\r\n#Don't think of this as a \"continue\" but rather as a silent mode\r\nopts.StopOnError = False\r\n#Make sure to not use these settings as they don't work if 'Default' size is used above\r\n#opts.PaperPlacement = PaperPlacementType.LowerLeft\r\n\r\nif IN[3] == True:\r\n\topts.Combine = True\r\n\topts.FileName = names[0]\r\n\tsheetId = List[ElementId](x.Id for x in sheets)\r\n\tresult=doc.Export(Folder,sheetId,opts)\r\nelse:\r\n\tfor sheet,name in zip(sheets,names):\r\n\t\topts.FileName = name\r\n\t\tsheetId = List[ElementId]()\r\n\t\tsheetId.Add(sheet.Id)\r\n\t\tresult.append(doc.Export(Folder,sheetId,opts))\r\n\t\r\nOUT = result",
       "Engine": "IronPython2",
       "VariableInputPorts": true,
       "Id": "bcae408a19d941d880ff35c9fa1582cc",
@@ -49,6 +49,15 @@
           "Id": "bd7554ed57ff45999450843f90f9c44b",
           "Name": "IN[3]",
           "Description": "Input #3",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "9473294149e94821920189ada2ed959e",
+          "Name": "IN[4]",
+          "Description": "Input #4",
           "UsingDefaultValue": false,
           "Level": 2,
           "UseLevels": false,
@@ -193,44 +202,82 @@
       "Outputs": [],
       "Replication": "Disabled",
       "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "Raster",
+        "TypeName": "bool",
+        "TypeRank": 0,
+        "DefaultValue": "false",
+        "Description": "Raster or vector processing ?"
+      },
+      "Id": "9ac5c12faab445a2a53e024d90d72add",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "dc60d3c30ccf4c2cabdb7dd636024ef9",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
     }
   ],
   "Connectors": [
     {
       "Start": "1d92689919bc40e9a083a3d6048f71df",
       "End": "2c4693f810414ab0b620a6756417d463",
-      "Id": "98870151ee974d97b7d3966f5216bd56"
+      "Id": "98870151ee974d97b7d3966f5216bd56",
+      "IsHidden": "False"
     },
     {
       "Start": "e5fd1b4a9a204d54b28b09c79d027a99",
       "End": "32bff43b788c4847b4aa263847bd08ed",
-      "Id": "6300615a43e94fcca249834baeeac2cf"
+      "Id": "6300615a43e94fcca249834baeeac2cf",
+      "IsHidden": "False"
     },
     {
       "Start": "ad71f92bed4b45e1ac1ef3b13aefbb96",
       "End": "969be5ca5b404d1b89cd0df799be043a",
-      "Id": "e1b6f22ecbac4edca28b3f20ea9fc256"
+      "Id": "e1b6f22ecbac4edca28b3f20ea9fc256",
+      "IsHidden": "False"
     },
     {
       "Start": "2232fe4ebeda4c1f8c53594390629932",
       "End": "0847ccb906874820864aa9af3877f539",
-      "Id": "b5aaa494fd584c1ba260ea27eb23b245"
+      "Id": "b5aaa494fd584c1ba260ea27eb23b245",
+      "IsHidden": "False"
     },
     {
       "Start": "0e9fe99e2f2a45d7b50acca61be09104",
       "End": "bd7554ed57ff45999450843f90f9c44b",
-      "Id": "28b8461e191740eda8a97a634997033a"
+      "Id": "28b8461e191740eda8a97a634997033a",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "dc60d3c30ccf4c2cabdb7dd636024ef9",
+      "End": "9473294149e94821920189ada2ed959e",
+      "Id": "487e7d446e5740028ae122b6cce8d4e3",
+      "IsHidden": "False"
     }
   ],
   "Dependencies": [],
   "NodeLibraryDependencies": [],
+  "Author": "None provided",
   "Bindings": [],
   "View": {
     "Dynamo": {
       "ScaleFactor": 1.0,
       "HasRunWithoutCrash": false,
       "IsVisibleInDynamoLibrary": true,
-      "Version": "2.10.1.3976",
+      "Version": "2.13.1.3887",
       "RunType": "Manual",
       "RunPeriod": "1000"
     },
@@ -246,10 +293,11 @@
       "UpY": 1.0,
       "UpZ": 0.0
     },
+    "ConnectorPins": [],
     "NodeViews": [
       {
-        "ShowGeometry": true,
         "Name": "Export PDF",
+        "ShowGeometry": true,
         "Id": "bcae408a19d941d880ff35c9fa1582cc",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -258,59 +306,69 @@
         "Y": 184.79999999999995
       },
       {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "4d4dad6fb92f40849f33fcee87ff5707",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 76.0,
-        "Y": 177.60000000000005
+        "X": -81.5756506084698,
+        "Y": 92.881908275016173
       },
       {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "a9b289bf85dd43c7a87d3557b8021d2d",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 136.79999999999995,
-        "Y": 241.60000000000008
+        "X": -11.174266879638481,
+        "Y": 223.52680709867019
       },
       {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "16c41c3eaa2641c8806dbd9ec7890f37",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 0.40000000000003411,
-        "Y": 307.59999999999997
+        "X": -65.115324267320773,
+        "Y": 359.56042959132338
       },
       {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "8edf09ef41504aa785f7f409bd7610c8",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": -44.000000000000057,
-        "Y": 376.80000000000013
+        "X": -141.70819912281473,
+        "Y": 495.40532841497742
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "efffc321b8714d5d99e605a802494c7d",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 471.2,
-        "Y": 182.4
+        "X": 511.29989674982579,
+        "Y": 183.52957455633313
+      },
+      {
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Id": "9ac5c12faab445a2a53e024d90d72add",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": -147.73543164780972,
+        "Y": 646.24775022691381
       }
     ],
     "Annotations": [],
-    "X": 117.17433,
-    "Y": 42.014699999999962,
-    "Zoom": 0.70823125000000009
+    "X": 249.81103750441736,
+    "Y": -130.87011104148041,
+    "Zoom": 0.91006380393143915
   }
 }
