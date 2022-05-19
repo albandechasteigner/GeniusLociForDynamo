@@ -44,8 +44,20 @@ for view in views:
 		transform = bb.Transform
 		min = transform.OfPoint(bb.Min)
 		max = transform.OfPoint(bb.Max)
-		bb.Min = min
-		bb.Max = max
+		viewRange = view.GetViewRange()
+
+		topLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.TopClipPlane))
+		topOffset = viewRange.GetOffset(PlanViewPlane.TopClipPlane)
+		bttmLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.BottomClipPlane))
+		bttmOffset = viewRange.GetOffset(PlanViewPlane.BottomClipPlane)
+		cutLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.CutPlane))
+		cutOffset = viewRange.GetOffset(PlanViewPlane.CutPlane)
+		if bttmLevel : newmin = XYZ(min.X, min.Y, bttmLevel.ProjectElevation + bttmOffset)
+		else: newmin = XYZ(min.X, min.Y, cutLevel.ProjectElevation + bttmOffset)
+		if topLevel : newmax = XYZ(max.X, max.Y, topLevel.ProjectElevation + topOffset)
+		else: newmax = XYZ(max.X, max.Y, cutLevel.ProjectElevation + cutOffset)
+		bb.Min = newmin
+		bb.Max = newmax
 		box.append(bb.ToProtoType())
 	# viewSection Marker
 	elif view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
@@ -56,10 +68,8 @@ for view in views:
 		else:lines.append(None)	
 		bb = view.CropBox
 		transform = bb.Transform
-		min = transform.OfPoint(bb.Min)
-		max = transform.OfPoint(bb.Max)
-		bb.Min = min
-		bb.Max = max
+		bb.Min = transform.OfPoint(bb.Min)
+		bb.Max = transform.OfPoint(bb.Max)
 		box.append(bb.ToProtoType())
 	# SectionBox
 	elif view.ViewType == ViewType.ThreeD:
@@ -67,10 +77,8 @@ for view in views:
 		lines.append(None)
 		bb = view.GetSectionBox()
 		transform = bb.Transform
-		min = transform.OfPoint(bb.Min)
-		max = transform.OfPoint(bb.Max)
-		bb.Min = min
-		bb.Max = max
+		bb.Min = transform.OfPoint(bb.Min)
+		bb.Max = transform.OfPoint(bb.Max)
 		box.append(bb.ToProtoType())
 
 if isinstance(IN[0], list): OUT = elem, lines, box
