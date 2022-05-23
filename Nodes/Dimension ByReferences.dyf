@@ -43,30 +43,39 @@ def tolist(obj1):
     if hasattr(obj1,"__iter__"): return obj1
     else: return [obj1]
 
-view = tolist(UnwrapElement(IN[0]))[0]
+views = tolist(UnwrapElement(IN[0]))
 lines = tolist(IN[1])
-references= IN[2]
-dimensionType=tolist(UnwrapElement(IN[3]))[0]
+if any(isinstance(el, list) for el in IN[2]) : referenceList =  IN[2]
+else : referenceList = [(IN[2])]
+dimensionType = tolist(UnwrapElement(IN[3]))[0]
+listRef,dimList = [], []
 
-elementsRef = ReferenceArray()
-for reference in references :
-	elementsRef.Append(reference)
+#Thanks to Gavin Crump for the list structure improvement
+for references in referenceList :
+	elementsRef = ReferenceArray()
+	for reference in references :
+		elementsRef.Append(reference)
+	listRef.append(elementsRef)
 	
 TransactionManager.Instance.EnsureInTransaction(doc)
-for line in lines:
-	if doc.IsFamilyDocument == True :
-		if IN[3]== None: 
-			dim = doc.FamilyCreate.NewDimension(view, line.ToRevitType(), elementsRef).ToDSType(True)
+for view in views:
+	dims = []
+	for line,refer in zip(lines,listRef) :
+		if doc.IsFamilyDocument == True :
+			if IN[3]== None: 
+				dims.append(doc.FamilyCreate.NewDimension(view, line.ToRevitType(), refer).ToDSType(True))
+			else:
+				dims.append(doc.FamilyCreate.NewDimension(view, line.ToRevitType(), refer, dimensionType).ToDSType(True))
 		else:
-			dim = doc.FamilyCreate.NewDimension(view, line.ToRevitType(), elementsRef,dimensionType).ToDSType(True)
-	else:
-		if IN[3]== None: 
-			dim = doc.Create.NewDimension(view, line.ToRevitType(), elementsRef).ToDSType(True)
-		else:
-			dim = doc.Create.NewDimension(view, line.ToRevitType(), elementsRef,dimensionType).ToDSType(True)
+			if IN[3]== None: 
+				dims.append(doc.Create.NewDimension(view, line.ToRevitType(), refer).ToDSType(True))
+			else:
+				dims.append(doc.Create.NewDimension(view, line.ToRevitType(), refer, dimensionType).ToDSType(True))
+	dimList.append(dims)
 TransactionManager.Instance.TransactionTaskDone()
 
-OUT=dim</Script>
+if isinstance(IN[0], list): OUT = dimList
+else: OUT = dimList[0]</Script>
     </PythonNodeModels.PythonNode>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="eda9279a-f962-478f-8c2d-f1488336bc8e" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="46.610116461697" y="189.292695965717" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
       <Symbol value="//View to place dimension in&#xD;&#xA;view:Revit.Elements.Views.View = Revit.Application.Document.Current.ActiveView" />
