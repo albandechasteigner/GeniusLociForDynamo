@@ -22,6 +22,10 @@ Thanks to the original authors for their great Python scripts and for everything
 ### INSTALLATION
 Installation is simple - just use Dynamo's built-in package manager and search for `Genius Loci`.
 
+If the package helps you be more productive, feel free to vote for it in Dynamo's package manager.
+You can also donte on 
+<a href="https://www.buymeacoffee.com/GeniusLoci" target="_blank"><img src="https://cdn.buymeacoffee.com/buttons/default-orange.png" alt="Buy Me A Coffee" height="41" width="174"></a>
+
 ### UPDATES
 
 ###### 21.05.18 Update nodes for Revit 2022 and add Export PDF. 
