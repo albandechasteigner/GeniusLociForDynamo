@@ -1,97 +1,354 @@
-<Workspace Version="1.3.4.6666" X="-785.554970344348" Y="29.5223035465719" zoom="0.867977507649016" ScaleFactor="1" Name="FamilyInstance Symbolic Lines" Description="Obtains the symbolic lines of the family instance in the active view.&#xD;&#xA;(For example, the lines and the arcs of a door in a project plan view.)" ID="dd3fd02e-dcc9-4735-8339-5d856fdb8524" Category="GeniusLoci.Family">
-  <NamespaceResolutionMap />
-  <Elements>
-    <PythonNodeModels.PythonNode guid="0e692d29-9637-4e48-8e3b-151862168ad1" type="PythonNodeModels.PythonNode" nickname="Python Script" x="1046.71391552117" y="226.818642306946" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
-      <PortInfo index="0" default="False" />
-      <Script>#Alban de Chasteigner 2019
-#twitter : @geniusloci_bim
-#geniusloci.bim@gmail.com
-
-import clr
-clr.AddReference("RevitAPI")
-import Autodesk
-from Autodesk.Revit.DB import *
-
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.GeometryConversion)
-
-clr.AddReference('RevitServices')
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-doc = DocumentManager.Instance.CurrentDBDocument
-
-items = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
-curveList,outsurfaces,outedges,subCategories=[],[],[],[]
-
-opt = Options()
-opt.IncludeNonVisibleObjects = False
-opt.View = doc.ActiveView
-
-for item in items:
-	geoEle=item.get_Geometry(opt)
-	if geoEle != None:
-		for geoInstance in geoEle:
-			if isinstance(geoInstance, GeometryInstance):
-				allCurves,outsurface,outedge,subCategory=[],[],[],[]
-				for symbIns in geoInstance.GetInstanceGeometry():
-				#for symbIns in geoInstance.SymbolGeometry:
-					if isinstance(symbIns, Curve):
-						allCurves.append(symbIns.ToProtoType())
-						subCategory.append(doc.GetElement(symbIns.GraphicsStyleId).GraphicsStyleCategory.Name)
-						#allCurves.append(symbIns.CreateTransformed(geoInstance.Transform).ToProtoType())
-					if isinstance(symbIns, Solid) and symbIns.Volume == 0:
-						#solid=SolidUtils.CreateTransformed(symbIns,geoInstance.Transform)
-						#for face in solid.Faces:
-						for face in symbIns.Faces:
-							outsurface.extend(face.ToProtoType())
-						#for edge in solid.Edges:	
-						for edge in symbIns.Edges:
-							outedge.append(edge.AsCurve().ToProtoType())
-				curveList.append(allCurves)
-				subCategories.append(subCategory)
-				outsurfaces.append(outsurface)
-				outedges.append(outedge)
-	else:
-		pass	
-if isinstance(IN[0], (list)): OUT = curveList,subCategories,outsurfaces, outedges
-else: OUT = curveList[0],subCategories[0],outsurfaces[0],outedges[0]</Script>
-    </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="18b8309f-6d16-4e84-9483-ab92a4ad3966" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="800.713915521168" y="226.818642306946" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="familyInstance" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="b94a4615-a07c-4c2a-8c7e-3d23321eabc5" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1462.31391552117" y="128.178642306946" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Symbolic Lines" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="f91068f2-cf90-44ff-90c1-3fd8cb159d3c" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1271.11391552117" y="231.03197564028" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];&#xA;x[3];" ShouldFocus="false">
-      <PortInfo index="0" default="False" />
-    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="e9f57572-d459-4c41-b141-bf8136282437" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1462.31391552117" y="211.178642306946" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="SubCategoryName" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="5a29e14f-eb82-4a0d-ba28-4037f627decf" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1462.31391552117" y="295.178642306946" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Surfaces" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="c345102f-8e88-401f-b602-8e703bd05b06" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1462.31391552117" y="378.178642306946" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Edges" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="0e692d29-9637-4e48-8e3b-151862168ad1" start_index="0" end="f91068f2-cf90-44ff-90c1-3fd8cb159d3c" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="18b8309f-6d16-4e84-9483-ab92a4ad3966" start_index="0" end="0e692d29-9637-4e48-8e3b-151862168ad1" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="f91068f2-cf90-44ff-90c1-3fd8cb159d3c" start_index="0" end="b94a4615-a07c-4c2a-8c7e-3d23321eabc5" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="f91068f2-cf90-44ff-90c1-3fd8cb159d3c" start_index="1" end="e9f57572-d459-4c41-b141-bf8136282437" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="f91068f2-cf90-44ff-90c1-3fd8cb159d3c" start_index="2" end="5a29e14f-eb82-4a0d-ba28-4037f627decf" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="f91068f2-cf90-44ff-90c1-3fd8cb159d3c" start_index="3" end="c345102f-8e88-401f-b602-8e703bd05b06" end_index="0" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "dd3fd02e-dcc9-4735-8339-5d856fdb8524",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Family",
+  "Description": "Obtains the symbolic lines of the family instance in the active view.\r\n(For example, the lines and the arcs of a door in a project plan view.)",
+  "Name": "FamilyInstance Symbolic Lines",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2019\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\nclr.AddReference(\"RevitAPI\")\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\nclr.AddReference(\"RevitNodes\")\nimport Revit\nclr.ImportExtensions(Revit.GeometryConversion)\n\nclr.AddReference('RevitServices')\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\ndoc = DocumentManager.Instance.CurrentDBDocument\n\nitems = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\ncurveList,outsurfaces,outedges,subCategories=[],[],[],[]\n\nopt = Options()\nopt.IncludeNonVisibleObjects = False\nopt.View = doc.ActiveView\n\nfor item in items:\n\tgeoEle=item.get_Geometry(opt)\n\tif geoEle != None:\n\t\tfor geoInstance in geoEle:\n\t\t\tif isinstance(geoInstance, GeometryInstance):\n\t\t\t\tallCurves,outsurface,outedge,subCategory=[],[],[],[]\n\t\t\t\tfor symbIns in geoInstance.GetInstanceGeometry():\n\t\t\t\t#for symbIns in geoInstance.SymbolGeometry:\n\t\t\t\t\tif isinstance(symbIns, Curve):\n\t\t\t\t\t\tallCurves.append(symbIns.ToProtoType())\n\t\t\t\t\t\tsubCategory.append(item.Document.GetElement(symbIns.GraphicsStyleId).GraphicsStyleCategory.Name)\n\t\t\t\t\t\t#allCurves.append(symbIns.CreateTransformed(geoInstance.Transform).ToProtoType())\n\t\t\t\t\tif isinstance(symbIns, Solid) and symbIns.Volume == 0:\n\t\t\t\t\t\t#solid=SolidUtils.CreateTransformed(symbIns,geoInstance.Transform)\n\t\t\t\t\t\t#for face in solid.Faces:\n\t\t\t\t\t\tfor face in symbIns.Faces:\n\t\t\t\t\t\t\toutsurface.extend(face.ToProtoType())\n\t\t\t\t\t\t#for edge in solid.Edges:\t\n\t\t\t\t\t\tfor edge in symbIns.Edges:\n\t\t\t\t\t\t\toutedge.append(edge.AsCurve().ToProtoType())\n\t\t\t\tcurveList.append(allCurves)\n\t\t\t\tsubCategories.append(subCategory)\n\t\t\t\toutsurfaces.append(outsurface)\n\t\t\t\toutedges.append(outedge)\n\telse:\n\t\tpass\t\nif isinstance(IN[0], (list)): OUT = curveList,subCategories,outsurfaces, outedges\nelse: OUT = curveList[0],subCategories[0],outsurfaces[0],outedges[0]",
+      "Engine": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "0e692d2996374e488e3b151862168ad1",
+      "Inputs": [
+        {
+          "Id": "1cf6eae05f2247328dd1c129f0fdfc36",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "f81ceedeee864f45b832d7cfd803d205",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "familyInstance",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "18b8309f6d164e849483ab92a4ad3966",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "c493757382a544d78ff4322f9b6d5259",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Symbolic Lines",
+      "Id": "b94a4615a07c4c2a8c7e3d23321eabc5",
+      "Inputs": [
+        {
+          "Id": "e40a82db5cf4480591a09b51b577aa44",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CodeBlockNodeModel, DynamoCore",
+      "NodeType": "CodeBlockNode",
+      "Code": "x[0];\nx[1];\nx[2];\nx[3];",
+      "Id": "f91068f2cf9044ff90c13fd8cb159d3c",
+      "Inputs": [
+        {
+          "Id": "048a6faa376f496982d1eed26709abc7",
+          "Name": "x",
+          "Description": "x",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "bc9d22cc46f14c16926b08d3667b2d03",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "0eefcb39d9904953b089f07cde3d40d0",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "ad2fec88bad849c8b5f104e0da761e8b",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 3",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "689e4314bf9243bba36ca9ea41486e9d",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 4",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Permet de créer le code DesignScript directement"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "SubCategoryName",
+      "Id": "e9f57572d4594c41b141bf8136282437",
+      "Inputs": [
+        {
+          "Id": "3cc583cc6c024227a34909b43b1ffb84",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Surfaces",
+      "Id": "5a29e14feb824a0dba284037f627decf",
+      "Inputs": [
+        {
+          "Id": "9de9395b716745bfb17981696dd61029",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Edges",
+      "Id": "c345102f8e88401fb6028e703bd05b06",
+      "Inputs": [
+        {
+          "Id": "6029021dc16448a5b3010547f9559a88",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "f81ceedeee864f45b832d7cfd803d205",
+      "End": "048a6faa376f496982d1eed26709abc7",
+      "Id": "8af6237d94f141a49975ab100c954189",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "c493757382a544d78ff4322f9b6d5259",
+      "End": "1cf6eae05f2247328dd1c129f0fdfc36",
+      "Id": "29bd02cd37a24218812f091f77a2853d",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "bc9d22cc46f14c16926b08d3667b2d03",
+      "End": "e40a82db5cf4480591a09b51b577aa44",
+      "Id": "84f62e35c3af4a0b9074319558792c9f",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "0eefcb39d9904953b089f07cde3d40d0",
+      "End": "3cc583cc6c024227a34909b43b1ffb84",
+      "Id": "78f7c488d4fd44408c41145f06ba1f91",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "ad2fec88bad849c8b5f104e0da761e8b",
+      "End": "9de9395b716745bfb17981696dd61029",
+      "Id": "9c8571c5518b4b0ba7fa8e297f534bae",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "689e4314bf9243bba36ca9ea41486e9d",
+      "End": "6029021dc16448a5b3010547f9559a88",
+      "Id": "41d5dd027dd4477f86cf0ebfbff5d4b8",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.13.1.3887",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Name": "Python Script",
+        "ShowGeometry": true,
+        "Id": "0e692d2996374e488e3b151862168ad1",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1046.71391552117,
+        "Y": 226.818642306946
+      },
+      {
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Id": "18b8309f6d164e849483ab92a4ad3966",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 800.713915521168,
+        "Y": 226.818642306946
+      },
+      {
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Id": "b94a4615a07c4c2a8c7e3d23321eabc5",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1462.31391552117,
+        "Y": 128.178642306946
+      },
+      {
+        "Name": "Code Block",
+        "ShowGeometry": true,
+        "Id": "f91068f2cf9044ff90c13fd8cb159d3c",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1271.11391552117,
+        "Y": 231.03197564028
+      },
+      {
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Id": "e9f57572d4594c41b141bf8136282437",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1462.31391552117,
+        "Y": 211.178642306946
+      },
+      {
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Id": "5a29e14feb824a0dba284037f627decf",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1462.31391552117,
+        "Y": 295.178642306946
+      },
+      {
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Id": "c345102f8e88401fb6028e703bd05b06",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1462.31391552117,
+        "Y": 378.178642306946
+      }
+    ],
+    "Annotations": [],
+    "X": -785.554970344348,
+    "Y": 29.5223035465719,
+    "Zoom": 0.867977507649016
+  }
+}
