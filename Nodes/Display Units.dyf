@@ -75,7 +75,7 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "#Alban de Chasteigner 2018\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\nversion=int(app.VersionNumber)\n\nclr.AddReference(\"RevitAPI\")\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\nunits,groups,dispunits,validUnits,dispsyms=[],[],[],[],[]\n\nif version < 2021:\n\tunits = UnitUtils.GetValidUnitTypes()\n\tfor unit in units :\n\t\tgroup=UnitUtils.GetUnitGroup(unit)\n\t\tgroups.append(group)\n\t\tdispunit = UnitUtils.GetValidDisplayUnits(unit)\n\t\tdispunits.append(dispunit)\n\n\tfor dispuni in dispunits :\n\t\tunitSymbTy,dispsyms=[],[]\n\t\tfor dispun in dispuni:\n\t\t\tunitSymbType=FormatOptions.GetValidUnitSymbols(dispun)\n\t\t\tunitSymbTy.append(unitSymbType)\n\t\tvalidUnits.append(unitSymbTy)\n\t\tfor unitsymbol in validUnits:\n\t\t\tsymbs=[]\n\t\t\tfor unitsymb in unitsymbol :\n\t\t\t\tfor unitsy in unitsymb :\n\t\t\t\t\tif unitsy == UnitSymbolType.UST_NONE:\n\t\t\t\t\t\tdispsym = None\n\t\t\t\t\telse:\n\t\t\t\t\t\tdispsym = LabelUtils.GetLabelFor(unitsy)\n\t\t\t\t\tsymbs.append(dispsym)\n\t\t\tdispsyms.append(filter(None,symbs))\nelse:\n\tif version >= 2023:\n\t\tidentifiers = UnitUtils.GetAllMeasurableSpecs()\n\telse:\n\t\tidentifiers = UnitUtils.GetAllSpecs()\n\tfor id in identifiers:\n\t\tunits.append(UnitUtils.GetTypeCatalogStringForSpec(id))\n\t\tif version >= 2023:\n\t\t\tgroups.append(None)\n\t\telse:\n\t\t\tgroups.append(UnitUtils.GetUnitGroup(id))\n\t\tvalidUnits.append(UnitUtils.GetValidUnits(id))\n\tfor vali in validUnits :\n\t\tdispunit,symbs=[],[]\n\t\tfor val in vali:\n\t\t\tdispunit.append(UnitUtils.GetTypeCatalogStringForUnit(val))\n\t\t\tunitSymbType=FormatOptions.GetValidSymbols(val)\n\t\t\tfor unitSymb in unitSymbType:\n\t\t\t\ttry:dispSym = LabelUtils.GetLabelForSymbol(unitSymb)\n\t\t\t\texcept:dispSym = None\n\t\t\t\tsymbs.append(dispSym)\t\n\t\tdispunits.append(dispunit)\n\t\tdispsyms.append(filter(None,symbs))\n\nOUT = units, groups,dispunits,dispsyms",
+      "Code": "#Alban de Chasteigner 2018\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\nversion=int(app.VersionNumber)\n\nclr.AddReference(\"RevitAPI\")\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\nunits,groups,dispunits,validUnits,dispsyms=[],[],[],[],[]\n\nif version < 2021:\n\tunits = UnitUtils.GetValidUnitTypes()\n\tfor unit in units :\n\t\tgroup=UnitUtils.GetUnitGroup(unit)\n\t\tgroups.append(group)\n\t\tdispunit = UnitUtils.GetValidDisplayUnits(unit)\n\t\tdispunits.append(dispunit)\n\n\tfor dispuni in dispunits :\n\t\tunitSymbTy,dispsyms=[],[]\n\t\tfor dispun in dispuni:\n\t\t\tunitSymbType=FormatOptions.GetValidUnitSymbols(dispun)\n\t\t\tunitSymbTy.append(unitSymbType)\n\t\tvalidUnits.append(unitSymbTy)\n\t\tfor unitsymbol in validUnits:\n\t\t\tsymbs=[]\n\t\t\tfor unitsymb in unitsymbol :\n\t\t\t\tfor unitsy in unitsymb :\n\t\t\t\t\tif unitsy == UnitSymbolType.UST_NONE:\n\t\t\t\t\t\tdispsym = None\n\t\t\t\t\telse:\n\t\t\t\t\t\tdispsym = LabelUtils.GetLabelFor(unitsy)\n\t\t\t\t\tsymbs.append(dispsym)\n\t\t\tdispsyms.append(filter(None,symbs))\nelse:\n\tif version >= 2023:\n\t\tidentifiers = UnitUtils.GetAllMeasurableSpecs()\n\telse:\n\t\tidentifiers = UnitUtils.GetAllSpecs()\n\tfor id in identifiers:\n\t\tunits.append(UnitUtils.GetTypeCatalogStringForSpec(id))\n\t\tif version >= 2022:\n\t\t\tgroups.append(LabelUtils.GetLabelForDiscipline(UnitUtils.GetDiscipline(id)))\n\t\telse:\n\t\t\tgroups.append(UnitUtils.GetUnitGroup(id))\n\t\tvalidUnits.append(UnitUtils.GetValidUnits(id))\n\tfor vali in validUnits :\n\t\tdispunit,symbs=[],[]\n\t\tfor val in vali:\n\t\t\tdispunit.append(UnitUtils.GetTypeCatalogStringForUnit(val))\n\t\t\tunitSymbType=FormatOptions.GetValidSymbols(val)\n\t\t\tfor unitSymb in unitSymbType:\n\t\t\t\ttry:dispSym = LabelUtils.GetLabelForSymbol(unitSymb)\n\t\t\t\texcept:dispSym = None\n\t\t\t\tsymbs.append(dispSym)\t\n\t\tdispunits.append(dispunit)\n\t\tdispsyms.append(filter(None,symbs))\n\nOUT = units, groups,dispunits,dispsyms",
       "Engine": "IronPython2",
       "VariableInputPorts": true,
       "Id": "8c48d8dc78d746fbb54e30e163efbf37",
@@ -183,32 +183,27 @@
     {
       "Start": "2a1ec462ee0d448eab4a2eb2f76ec9fd",
       "End": "9d714d22c72841bcae8bde1933d75f5b",
-      "Id": "e85805fd90dc462cb06d4728065a0c41",
-      "IsHidden": "False"
+      "Id": "e85805fd90dc462cb06d4728065a0c41"
     },
     {
       "Start": "62220b7b7f744fbf80b03617dc149635",
       "End": "b47d1f983e8a475e97700cf8a00ea64d",
-      "Id": "b7ea46be7be64bd28b5e108660675609",
-      "IsHidden": "False"
+      "Id": "b7ea46be7be64bd28b5e108660675609"
     },
     {
       "Start": "9c1434b703464ad4a8ebb1e6f8b63b66",
       "End": "c30fc1d6d82c491ba62c3754af9bb15a",
-      "Id": "3e3c27dc15934107847f327db413d3e8",
-      "IsHidden": "False"
+      "Id": "3e3c27dc15934107847f327db413d3e8"
     },
     {
       "Start": "f0127d503770434a823d89f5dd0cc3ae",
       "End": "b4b6b033f1cb4ead8ae32a7de71060e9",
-      "Id": "1ff52ede1a084c4781274904cb19f222",
-      "IsHidden": "False"
+      "Id": "1ff52ede1a084c4781274904cb19f222"
     },
     {
       "Start": "6d12fbad0f8c478f9c21f44bcf1f3a1b",
       "End": "c5349240a1a94f25b644fea84c5f1bab",
-      "Id": "3c7be42e7f7f42168f7995263b9e2bfd",
-      "IsHidden": "False"
+      "Id": "3c7be42e7f7f42168f7995263b9e2bfd"
     }
   ],
   "Dependencies": [],
@@ -220,7 +215,7 @@
       "ScaleFactor": 1.0,
       "HasRunWithoutCrash": false,
       "IsVisibleInDynamoLibrary": true,
-      "Version": "2.13.1.3887",
+      "Version": "2.12.0.5650",
       "RunType": "Manual",
       "RunPeriod": "1000"
     },
@@ -236,64 +231,63 @@
       "UpY": 1.0,
       "UpZ": 0.0
     },
-    "ConnectorPins": [],
     "NodeViews": [
       {
-        "Name": "Code Block",
-        "ShowGeometry": true,
         "Id": "f5881e48593a4fd3a80ce197a2fab506",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
+        "Name": "Code Block",
+        "ShowGeometry": true,
         "Excluded": false,
         "X": 727.710705417363,
         "Y": 1013.40705329417
       },
       {
-        "Name": "display units",
-        "ShowGeometry": true,
         "Id": "8c48d8dc78d746fbb54e30e163efbf37",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
+        "Name": "display units",
+        "ShowGeometry": true,
         "Excluded": false,
         "X": 538.110705417363,
         "Y": 1009.19371996084
       },
       {
-        "Name": "Output",
-        "ShowGeometry": true,
         "Id": "ca1bf111a0724ca1941e30aa158fade6",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
         "Excluded": false,
         "X": 955.115052189892,
         "Y": 934.53733054765
       },
       {
-        "Name": "Output",
-        "ShowGeometry": true,
         "Id": "d8e360a4c26f4033abbefa70cf916c90",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
         "Excluded": false,
         "X": 956.351785112162,
         "Y": 1005.12894583222
       },
       {
-        "Name": "Output",
-        "ShowGeometry": true,
         "Id": "969960f8e6794db59a42f7853bddf318",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
         "Excluded": false,
         "X": 950.168120500782,
         "Y": 1077.95729403907
       },
       {
-        "Name": "Output",
-        "ShowGeometry": true,
         "Id": "f09d7730e604489c9ebfeeb0e6b19a48",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
         "Excluded": false,
         "X": 956.351785112162,
         "Y": 1172.12894583222
