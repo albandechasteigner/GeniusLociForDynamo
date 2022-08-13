@@ -1,4 +1,4 @@
-<Workspace Version="1.3.4.6666" X="-59.4448277417949" Y="29.1311402286053" zoom="0.784369328044829" ScaleFactor="1" Name="FamilyDocument Open" Description="Gets the familyDocument by family or family instance. (Opens the family in the background)&#xD;&#xA;Use the &quot;FamilyDocument Close&quot; node to close the familyDocument. " ID="62e8e34d-3a8c-4612-a5b1-719a5cf97602" Category="GeniusLoci.Family">
+<Workspace Version="1.3.4.6666" X="-59.4448277417949" Y="29.1311402286053" zoom="0.784369328044829" ScaleFactor="1" Name="FamilyDocument Edit" Description="Gets the familyDocument by family or family instance. (Opens the family in the background)&#xD;&#xA;Use the &quot;FamilyDocument Close&quot; node to close the familyDocument. " ID="62e8e34d-3a8c-4612-a5b1-719a5cf97602" Category="GeniusLoci.Family">
   <NamespaceResolutionMap />
   <Elements>
     <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="8ae66e31-0010-4c02-a8b3-ac1583ffcb38" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="125.321065682995" y="274.426703848496" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
