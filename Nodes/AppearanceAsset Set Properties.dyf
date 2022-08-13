@@ -13,7 +13,7 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "#Alban de Chasteigner 2022\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\nclr.AddReference('RevitAPI')\nfrom Autodesk.Revit.DB import *\nfrom Autodesk.Revit.DB.Visual import *\nclr.AddReference('RevitServices')\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nfrom RevitServices.Transactions import TransactionManager\ndoc = DocumentManager.Instance.CurrentDBDocument\n\ndef toList(obj):\n    if hasattr(obj, '__iter__'): return obj\n    else: return [obj]\n    \nassetElems = toList(UnwrapElement(IN[0]))\nparameters = toList(IN[1])\nvalues = toList(IN[2])\n\nasset_len = len(assetElems) == 1\nval_len = len(values) == 1\n\ndef ToRevitColor(dynamoColor):\n\treturn Color(dynamoColor.Red, dynamoColor.Green, dynamoColor.Blue)\n\nfor i in xrange(len(parameters)):\n\tparam = parameters[i]\n\ta = 0 if asset_len else i\n\tv = 0 if val_len else i\n#for assetElem, parameter, value in zip(assetElems, parameters, values):\n\tTransactionManager.Instance.EnsureInTransaction(doc)\n\twith Visual.AppearanceAssetEditScope(assetElems[a].Document) as editScope:\n\t\teditableAsset = editScope.Start(assetElems[a].Id)\n\t\tproperty = editableAsset.FindByName(param)\n\t\tif param == \"UIName\":\n\t\t\tassetElem.Name = values[v]\n\t\tif property.IsEditable():\n\t\t\tif not isinstance(property, AssetPropertyDoubleArray4d):\n\t\t\t\tproperty.Value = values[v]\n\t\t\telse: \n\t\t\t\tproperty.SetValueAsColor(ToRevitColor(values[v]))\n\t\teditScope.Commit(True)\n\tTransactionManager.Instance.TransactionTaskDone()\n\nOUT = assetElems",
+      "Code": "#Alban de Chasteigner 2022\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n#https://github.com/albandechasteigner/GeniusLociForDynamo\n\nimport clr\nclr.AddReference('RevitAPI')\nfrom Autodesk.Revit.DB import *\nfrom Autodesk.Revit.DB.Visual import *\nclr.AddReference('RevitServices')\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nfrom RevitServices.Transactions import TransactionManager\ndoc = DocumentManager.Instance.CurrentDBDocument\n\ndef toList(obj):\n    if hasattr(obj, '__iter__'): return obj\n    else: return [obj]\n    \nassetElems = toList(UnwrapElement(IN[0]))\nparameters = toList(IN[1])\nvalues = toList(IN[2])\n\nval_len = len(values) == 1\n\ndef ToRevitColor(dynamoColor):\n\treturn Color(dynamoColor.Red, dynamoColor.Green, dynamoColor.Blue)\n\nfor assetElem in assetElems :\n\tfor i in xrange(len(parameters)):\n\t\tparam = parameters[i]\n\t\tv = 0 if val_len else i\n\t\tTransactionManager.Instance.EnsureInTransaction(doc)\n\t\twith Visual.AppearanceAssetEditScope(assetElem.Document) as editScope:\n\t\t\teditableAsset = editScope.Start(assetElem.Id)\n\t\t\tproperty = editableAsset.FindByName(param)\n\t\t\tif param == \"UIName\":\n\t\t\t\tassetElem.Name = values[v]\n\t\t\tif property.IsEditable():\n\t\t\t\tif not isinstance(property, AssetPropertyDoubleArray4d):\n\t\t\t\t\tproperty.Value = values[v]\n\t\t\t\telse: \n\t\t\t\t\tproperty.SetValueAsColor(ToRevitColor(values[v]))\n\t\t\teditScope.Commit(True)\n\t\tTransactionManager.Instance.TransactionTaskDone()\n\nOUT = IN[0]",
       "Engine": "IronPython2",
       "VariableInputPorts": true,
       "Id": "1ea673372d644f1e8437efc72fd73629",
@@ -137,26 +137,49 @@
       ],
       "Replication": "Disabled",
       "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "AppearanceAssetElement",
+      "Id": "092910972a1d46fcb5b939781e459ee1",
+      "Inputs": [
+        {
+          "Id": "311fcd3767f14e63a9c04e930f62432b",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
     }
   ],
   "Connectors": [
     {
+      "Start": "8914f8a877544d33a1306eb2557a8d34",
+      "End": "311fcd3767f14e63a9c04e930f62432b",
+      "Id": "45c64a8a9b224106a4f256a1d67fa790"
+    },
+    {
       "Start": "65b28a439e0f43b699e938682ec15d12",
       "End": "0d4441c9b1ec4b2596988b90dadedad7",
-      "Id": "98bb1bcdd3984c799683687aff4519ad",
-      "IsHidden": "False"
+      "Id": "98bb1bcdd3984c799683687aff4519ad"
     },
     {
       "Start": "58301f8286f2420ba5d994e6b7243061",
       "End": "3189dc701ec34a8a890529e5ff93deb6",
-      "Id": "41a5506470674f7fa9f4dd57bc2e857a",
-      "IsHidden": "False"
+      "Id": "41a5506470674f7fa9f4dd57bc2e857a"
     },
     {
       "Start": "3c56849597f54440ac88e62d1489f8e4",
       "End": "f5d3241bd26444f1b019b8d9a922904f",
-      "Id": "9c3c167fc9754b8c8809315ef801aa43",
-      "IsHidden": "False"
+      "Id": "9c3c167fc9754b8c8809315ef801aa43"
     }
   ],
   "Dependencies": [],
@@ -168,7 +191,7 @@
       "ScaleFactor": 1.0,
       "HasRunWithoutCrash": false,
       "IsVisibleInDynamoLibrary": true,
-      "Version": "2.13.1.3887",
+      "Version": "2.12.0.5650",
       "RunType": "Manual",
       "RunPeriod": "1000"
     },
@@ -184,11 +207,10 @@
       "UpY": 1.0,
       "UpZ": 0.0
     },
-    "ConnectorPins": [],
     "NodeViews": [
       {
-        "Name": "Set Properties",
         "ShowGeometry": true,
+        "Name": "Set Properties",
         "Id": "1ea673372d644f1e8437efc72fd73629",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -197,34 +219,44 @@
         "Y": 342.79999999999995
       },
       {
-        "Name": "Input",
         "ShowGeometry": true,
+        "Name": "Input",
         "Id": "0cd21d001f7d49e7b01c8883e7b7c1ab",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 251.2000000000001,
-        "Y": 231.59999999999997
+        "X": 165.7400593471811,
+        "Y": 287.62373887240346
       },
       {
-        "Name": "Input",
         "ShowGeometry": true,
+        "Name": "Input",
         "Id": "6e1c19f9afef404fa2e6c491e5bea872",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 187.60000000000002,
-        "Y": 371.99999999999994
+        "X": 187.6,
+        "Y": 372.0
       },
       {
-        "Name": "Input",
         "ShowGeometry": true,
+        "Name": "Input",
         "Id": "60ff1c1ceb68461ba16ecbac06d9b7d8",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 270.80000000000007,
-        "Y": 527.6
+        "X": 230.918694362018,
+        "Y": 481.071810089021
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Output",
+        "Id": "092910972a1d46fcb5b939781e459ee1",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 707.26409495548955,
+        "Y": 339.95014836795247
       }
     ],
     "Annotations": [],
