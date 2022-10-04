@@ -13,7 +13,7 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "#Alban de Chasteigner 2018\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\nimport clr\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nclr.AddReference(\"RevitAPI\")\nimport Autodesk\nfrom Autodesk.Revit.DB import FilteredElementCollector,IndependentTag,BuiltInCategory\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\nversion=int(app.VersionNumber)\ndoc = DocumentManager.Instance.CurrentDBDocument\n\nelements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\n\ntagged,notTagged = [], []\n\ncollector = FilteredElementCollector(doc,doc.ActiveView.Id).OfClass(IndependentTag).ToElements()\ncollector2 = FilteredElementCollector(doc,doc.ActiveView.Id).OfCategory(BuiltInCategory.OST_RoomTags).ToElements()\n\nfor elem in elements:\n\tisTagged = False\n\tfor t in collector:\n\t\tif version < 2022:\n\t\t\tif t.TaggedLocalElementId == elem.Id:\n\t\t\t\tisTagged = True\n\t\telse:\n\t\t\tif [doc.GetElement(x) for x in t.GetTaggedLocalElementIds()] == elem.Id:\n\t\t\t\tisTagged = True\n\tfor t in collector2:\n\t\tif t.TaggedLocalRoomId == elem.Id:\n\t\t\tisTagged = True\n\tif not isTagged :\n\t\tnotTagged.append(elem)\n\telse: tagged.append(elem)\n\nOUT = tagged,notTagged",
+      "Code": "#Alban de Chasteigner 2018\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\nimport clr\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nclr.AddReference(\"RevitAPI\")\nimport Autodesk\nfrom Autodesk.Revit.DB import FilteredElementCollector,IndependentTag,BuiltInCategory\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\nversion=int(app.VersionNumber)\ndoc = DocumentManager.Instance.CurrentDBDocument\n\nelements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\n\ntagged,notTagged = [], []\n\ncollector = FilteredElementCollector(doc,doc.ActiveView.Id).OfClass(IndependentTag).ToElements()\ncollector2 = FilteredElementCollector(doc,doc.ActiveView.Id).OfCategory(BuiltInCategory.OST_RoomTags).ToElements()\n\nfor elem in elements:\n\tisTagged = False\n\tfor t in collector:\n\t\tif version < 2022:\n\t\t\tif t.TaggedLocalElementId == elem.Id:\n\t\t\t\tisTagged = True\n\t\telse:\n\t\t\tif [x for x in t.GetTaggedLocalElementIds()][0] == elem.Id:\n\t\t\t\tisTagged = True\n\tfor t in collector2:\n\t\tif t.TaggedLocalRoomId == elem.Id:\n\t\t\tisTagged = True\n\tif not isTagged :\n\t\tnotTagged.append(elem)\n\telse: tagged.append(elem)\n\nOUT = tagged,notTagged",
       "Engine": "IronPython2",
       "VariableInputPorts": true,
       "Id": "1836acd8e8474bd88983bbd8a7884030",
@@ -154,22 +154,26 @@
     {
       "Start": "319d39c659724635b6ae115cf90de643",
       "End": "eef9639b4dfd4e28b7fa6721eb447cf3",
-      "Id": "cdb942a49aa9478d826244d5ab702d00"
+      "Id": "cdb942a49aa9478d826244d5ab702d00",
+      "IsHidden": "False"
     },
     {
       "Start": "f333da644e424a3f83ef9655cb9f5365",
       "End": "5cf99677c28f417c8bfe0d22a62123d7",
-      "Id": "c64562ebf2e849f581411247febf0221"
+      "Id": "c64562ebf2e849f581411247febf0221",
+      "IsHidden": "False"
     },
     {
       "Start": "ac77ace84cb4471397bae4bfc2891f9e",
       "End": "d9a831c2a7c440b0be4de206e8d02687",
-      "Id": "65c3e561ce424d168c026ffcbd4b3722"
+      "Id": "65c3e561ce424d168c026ffcbd4b3722",
+      "IsHidden": "False"
     },
     {
       "Start": "3c3cb97a60a34e33811742da0d94ec6c",
       "End": "63c88c4584d8406fbccedae9916a83de",
-      "Id": "b6c1682da4e34522aec8ccc052ec8b8b"
+      "Id": "b6c1682da4e34522aec8ccc052ec8b8b",
+      "IsHidden": "False"
     }
   ],
   "Dependencies": [],
@@ -181,7 +185,7 @@
       "ScaleFactor": 1.0,
       "HasRunWithoutCrash": false,
       "IsVisibleInDynamoLibrary": true,
-      "Version": "2.12.0.5650",
+      "Version": "2.13.1.3887",
       "RunType": "Manual",
       "RunPeriod": "1000"
     },
@@ -197,10 +201,11 @@
       "UpY": 1.0,
       "UpZ": 0.0
     },
+    "ConnectorPins": [],
     "NodeViews": [
       {
-        "ShowGeometry": true,
         "Name": "Python Script",
+        "ShowGeometry": true,
         "Id": "1836acd8e8474bd88983bbd8a7884030",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -209,49 +214,49 @@
         "Y": 210.4
       },
       {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "f6d48b42ddc848968b0556f48f4a73ee",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": -19.068598199986297,
-        "Y": 207.31746854077295
+        "X": -49.1124517948295,
+        "Y": 211.44113472045734
       },
       {
-        "ShowGeometry": true,
         "Name": "Code Block",
+        "ShowGeometry": true,
         "Id": "b23b6f17b80e4b228fc876a76b404b77",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 382.999950835341,
-        "Y": 216.455361971529
+        "X": 432.48394499155347,
+        "Y": 213.50988612889734
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "1aba805b52024998b3aed0349e71cf22",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 527.209389340881,
-        "Y": 214.425972453233
+        "X": 619.69733079951629,
+        "Y": 130.77445852249309
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "0b17adb934a74cbab3a27c40841c8f01",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 521.979685073088,
-        "Y": 280.375395598287
+        "X": 618.59129271140762,
+        "Y": 270.36077773333932
       }
     ],
     "Annotations": [],
-    "X": 17.60336944941,
-    "Y": 49.5755710400082,
-    "Zoom": 0.679007436100058
+    "X": 352.17537459685713,
+    "Y": 161.89132625506332,
+    "Zoom": 0.39489308302981935
   }
 }
