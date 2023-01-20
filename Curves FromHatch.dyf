@@ -1,0 +1,217 @@
+{
+  "Uuid": "cd997e3a-d190-4728-8d06-19dce5537479",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.CAD Import",
+  "Description": "Gets the boundaries of the hatches from a CAD link or import.\r\nBy Cyril Poupin on the Dynamo Forum",
+  "Name": "Curves FromHatch",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#By Cyril Poupin on the Dynamo Forum\n#https://forum.dynamobim.com/t/get-face-from-cad-dwg/70043/3\n\nimport clr\nclr.AddReference('ProtoGeometry')\nfrom Autodesk.DesignScript.Geometry import *\nimport Autodesk.DesignScript.Geometry as DS\n\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\nclr.AddReference('RevitNodes')\nimport Revit\nclr.ImportExtensions(Revit.GeometryConversion)\n\nimportinstances = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\n\npolycurves = []\nopt = Options()\nfor importinstance in importinstances:\n\tgeoSet = importinstance.get_Geometry(opt)\n\tfor geo in geoSet:\n\t\tif isinstance(geo, GeometryInstance):\n\t\t\tfor g in  geo.GetInstanceGeometry():\n\t\t\t\tif isinstance(g, Solid) and g.Volume == 0 :\n\t\t\t\t\tfor f in g.Faces:\n\t\t\t\t\t\tgstyleName = importinstance.Document.GetElement(f.GraphicsStyleId).GraphicsStyleCategory.Name\n\t\t\t\t\t\tif gstyleName == IN[1] :\n\t\t\t\t\t\t\tfor loopCurve in f.GetEdgesAsCurveLoops():\n\t\t\t\t\t\t\t\tds_polycurv = DS.PolyCurve.ByJoinedCurves(x.ToProtoType() for x in loopCurve)\n\t\t\t\t\t\t\t\tpolycurves.append(ds_polycurv)\n\t\t\t\t\t\telif IN[1] == None :\n\t\t\t\t\t\t\tfor loopCurve in f.GetEdgesAsCurveLoops():\n\t\t\t\t\t\t\t\tds_polycurv = DS.PolyCurve.ByJoinedCurves(x.ToProtoType() for x in loopCurve)\n\t\t\t\t\t\t\t\tpolycurves.append(ds_polycurv)\n\t\t\t\t\t\t\t\t\nif isinstance(IN[0], list): OUT = polycurves \nelse: OUT = polycurves[0]",
+      "Engine": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "7013d67f081546aba1aaf771fa98b15a",
+      "Inputs": [
+        {
+          "Id": "f134608aa86a46dfb18131b07b0af543",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "22d8d3767a7a4a6295acd8250d2f17ab",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "2fe7a610fe3c45139e8e440976c945dd",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "PolyCurve",
+      "Id": "a1db3d491bf649149c727cd52d658ea7",
+      "Inputs": [
+        {
+          "Id": "ccb79803396a4413872740370ce673d6",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "importInstance",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "2b96453c04a14bb9b27387caf04d19e1",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "67744799fa8b47d786817c0a55d74de1",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "layerName",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": "null",
+        "Description": "Optional input"
+      },
+      "Id": "789c1d45a9714c00ae2c6c18008dc257",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "306f2b385ff44285b1f86793abf0a9fb",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "2fe7a610fe3c45139e8e440976c945dd",
+      "End": "ccb79803396a4413872740370ce673d6",
+      "Id": "9d54a00f42cb483f8c832d571c9868f3"
+    },
+    {
+      "Start": "67744799fa8b47d786817c0a55d74de1",
+      "End": "f134608aa86a46dfb18131b07b0af543",
+      "Id": "2bb33197f43240489cd4d980b2baf42b"
+    },
+    {
+      "Start": "306f2b385ff44285b1f86793abf0a9fb",
+      "End": "22d8d3767a7a4a6295acd8250d2f17ab",
+      "Id": "5bd0f8c37e78418b9a1ddfc59713da79"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.12.1.8246",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": 1.4520793167264403,
+      "EyeY": 1.4081537742362682,
+      "EyeZ": 4.797823437504916,
+      "LookX": 1.2998342531411706,
+      "LookY": -1.4081537742362682,
+      "LookZ": -6.2825322235156582,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "NodeViews": [
+      {
+        "ShowGeometry": true,
+        "Name": "Python Script",
+        "Id": "7013d67f081546aba1aaf771fa98b15a",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 401.2,
+        "Y": 292.0
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Output",
+        "Id": "a1db3d491bf649149c727cd52d658ea7",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 584.8,
+        "Y": 289.2
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "2b96453c04a14bb9b27387caf04d19e1",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 109.99999999999994,
+        "Y": 266.4
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "789c1d45a9714c00ae2c6c18008dc257",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 96.4,
+        "Y": 352.8
+      }
+    ],
+    "Annotations": [],
+    "X": -46.0,
+    "Y": 6.0,
+    "Zoom": 1.0
+  }
+}
