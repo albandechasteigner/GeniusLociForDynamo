@@ -1,90 +1,261 @@
-<Workspace Version="1.3.4.6666" X="-51.1876650765887" Y="-137.120720145194" zoom="0.867977507649015" ScaleFactor="1" Name="FamilyInstance Reference ByType" Description="Works only in Revit 2018.1 and later.&#xD;&#xA;Gets the reference corresponding to the given Reference Plane in the family instance.&#xD;&#xA;Also works with linked family instance." ID="27053731-def9-46b7-8a8f-d05ef3a8e51f" Category="GeniusLoci.Reference">
-  <NamespaceResolutionMap />
-  <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="38be3203-5e10-47a6-af50-d8935cb365f0" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="893.345177085362" y="371.190190955317" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Reference" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="f5b3a585-0eb1-44e9-8bd8-c2d7a8cc5451" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="90.9451770853621" y="407.616857621984" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="familyInstance" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1d7f7507-7038-4532-a0c4-24d8cac0d2af" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="90.9451770853621" y="491.616857621984" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Default = Center (Left/Right)&#xD;&#xA;ReferenceType:var=null" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="7d764139-a2fc-47d9-bf62-d29c5e6629ae" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="702.145177085362" y="440.830190955317" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];&#xA;x[2];" ShouldFocus="false">
-      <PortInfo index="0" default="False" />
-    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="2351f917-5f81-4c8e-a937-6f262e53e7b8" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="893.345177085362" y="454.190190955317" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="ReferenceName" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="797a7ebc-708b-4012-b1b0-7f4b5ac20679" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="893.345177085362" y="537.190190955317" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Plane" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <PythonNodeModels.PythonNode guid="4d340dd1-eee3-4aab-a759-d4743361f4c8" type="PythonNodeModels.PythonNode" nickname="Python Script" x="477.345177085362" y="436.616857621984" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
-      <PortInfo index="0" default="False" />
-      <PortInfo index="1" default="False" />
-      <Script>#Alban de Chasteigner 2018
-#twitter : @geniusloci_bim
-#geniusloci.bim@gmail.com
-
-import clr
-clr.AddReference('RevitServices')
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-from RevitServices.Transactions import TransactionManager
-doc = DocumentManager.Instance.CurrentDBDocument
-
-clr.AddReference('RevitAPI')
-import Autodesk
-from Autodesk.Revit.DB import *
-
-clr.AddReference('RevitNodes')
-import Revit
-clr.ImportExtensions(Revit.GeometryConversion)
-
-elements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
-reftype = UnwrapElement(IN[1])
-ref,refname,planeList=[],[],[]
-
-#Get Reference Planes from Families
-for element in elements:
-	if reftype == None:
-		reference = element.GetReferences(FamilyInstanceReferenceType.CenterLeftRight)
-	else :
-		reference = element.GetReferences(reftype)
-	ref.append(reference[0])
-	refname.append(element.GetReferenceName(reference[0]))
-	try :
-		TransactionManager.Instance.EnsureInTransaction(doc)
-		trans1 = SubTransaction(doc)
-		trans1.Start()
-		sketch=SketchPlane.Create(doc,reference[0])
-		plane = sketch.GetPlane().ToPlane(True)
-		sketch.Dispose()
-		trans1.RollBack()
-		TransactionManager.Instance.TransactionTaskDone()
-	except :
-		plane=None
-	planeList.append(plane)
-
-if isinstance(IN[0], list): OUT = ref,refname,planeList
-else: OUT = ref[0],refname[0],planeList[0]</Script>
-    </PythonNodeModels.PythonNode>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="f5b3a585-0eb1-44e9-8bd8-c2d7a8cc5451" start_index="0" end="4d340dd1-eee3-4aab-a759-d4743361f4c8" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="1d7f7507-7038-4532-a0c4-24d8cac0d2af" start_index="0" end="4d340dd1-eee3-4aab-a759-d4743361f4c8" end_index="1" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="7d764139-a2fc-47d9-bf62-d29c5e6629ae" start_index="0" end="38be3203-5e10-47a6-af50-d8935cb365f0" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="7d764139-a2fc-47d9-bf62-d29c5e6629ae" start_index="1" end="2351f917-5f81-4c8e-a937-6f262e53e7b8" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="7d764139-a2fc-47d9-bf62-d29c5e6629ae" start_index="2" end="797a7ebc-708b-4012-b1b0-7f4b5ac20679" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="4d340dd1-eee3-4aab-a759-d4743361f4c8" start_index="0" end="7d764139-a2fc-47d9-bf62-d29c5e6629ae" end_index="0" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "27053731-def9-46b7-8a8f-d05ef3a8e51f",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Reference",
+  "Description": "Works only in Revit 2018.1 and later.\r\nGets the reference corresponding to the given Reference Plane in the family instance.\r\nAlso works with linked family instance.",
+  "Name": "FamilyInstance Reference ByType",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Reference",
+      "Id": "38be32035e1047a6af50d8935cb365f0",
+      "Inputs": [
+        {
+          "Id": "5cbdc3a245a84976a4767a621c2911b9",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "familyInstance",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "f5b3a5850eb144e98bd8c2d7a8cc5451",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "eff8106f99144c3380df176ad22083d1",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "ReferenceType",
+        "TypeName": "var",
+        "TypeRank": 0,
+        "DefaultValue": "null",
+        "Description": "Default = Center (Left/Right)"
+      },
+      "Id": "1d7f750770384532a0c424d8cac0d2af",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "10a4b2ffadca4f11910e062a5001f38a",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CodeBlockNodeModel, DynamoCore",
+      "NodeType": "CodeBlockNode",
+      "Code": "x[0];\nx[1];\nx[2];",
+      "Id": "7d764139a2fc47d9bf62d29c5e6629ae",
+      "Inputs": [
+        {
+          "Id": "9f86ac2ae1c84e229025d333f5391194",
+          "Name": "x",
+          "Description": "x",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "e6e4240e8145437ca0040d84c613d85e",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "d369be67b8f74db7800099a4da85473b",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "8d4dc006b14d4952a96bf6b4ae627cf9",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 3",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Permet de créer le code DesignScript directement"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "ReferenceName",
+      "Id": "2351f9175f814c8ea9376f262e53e7b8",
+      "Inputs": [
+        {
+          "Id": "9bfed0acfa714ed38e632cb5eadc8506",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Plane",
+      "Id": "797a7ebc708b4012b1b07f4b5ac20679",
+      "Inputs": [
+        {
+          "Id": "2940dbfc7b8f47b4a05615c72f2f56d0",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2018\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\nclr.AddReference('RevitServices')\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nfrom RevitServices.Transactions import TransactionManager\ndoc = DocumentManager.Instance.CurrentDBDocument\n\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\nclr.AddReference('RevitNodes')\nimport Revit\nclr.ImportExtensions(Revit.GeometryConversion)\n\nelements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\nreftype = UnwrapElement(IN[1])\nreferences,refnamelist,listPlane=[],[],[]\n\n#Get Reference Planes from Families\nfor element in elements:\n\tif reftype == None:\n\t\treference = element.GetReferences(FamilyInstanceReferenceType.CenterLeftRight)\n\telse :\n\t\treference = element.GetReferences(reftype)\n\trefname,planeList=[],[]\n\tfor ref in reference:\n\t\trefname.append(element.GetReferenceName(ref))\n\t\ttry :\n\t\t\tTransactionManager.Instance.EnsureInTransaction(doc)\n\t\t\ttrans1 = SubTransaction(doc)\n\t\t\ttrans1.Start()\n\t\t\tsketch=SketchPlane.Create(doc,ref)\n\t\t\tplane = sketch.GetPlane().ToPlane(True)\n\t\t\tsketch.Dispose()\n\t\t\ttrans1.RollBack()\n\t\t\tTransactionManager.Instance.TransactionTaskDone()\n\t\texcept :\n\t\t\tplane=None\n\t\tplaneList.append(plane)\n\tif len(reference) == 1:\t\n\t\treferences.append(reference[0])\n\t\trefnamelist.append(refname[0])\n\t\tlistPlane.append(planeList[0])\n\telse:\n\t\treferences.append(reference)\n\t\trefnamelist.append(refname)\n\t\tlistPlane.append(planeList)\n\nif len(references) == 1: OUT = references[0], refnamelist[0], listPlane[0]\nelse: OUT = references, refnamelist, listPlane",
+      "Engine": "IronPython2",
+      "EngineName": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "4d340dd1eee34aaba759d4743361f4c8",
+      "Inputs": [
+        {
+          "Id": "66521941ff2c40cb92029e527dc4bb7f",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "38747cf118a54e7083403b090905b6f5",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "5ca180d7903643869d4a777f8d4cb542",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "eff8106f99144c3380df176ad22083d1",
+      "End": "66521941ff2c40cb92029e527dc4bb7f",
+      "Id": "f26763ba47c74674a2891f2efd14d62a",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "10a4b2ffadca4f11910e062a5001f38a",
+      "End": "38747cf118a54e7083403b090905b6f5",
+      "Id": "bb883175f6ef483bb6cefae96daf7f1f",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "e6e4240e8145437ca0040d84c613d85e",
+      "End": "5cbdc3a245a84976a4767a621c2911b9",
+      "Id": "9cec320c077747be8ff1e5c3bfa0341f",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "d369be67b8f74db7800099a4da85473b",
+      "End": "9bfed0acfa714ed38e632cb5eadc8506",
+      "Id": "818855d3f2f84bccad15b1b3aa15bcc6",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "8d4dc006b14d4952a96bf6b4ae627cf9",
+      "End": "2940dbfc7b8f47b4a05615c72f2f56d0",
+      "Id": "1cf3e0ec7ae0446e8b03614d904737a9",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "5ca180d7903643869d4a777f8d4cb542",
+      "End": "9f86ac2ae1c84e229025d333f5391194",
+      "Id": "e260d241b54248ac9fb52b98854e3de1",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": []
+}
