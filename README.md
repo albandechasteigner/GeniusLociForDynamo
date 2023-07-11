@@ -1,18 +1,18 @@
 [![contributions welcome](https://img.shields.io/badge/contributions-welcome-brightgreen.svg?style=flat)](https://github.com/albandechasteigner/GeniusLociForDynamo/issues)
 ![Maintained](https://img.shields.io/badge/maintained-yes-brightgreen.svg)
-[![Current version](https://img.shields.io/badge/current%20version-2020.9.17-brightgreen.svg)](http://dynamopackages.com/)
+[![Current version](https://img.shields.io/badge/current%20version-2023.7.11-brightgreen.svg)](http://dynamopackages.com/)
 [![Follow me on Twitter for updates](https://img.shields.io/twitter/follow/geniusloci_bim.svg?label=Follow&style=social)](https://twitter.com/geniusloci_bim) 
 
 ![Logo Genius Loci](https://github.com/albandechasteigner/GeniusLociForDynamo/blob/master/Logo%20Genius%20Loci.png)
 
-***Genius Loci*** is a compilation of 350 custom nodes for the [Dynamo](http://www.dynamobim.com/) environment.
+***Genius Loci*** is a compilation of +350 custom nodes for the [Dynamo](http://www.dynamobim.com/) environment.
 The vast majority of nodes are written in Python and related to Revit.
 Particular emphasis is placed on interoperability and many nodes can handle with DWG, DWF, NWC and IFC files.
 Another goal is to interact easily with linked files and Revit documents. 
 Other categories of nodes focus on automating dimensions and managing materials and graphics.
 
-Genius Loci is compatible with Dynamo 2.x. Revit 2017 to Revit 2023.
-Make sure to have the DynamoIronPython2.7 package installed for Dynamo 2.13 in Revit 2023.
+Genius Loci is compatible with Dynamo 2.x. Revit 2017 to Revit 2024.
+Make sure to have the DynamoIronPython2.7 package installed for Dynamo 2.16/17 in Revit 2023/24.
 
 Feedbacks, [issues](https://github.com/albandechasteigner/GeniusLociForDynamo/issues), [pull request](https://github.com/albandechasteigner/GeniusLociForDynamo/pulls) and suggestions for improvement are welcome and can be reported in the repository.
 
