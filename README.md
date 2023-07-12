@@ -12,7 +12,7 @@ Another goal is to interact easily with linked files and Revit documents.
 Other categories of nodes focus on automating dimensions and managing materials and graphics.
 
 Genius Loci is compatible with Dynamo 2.x. Revit 2017 to Revit 2024.
-Make sure to have the DynamoIronPython2.7 package installed for Dynamo 2.16/17 in Revit 2023/24.
+Make sure to have the DynamoIronPython2.7 package installed for Dynamo 2.16/18 in Revit 2023/24.
 
 Feedbacks, [issues](https://github.com/albandechasteigner/GeniusLociForDynamo/issues), [pull request](https://github.com/albandechasteigner/GeniusLociForDynamo/pulls) and suggestions for improvement are welcome and can be reported in the repository.
 
