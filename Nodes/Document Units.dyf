@@ -11,37 +11,6 @@
   "Outputs": [],
   "Nodes": [
     {
-      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
-      "NodeType": "PythonScriptNode",
-      "Code": "#Alban de Chasteigner 2020\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n#https://github.com/albandechasteigner/GeniusLociForDynamo\n\nimport clr\nclr.AddReference(\"RevitServices\")\nimport RevitServices \nfrom RevitServices.Persistence import DocumentManager\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\nversion=int(app.VersionNumber)\n\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\ninputdoc = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])][0]\nresults=[]\n\nif inputdoc == None:\n\tdoc = DocumentManager.Instance.CurrentDBDocument\nelif isinstance(inputdoc,Document):\n\tdoc = inputdoc\nelif isinstance(inputdoc,RevitLinkInstance):\n\tdoc = inputdoc.GetLinkDocument()\nelse: doc = DocumentManager.Instance.CurrentDBDocument\n\nif version < 2021:\n\tunitTypes = [UnitType.UT_Angle, UnitType.UT_Area, UnitType.UT_Length,UnitType.UT_MassDensity, UnitType.UT_Slope, UnitType.UT_Volume, UnitType.UT_Currency]\n\tfor unitType in unitTypes:\n\t\tformatOption = doc.GetUnits().GetFormatOptions(unitType)\n\t\tdispUnit = formatOption.DisplayUnits\n\t\tsymType = formatOption.UnitSymbol\n\t\tif symType == UnitSymbolType.UST_NONE:\n\t\t\tdispSym = None\n\t\telse:\n\t\t\tdispSym = LabelUtils.GetLabelFor(symType)\n\t\tresults.append([dispUnit,dispSym])\nelse:\n\tunitTypes = [SpecTypeId.Angle, SpecTypeId.Area, SpecTypeId.Length,SpecTypeId.MassDensity, SpecTypeId.Slope, SpecTypeId.Volume, SpecTypeId.Currency, SpecTypeId.Speed,SpecTypeId.Time]\n\tfor unitType in unitTypes:\n\t\tformatOption = doc.GetUnits().GetFormatOptions(unitType)\n\t\tsymUnit = formatOption.GetUnitTypeId()\n\t\tsymType = formatOption.GetSymbolTypeId()\n\t\ttry:dispSym = LabelUtils.GetLabelForSymbol(symType)\n\t\texcept:dispSym = None\n\t\tdispUnit = LabelUtils.GetLabelForUnit(symUnit)\n\t\tresults.append([dispUnit,dispSym])\nresults.append(doc.DisplayUnitSystem.ToString())\n\nOUT = results",
-      "VariableInputPorts": true,
-      "Id": "908004d67cdf47b185139857f25d9c88",
-      "Inputs": [
-        {
-          "Id": "0b514259df324e968ef342e2ba339907",
-          "Name": "IN[0]",
-          "Description": "Input #0",
-          "UsingDefaultValue": false,
-          "Level": 2,
-          "UseLevels": false,
-          "KeepListStructure": false
-        }
-      ],
-      "Outputs": [
-        {
-          "Id": "0ae7a158d3554b309380c0c3ea8af876",
-          "Name": "OUT",
-          "Description": "Résultat du script Python",
-          "UsingDefaultValue": false,
-          "Level": 2,
-          "UseLevels": false,
-          "KeepListStructure": false
-        }
-      ],
-      "Replication": "Disabled",
-      "Description": "Exécute un script IronPython intégré."
-    },
-    {
       "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
       "NodeType": "InputNode",
       "Parameter": {
@@ -70,11 +39,11 @@
     {
       "ConcreteType": "Dynamo.Graph.Nodes.CodeBlockNodeModel, DynamoCore",
       "NodeType": "CodeBlockNode",
-      "Code": "x[0];\nx[1];\nx[2];\nx[3];\nx[4];\nx[5];\nx[6];\nx[7];\nx[8];\nx[9];",
+      "Code": "x[0];\nx[1];\nx[2];\nx[3];\nx[4];\nx[5];\nx[6];\nx[7];\nx[8];\nx[9];\nx[10];",
       "Id": "f27dccf8a5ef4f328a3e3a67da8a4c89",
       "Inputs": [
         {
-          "Id": "98e1c202821c4139816519d77c62a2e4",
+          "Id": "e909d82cb535405287768fed8a75ea7e",
           "Name": "x",
           "Description": "x",
           "UsingDefaultValue": false,
@@ -85,7 +54,7 @@
       ],
       "Outputs": [
         {
-          "Id": "eeeabb31057a4460b177bd0616a02cbd",
+          "Id": "ccc9960ee6e44e5eb8bc69720f80f4d1",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 1",
           "UsingDefaultValue": false,
@@ -94,7 +63,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "edd0af3928d24eabbcaed8449129a47e",
+          "Id": "167b4b4a77c840e3bc6ea2dfcbeb77b4",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 2",
           "UsingDefaultValue": false,
@@ -103,7 +72,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "9973714164a245e49e893f6489c1f314",
+          "Id": "d693f56f4d9e4a959afbb10e7f79dd4f",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 3",
           "UsingDefaultValue": false,
@@ -112,7 +81,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "16b2219cae854c028488dbcc1a877137",
+          "Id": "0114a9a5b28e4e5da07ca563a250850b",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 4",
           "UsingDefaultValue": false,
@@ -121,7 +90,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "e68294b48a6a42c0aeb423f28bd3adc7",
+          "Id": "f0e455d639c048269645f56ff7379af8",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 5",
           "UsingDefaultValue": false,
@@ -130,7 +99,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "659bff87375e4564bb761e5a1b2df555",
+          "Id": "1a3a8da31ebb4561a46baf12fbf53c1e",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 6",
           "UsingDefaultValue": false,
@@ -139,7 +108,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "78642c9dec074e1e9e8789150654f72c",
+          "Id": "f9c5489d3f244aeca4cb971d49ced839",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 7",
           "UsingDefaultValue": false,
@@ -148,7 +117,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "040ab4a4c59d4697a8c44132f86135e8",
+          "Id": "8299631eb3a74311aa094415100356f0",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 8",
           "UsingDefaultValue": false,
@@ -157,7 +126,7 @@
           "KeepListStructure": false
         },
         {
-          "Id": "d0eff3ce065f4038a96f225eff0a116e",
+          "Id": "4677c60b29794c59b013e964106465ea",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 9",
           "UsingDefaultValue": false,
@@ -166,9 +135,18 @@
           "KeepListStructure": false
         },
         {
-          "Id": "e68ce4c6a74c4514ac0e1d9c0699fc78",
+          "Id": "bdbcca636c8241009071662568424ecb",
           "Name": "",
           "Description": "Valeur de l'expression à la ligne 10",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "16cc8dd48ad344499b52ab51bad987a5",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 11",
           "UsingDefaultValue": false,
           "Level": 2,
           "UseLevels": false,
@@ -387,79 +365,152 @@
       "Outputs": [],
       "Replication": "Disabled",
       "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2020\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n#https://github.com/albandechasteigner/GeniusLociForDynamo\n\nimport clr\nclr.AddReference(\"RevitServices\")\nimport RevitServices \nfrom RevitServices.Persistence import DocumentManager\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\nversion=int(app.VersionNumber)\n\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\ninputdocs = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\nresults=[]\n\ndef DocUnits(inputdoc) :\n\tif inputdoc == None:\n\t\tdoc = DocumentManager.Instance.CurrentDBDocument\n\telif isinstance(inputdoc, Document):\n\t\tdoc = inputdoc\n\telif isinstance(inputdoc, RevitLinkInstance):\n\t\tdoc = inputdoc.GetLinkDocument()\n\t\t\n\tif version < 2021:\n\t\tunitTypes = [UnitType.UT_Angle, UnitType.UT_Area, UnitType.UT_Length,UnitType.UT_MassDensity, UnitType.UT_Slope, UnitType.UT_Volume, UnitType.UT_Currency]\n\t\tfor unitType in unitTypes:\n\t\t\tformatOption = doc.GetUnits().GetFormatOptions(unitType)\n\t\t\tdispUnit = formatOption.DisplayUnits\n\t\t\tsymType = formatOption.UnitSymbol\n\t\t\tif symType == UnitSymbolType.UST_NONE:\n\t\t\t\tdispSym = None\n\t\t\telse:\n\t\t\t\tdispSym = LabelUtils.GetLabelFor(symType)\n\t\t\tresults.append([dispUnit,dispSym])\n\telse:\n\t\tunitTypes = [SpecTypeId.Angle, SpecTypeId.Area, SpecTypeId.Length,SpecTypeId.MassDensity, SpecTypeId.Slope, SpecTypeId.Volume, SpecTypeId.Currency, SpecTypeId.Speed,SpecTypeId.Time]\n\t\tfor unitType in unitTypes:\n\t\t\tformatOption = doc.GetUnits().GetFormatOptions(unitType)\n\t\t\tsymUnit = formatOption.GetUnitTypeId()\n\t\t\tsymType = formatOption.GetSymbolTypeId()\n\t\t\ttry:dispSym = LabelUtils.GetLabelForSymbol(symType)\n\t\t\texcept:dispSym = None\n\t\t\tdispUnit = LabelUtils.GetLabelForUnit(symUnit)\n\t\t\tresults.append([dispUnit,dispSym])\n\t\t\t\n\tresults.append(doc.DisplayUnitSystem.ToString())\n\tresults.append(doc.Title)\t\n\treturn results\n\nOUT = DocUnits(inputdocs[0])",
+      "Engine": "IronPython2",
+      "EngineName": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "f671f4aff2cb456a9283acead5c41ad6",
+      "Inputs": [
+        {
+          "Id": "dbe83c52b79b43c9bf354575fc9cb22a",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "2b97a8fca8a742f2b6f16d2fedc76fbf",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "FileName",
+      "Id": "1736d87dff314c5fa91af702d49444be",
+      "Inputs": [
+        {
+          "Id": "e0376adab6d748269dc105c72541e02c",
+          "Name": "",
+          "Description": "Données de sortie",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
     }
   ],
   "Connectors": [
     {
-      "Start": "0ae7a158d3554b309380c0c3ea8af876",
-      "End": "98e1c202821c4139816519d77c62a2e4",
-      "Id": "cf1dfe138e8b48f994023594aa459b37"
-    },
-    {
       "Start": "380ddf601d914f4ba4734a740fdaa499",
-      "End": "0b514259df324e968ef342e2ba339907",
-      "Id": "1e13c9a9f5f14896a6d6f71fac48be8b"
+      "End": "dbe83c52b79b43c9bf354575fc9cb22a",
+      "Id": "e0889251f76442289697f5f947eaa69a",
+      "IsHidden": "False"
     },
     {
-      "Start": "eeeabb31057a4460b177bd0616a02cbd",
+      "Start": "ccc9960ee6e44e5eb8bc69720f80f4d1",
       "End": "6ba345ba68794a2c80b207a9e71fb97a",
-      "Id": "7fba0bd966c04648b8e660405d51754f"
+      "Id": "c6a6369d332f492c9a33278e002dbf29",
+      "IsHidden": "False"
     },
     {
-      "Start": "edd0af3928d24eabbcaed8449129a47e",
+      "Start": "167b4b4a77c840e3bc6ea2dfcbeb77b4",
       "End": "0ca6948bbe1a4e01a62f20b4a6618ae3",
-      "Id": "c61f70c169f04cb4bf500924ebc5aa14"
+      "Id": "93d7be9ee09e41bf9db1dd4f1b9541e5",
+      "IsHidden": "False"
     },
     {
-      "Start": "9973714164a245e49e893f6489c1f314",
+      "Start": "d693f56f4d9e4a959afbb10e7f79dd4f",
       "End": "fd53a24fcf454e3cbce2e9e46561f868",
-      "Id": "471606e58a104b74a125c5d8fbad990b"
+      "Id": "594a5a5a467743229aa2e2e4afe805c4",
+      "IsHidden": "False"
     },
     {
-      "Start": "16b2219cae854c028488dbcc1a877137",
+      "Start": "0114a9a5b28e4e5da07ca563a250850b",
       "End": "fb96ed18276749a2a9b7d92f32f09405",
-      "Id": "934feb8e976b4d98a145fecabb983a5a"
+      "Id": "3c4977978a074768bb1a6ec0b922bee6",
+      "IsHidden": "False"
     },
     {
-      "Start": "e68294b48a6a42c0aeb423f28bd3adc7",
+      "Start": "f0e455d639c048269645f56ff7379af8",
       "End": "51a8bf7a3d124f3aaaa279234407066c",
-      "Id": "e15f8218a1e04e90820cbe17cda38347"
+      "Id": "ca2d37808a8345258d24428960a547ab",
+      "IsHidden": "False"
     },
     {
-      "Start": "659bff87375e4564bb761e5a1b2df555",
+      "Start": "1a3a8da31ebb4561a46baf12fbf53c1e",
       "End": "9500dfda0c834859b77fc32a92295a4a",
-      "Id": "f78ca51681b74369b32b292729deb9d6"
+      "Id": "e5a4aad3ef5d4921832add141f96ea1a",
+      "IsHidden": "False"
     },
     {
-      "Start": "78642c9dec074e1e9e8789150654f72c",
+      "Start": "f9c5489d3f244aeca4cb971d49ced839",
       "End": "a2ef2f44d42842ee8cd5eae99943334f",
-      "Id": "59338d0aa02f4e84a4b09d4c488bbb83"
+      "Id": "a0954cbc153342d985fcde82ecef1250",
+      "IsHidden": "False"
     },
     {
-      "Start": "040ab4a4c59d4697a8c44132f86135e8",
+      "Start": "8299631eb3a74311aa094415100356f0",
       "End": "e671286509fa448aa3862361fa3e223c",
-      "Id": "9f6478ff2137420192231e9669ba2aa3"
+      "Id": "96066b9788e048a78e77687f37b8733c",
+      "IsHidden": "False"
     },
     {
-      "Start": "d0eff3ce065f4038a96f225eff0a116e",
+      "Start": "4677c60b29794c59b013e964106465ea",
       "End": "ae1fa23c819e45d1bfb610f9f4631ff9",
-      "Id": "8f36208db9e1457ab92a921e4877be80"
+      "Id": "67d3b3bf1c4d4bd183affaf8ecb7b6ca",
+      "IsHidden": "False"
     },
     {
-      "Start": "e68ce4c6a74c4514ac0e1d9c0699fc78",
+      "Start": "bdbcca636c8241009071662568424ecb",
       "End": "98f4e1f1be3e43f1be61fc2edb2e52ce",
-      "Id": "07997fab4a54481e9525091391af3e27"
+      "Id": "6a3d40285f6a4a0eb3fc0d366be81e3d",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "16cc8dd48ad344499b52ab51bad987a5",
+      "End": "e0376adab6d748269dc105c72541e02c",
+      "Id": "fbf3951ed22b46aeafdc79ce9f2141a1",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "2b97a8fca8a742f2b6f16d2fedc76fbf",
+      "End": "e909d82cb535405287768fed8a75ea7e",
+      "Id": "5b4e27959bac4200af8d7de5e718cd4b",
+      "IsHidden": "False"
     }
   ],
   "Dependencies": [],
   "NodeLibraryDependencies": [],
+  "Author": "None provided",
   "Bindings": [],
   "View": {
     "Dynamo": {
       "ScaleFactor": 1.0,
       "HasRunWithoutCrash": false,
       "IsVisibleInDynamoLibrary": true,
-      "Version": "2.6.1.8786",
+      "Version": "2.16.2.5624",
       "RunType": "Manual",
       "RunPeriod": "1000"
     },
@@ -475,20 +526,11 @@
       "UpY": 1.0,
       "UpZ": 0.0
     },
+    "ConnectorPins": [],
     "NodeViews": [
       {
-        "ShowGeometry": true,
-        "Name": "Python Script",
-        "Id": "908004d67cdf47b185139857f25d9c88",
-        "IsSetAsInput": false,
-        "IsSetAsOutput": false,
-        "Excluded": false,
-        "X": 227.238900046647,
-        "Y": 375.462438759083
-      },
-      {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "d260d59804154760a86d132753de0ba9",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -497,8 +539,8 @@
         "Y": 375.462438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Code Block",
+        "ShowGeometry": true,
         "Id": "f27dccf8a5ef4f328a3e3a67da8a4c89",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -507,8 +549,8 @@
         "Y": 379.675772092417
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "81c0808d5ecb4c1ca7190701e472c205",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -517,8 +559,8 @@
         "Y": 179.182438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "8bf0c86d2ce9463ab501787769fce805",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -527,8 +569,8 @@
         "Y": 262.182438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "0c1be4489dd6452f964121212cef283b",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -537,8 +579,8 @@
         "Y": 345.182438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "046719646578499d8c9dbffa947a0d3d",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -547,8 +589,8 @@
         "Y": 428.182438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "82b364591618416296946fa4fb84d48a",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -557,8 +599,8 @@
         "Y": 511.182438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "5ba57dde616041379f703786b3d13ec1",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -567,8 +609,8 @@
         "Y": 594.182438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "0392b61264574d75a93d2a4e79dcacaf",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -577,8 +619,8 @@
         "Y": 677.182438759083
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "cd6850aa6e1848a3a0e3466b48cbea78",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -587,8 +629,8 @@
         "Y": 754.442366680409
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "7c7686096cdc4572a25290509b7db87e",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -597,14 +639,34 @@
         "Y": 836.017276582067
       },
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "66249855563c4204b3c39e886387eaef",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
         "X": 640.34215493776071,
         "Y": 898.55472632883686
+      },
+      {
+        "Name": "Python Script",
+        "ShowGeometry": true,
+        "Id": "f671f4aff2cb456a9283acead5c41ad6",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 225.61021901550316,
+        "Y": 381.28415636939496
+      },
+      {
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Id": "1736d87dff314c5fa91af702d49444be",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 640.69411427509965,
+        "Y": 1045.4300688175963
       }
     ],
     "Annotations": [],
