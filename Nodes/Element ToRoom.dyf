@@ -1,0 +1,215 @@
+{
+  "Uuid": "7560af17-90d2-4f3c-893d-7cd4f4804081",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Room",
+  "Description": "Reports the room of the current or linked model in which the element of the current document is located.\r\nPlease note : The custom node maps the element phase to the room phase using the phase name. ",
+  "Name": "Element ToRoom",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "//Room of current document or linked model\r\nRoom",
+      "Id": "cf2f553516c5407881c919559570bce8",
+      "Inputs": [
+        {
+          "Id": "3cd55dd01f83454a9918d1fa30d2949a",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "element",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": "Element of current document"
+      },
+      "Id": "8bcfaeff2b7e43079e4634bfff088ba3",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "5d9910e65f4544b4886f1007299ac26f",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "RevitLinksInstance",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": "null",
+        "Description": "Optional input to retrieve linked rooms"
+      },
+      "Id": "3c8a440bbaa846b2bae0493cae7e8f05",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "7423e57e4eb7482486c24aae7298c042",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2021\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n#https://github.com/albandechasteigner/GeniusLociForDynamo\n \nimport clr\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\n\nclr.AddReference(\"RevitNodes\")\nimport Revit\nclr.ImportExtensions(Revit.Elements)\nfrom Revit.Elements import *\n\ndoc = DocumentManager.Instance.CurrentDBDocument\n\nElements = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\ninputdoc = (UnwrapElement(IN[1]) if isinstance(IN[1],list) else [UnwrapElement(IN[1])])[0]\nrooms=[]\n\nfor e in Elements:\n\tphase = doc.GetElement(e.CreatedPhaseId)\n\tloc = e.Location\n\tif type(loc) == LocationPoint:\n\t\tpt=loc.Point\n\telif type(loc) == LocationCurve:\n\t\tpt=loc.Curve.Evaluate(0.5, True)\n\t# sketch-based elements (ceiling, floor and roof)\n\telif isinstance(e, CeilingAndFloor) or isinstance(e,RoofBase) :\n\t\ttry:\n\t\t\tfor ref in HostObjectUtils.GetTopFaces(e):\n\t\t\t\tgeomFace=e.GetGeometryObjectFromReference(ref)\n\t\t\t\t#Get UV BoundingBox\n\t\t\t\tbbox = geomFace.GetBoundingBox()\n\t\t# Multi-faceted floor/ceiling/roof\n\t\texcept:\n\t\t\tbbox = e.get_BoundingBox(none)\n\t\tuv = (bbox.Min+bbox.Max) / 2\n\t\tpt = geomFace.Evaluate(uv)\n\tif not isinstance(inputdoc, RevitLinkInstance):\n\t\ttry:\n\t\t\tif isinstance(e, FamilyInstance):\n\t\t\t\trooms.append(e.Room[phase].ToDSType(True))\n\t\t\telse: \n\t\t\t\trooms.append(doc.GetRoomAtPoint(pt, phase).ToDSType(True))\n\t\texcept:rooms.append(None)\n\telif isinstance (inputdoc, RevitLinkInstance):\n\t\ttry:\n\t\t\tlinkDoc = inputdoc.GetLinkDocument()\n\t\t\tphaseName = phase.Name\n\t\t\tlinkPhase = FilteredElementCollector(linkDoc).OfClass(Phase).ToElements().Find(lambda x : x.Name == phaseName)\n\t\t\ttransform = inputdoc.GetTotalTransform()\n\t\t\tlocationPoint = transform.Inverse.OfPoint(pt)\n\t\t\trooms.append(linkDoc.GetRoomAtPoint(locationPoint, linkPhase).ToDSType(True))\n\t\texcept:rooms.append(None)\n\telse:rooms.append(None)\n\t\nOUT = rooms",
+      "VariableInputPorts": true,
+      "Id": "bf0134c8c4794b06ba9ea7fa0b15cb06",
+      "Inputs": [
+        {
+          "Id": "fa37a87c306f456a95f2c3031fbf6141",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "ecc791a97d984a74a5a8c66ef44fcfed",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "6df98deb937c46e49c6618b66f62fa40",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script IronPython intégré."
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "5d9910e65f4544b4886f1007299ac26f",
+      "End": "fa37a87c306f456a95f2c3031fbf6141",
+      "Id": "d62890da349542bfb44509d26da171c2"
+    },
+    {
+      "Start": "7423e57e4eb7482486c24aae7298c042",
+      "End": "ecc791a97d984a74a5a8c66ef44fcfed",
+      "Id": "6efcb4b5c0ed4cffa3eda09b430d0ff7"
+    },
+    {
+      "Start": "6df98deb937c46e49c6618b66f62fa40",
+      "End": "3cd55dd01f83454a9918d1fa30d2949a",
+      "Id": "59c7022a011c4ad2b34a4d10de0dec43"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.6.2.15705",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "NodeViews": [
+      {
+        "Id": "cf2f553516c5407881c919559570bce8",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 452.513100556018,
+        "Y": 263.645314123432
+      },
+      {
+        "Id": "8bcfaeff2b7e43079e4634bfff088ba3",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": -44.6955987482069,
+        "Y": 238.834985781379
+      },
+      {
+        "Id": "3c8a440bbaa846b2bae0493cae7e8f05",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": -136.18230727373,
+        "Y": 319.242547890417
+      },
+      {
+        "Id": "bf0134c8c4794b06ba9ea7fa0b15cb06",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Python Script",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 291.2521632540886,
+        "Y": 271.09110780304582
+      }
+    ],
+    "Annotations": [],
+    "X": 93.5969811236058,
+    "Y": 149.544207958473,
+    "Zoom": 0.658674852158215
+  }
+}
