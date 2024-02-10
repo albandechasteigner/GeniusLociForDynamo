@@ -1,150 +1,272 @@
-<Workspace Version="1.3.4.6666" X="-159.008999098145" Y="126.963976098422" zoom="0.48391633011669" ScaleFactor="1" Name="Copy DWFMarkup Symbol to View" Description="Place a family instance from the location of the Markup symbol for the given or active sheet.&#xD;&#xA;Please note : A family type with a name similar to that of the markup symbol (label) should be loaded into the document." ID="43e02ebe-e31b-41ad-9d75-a37787ba2d56" Category="GeniusLoci.DWF">
-  <NamespaceResolutionMap>
-    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-  </NamespaceResolutionMap>
-  <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="4ea74089-230a-4a8c-8782-2a73663145da" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1409.00774412013" y="210.512016027149" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="DWFMarkup" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="5b9444d4-8bee-49c9-a808-560f2b329f27" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1217.80774412013" y="247.938682693816" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
-      <PortInfo index="0" default="False" />
-    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <PythonNodeModels.PythonNode guid="6bceaf46-5c26-47f5-a15f-8688c333a0d9" type="PythonNodeModels.PythonNode" nickname="Python Script" x="993.40774412013" y="243.725349360483" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
-      <PortInfo index="0" default="False" />
-      <Script>#Alban de Chasteigner 2020
-#twitter : @geniusloci_bim
-#geniusloci.bim@gmail.com
-
-import clr
-# Import RevitAPI Classes
-clr.AddReference('RevitAPI')
-import Autodesk
-from Autodesk.Revit.DB import *
-from Autodesk.Revit.DB.Structure import StructuralType
-
-# Import DocumentManager
-clr.AddReference("RevitServices")
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-from RevitServices.Transactions import TransactionManager
-
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.Elements)
-clr.ImportExtensions(Revit.GeometryConversion)
-#Import Collections
-from System.Collections.Generic import List
-import System
-
-doc = DocumentManager.Instance.CurrentDBDocument
-activeView = UnwrapElement(IN[0])
-
-filters = List[ElementFilter]()
-pvp = ParameterValueProvider(ElementId(BuiltInParameter.IMPORT_SYMBOL_NAME))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Markup Object Rec",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Markup Object Li",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Markup Object Polyli",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Markup Object Ell",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"nuage",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"cloud",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"a main",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"hand",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Cote",False),True))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"Dimension",False),True))
-orFilter = LogicalAndFilter(filters)
-
-def convert(box):
-	if view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan:
-		centr = (box.Min+box.Max)/2
-		coor = VC + XYZ((centr-BC).X * scale, (centr-BC).Y * scale, 0 )
-	elif view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
-		centr = XYZ(box.Min.X,box.Min.Y,0)
-		if view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):
-			coor = VC + XYZ((centr-BC).X * scale, 0, (centr-BC).Y * scale)
-		elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):
-			coor = VC + XYZ((-centr+BC).X * scale, 0, (centr-BC).Y * scale)
-		elif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):
-			coor = VC + XYZ(0,(BC-centr).X * scale, (centr-BC).Y * scale)
-		elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):
-			coor = VC + XYZ(0,(centr-BC).X * scale, (centr-BC).Y * scale)
-	return coor
-	
-TransactionManager.Instance.EnsureInTransaction(doc)
-viewports=[doc.GetElement(vip) for vip in activeView.GetAllViewports()]	
-for vp in viewports:
-	view=doc.GetElement(vp.ViewId)
-	if view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan or view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
-		scale=vp.get_Parameter(BuiltInParameter.VIEW_SCALE).AsInteger()
-		trans1 = SubTransaction(doc)
-		trans1.Start()
-		try:
-			view.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)
-		except: pass
-		BC = vp.GetBoxCenter()
-		if view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
-			viewCenter= (view.CropBox.Min + view.CropBox.Max)/2
-			origin = view.CropBox.Transform.Origin
-			if view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):
-				VC = origin + XYZ(viewCenter.X,0,viewCenter.Y)
-			elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):
-				VC = origin + XYZ(-viewCenter.X,0,viewCenter.Y)
-			elif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):
-				VC = origin + XYZ(0,-viewCenter.X, viewCenter.Y)
-			elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):
-				VC = origin + XYZ(0,viewCenter.X,viewCenter.Y)
-		else:
-			VC = (view.CropBox.Min + view.CropBox.Max)/2
-		trans1.RollBack()
-
-dwfMarkups = FilteredElementCollector(doc, activeView.Id).OfClass(ImportInstance).WhereElementIsNotElementType().WherePasses(orFilter).ToElements()
-
-types = FilteredElementCollector(doc).OfClass(FamilySymbol).ToElements()
-instances,dwfs = [],[]
-sT = StructuralType.NonStructural
-for dwf in dwfMarkups:
-	for famType in types:
-		if famType.ToDSType(False).Name in dwf.Name or famType.FamilyName in dwf.Name:
-			box=dwf.BoundingBox[activeView]
-			dwfs.append(dwf)
-			placement=famType.Family.FamilyPlacementType 
-			if not famType.IsActive : famType.Activate()
-			if placement == FamilyPlacementType.ViewBased :
-				instances.append(doc.Create.NewFamilyInstance(convert(box), famType, view).ToDSType(False))
-			elif placement == FamilyPlacementType.OneLevelBased :
-				instance = doc.Create.NewFamilyInstance(convert(box),famType,view.GenLevel,sT)
-				instances.append(instance.ToDSType(False))
-				if view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan :
-					instance.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(0)
-			else : instances = None
-TransactionManager.Instance.TransactionTaskDone()
-
-OUT = dwfs, instances</Script>
-    </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="865ae937-5195-4567-8815-cce9a058df9a" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="359.80774412013" y="243.725349360483" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="sheet:var[]..[]=Revit.Application.Document.Current.ActiveView" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="d4899524-0729-4a53-8517-53522da99f32" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1409.00774412013" y="294.512016027149" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="FamilyInstance" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="5b9444d4-8bee-49c9-a808-560f2b329f27" start_index="0" end="4ea74089-230a-4a8c-8782-2a73663145da" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="5b9444d4-8bee-49c9-a808-560f2b329f27" start_index="1" end="d4899524-0729-4a53-8517-53522da99f32" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="6bceaf46-5c26-47f5-a15f-8688c333a0d9" start_index="0" end="5b9444d4-8bee-49c9-a808-560f2b329f27" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="865ae937-5195-4567-8815-cce9a058df9a" start_index="0" end="6bceaf46-5c26-47f5-a15f-8688c333a0d9" end_index="0" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "43e02ebe-e31b-41ad-9d75-a37787ba2d56",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.DWF",
+  "Description": "Place a family instance from the location of the Markup symbol for the given or active sheet.\r\nPlease note : A family type with a name similar to that of the markup symbol (label) should be loaded into the document.",
+  "Name": "Copy DWFMarkup Symbol to View",
+  "ElementResolver": {
+    "ResolutionMap": {
+      "Revit.Application.Document.Current": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      },
+      "Revit.Application.Document": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      }
+    }
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "DWFMarkup",
+      "Id": "4ea74089230a4a8c87822a73663145da",
+      "Inputs": [
+        {
+          "Id": "df54bbcb89174c23982051174988143f",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CodeBlockNodeModel, DynamoCore",
+      "NodeType": "CodeBlockNode",
+      "Code": "x[0];\nx[1];",
+      "Id": "5b9444d48bee49c9a808560f2b329f27",
+      "Inputs": [
+        {
+          "Id": "cc9b993aa5374a51bd5d131405e5114a",
+          "Name": "x",
+          "Description": "x",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "7115afff5aff4bb0ad0d735d26ad139a",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "7c50aef3616647a6bd543732bcd9eb2b",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Permet de créer le code DesignScript directement"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2020\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\n# Import RevitAPI Classes\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\nfrom Autodesk.Revit.DB.Structure import StructuralType\n\n# Import DocumentManager\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nfrom RevitServices.Transactions import TransactionManager\n\nclr.AddReference(\"RevitNodes\")\nimport Revit\nclr.ImportExtensions(Revit.Elements)\nclr.ImportExtensions(Revit.GeometryConversion)\n#Import Collections\nfrom System.Collections.Generic import List\nimport System\n\ndoc = DocumentManager.Instance.CurrentDBDocument\nactiveView = UnwrapElement(IN[0])\n\nfilters = List[ElementFilter]()\npvp = ParameterValueProvider(ElementId(BuiltInParameter.IMPORT_SYMBOL_NAME))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"Markup Object Rec\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"Markup Object Li\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"Markup Object Polyli\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"Markup Object Ell\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"nuage\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"cloud\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"a main\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"hand\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"Cote\"),True))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"Dimension\"),True))\norFilter = LogicalAndFilter(filters)\n\ndef convert(box):\n\tif view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan:\n\t\tcentr = (box.Min+box.Max)/2\n\t\tcoor = VC + XYZ((centr-BC).X * scale, (centr-BC).Y * scale, 0 )\n\telif view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :\n\t\tcentr = XYZ(box.Min.X,box.Min.Y,0)\n\t\tif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):\n\t\t\tcoor = VC + XYZ((centr-BC).X * scale, 0, (centr-BC).Y * scale)\n\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):\n\t\t\tcoor = VC + XYZ((-centr+BC).X * scale, 0, (centr-BC).Y * scale)\n\t\telif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):\n\t\t\tcoor = VC + XYZ(0,(BC-centr).X * scale, (centr-BC).Y * scale)\n\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):\n\t\t\tcoor = VC + XYZ(0,(centr-BC).X * scale, (centr-BC).Y * scale)\n\treturn coor\n\t\nTransactionManager.Instance.EnsureInTransaction(doc)\nviewports=[doc.GetElement(vip) for vip in activeView.GetAllViewports()]\t\nfor vp in viewports:\n\tview=doc.GetElement(vp.ViewId)\n\tif view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan or view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :\n\t\tscale=vp.get_Parameter(BuiltInParameter.VIEW_SCALE).AsInteger()\n\t\ttrans1 = SubTransaction(doc)\n\t\ttrans1.Start()\n\t\ttry:\n\t\t\tview.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)\n\t\texcept: pass\n\t\tBC = vp.GetBoxCenter()\n\t\tif view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :\n\t\t\tviewCenter= (view.CropBox.Min + view.CropBox.Max)/2\n\t\t\torigin = view.CropBox.Transform.Origin\n\t\t\tif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):\n\t\t\t\tVC = origin + XYZ(viewCenter.X,0,viewCenter.Y)\n\t\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):\n\t\t\t\tVC = origin + XYZ(-viewCenter.X,0,viewCenter.Y)\n\t\t\telif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):\n\t\t\t\tVC = origin + XYZ(0,-viewCenter.X, viewCenter.Y)\n\t\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):\n\t\t\t\tVC = origin + XYZ(0,viewCenter.X,viewCenter.Y)\n\t\telse:\n\t\t\tVC = (view.CropBox.Min + view.CropBox.Max)/2\n\t\ttrans1.RollBack()\n\ndwfMarkups = FilteredElementCollector(doc, activeView.Id).OfClass(ImportInstance).WhereElementIsNotElementType().WherePasses(orFilter).ToElements()\n\ntypes = FilteredElementCollector(doc).OfClass(FamilySymbol).ToElements()\ninstances,dwfs = [],[]\nsT = StructuralType.NonStructural\nfor dwf in dwfMarkups:\n\tfor famType in types:\n\t\tif famType.ToDSType(False).Name in dwf.Name or famType.FamilyName in dwf.Name:\n\t\t\tbox=dwf.BoundingBox[activeView]\n\t\t\tdwfs.append(dwf)\n\t\t\tplacement=famType.Family.FamilyPlacementType \n\t\t\tif not famType.IsActive : famType.Activate()\n\t\t\tif placement == FamilyPlacementType.ViewBased :\n\t\t\t\tinstances.append(doc.Create.NewFamilyInstance(convert(box), famType, view).ToDSType(False))\n\t\t\telif placement == FamilyPlacementType.OneLevelBased :\n\t\t\t\tinstance = doc.Create.NewFamilyInstance(convert(box),famType,view.GenLevel,sT)\n\t\t\t\tinstances.append(instance.ToDSType(False))\n\t\t\t\tif view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan :\n\t\t\t\t\tinstance.get_Parameter(BuiltInParameter.INSTANCE_FREE_HOST_OFFSET_PARAM).Set(0)\n\t\t\telse : instances = None\nTransactionManager.Instance.TransactionTaskDone()\n\nOUT = dwfs, instances",
+      "Engine": "IronPython2",
+      "EngineName": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "6bceaf465c2647f5a15f8688c333a0d9",
+      "Inputs": [
+        {
+          "Id": "a1fb303f71f3495681c1596f0b6a7188",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "6606fb7605884d1290a2497744d5ff74",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "sheet",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": "Revit.Application.Document.Current.ActiveView",
+        "Description": ""
+      },
+      "Id": "865ae937519545678815cce9a058df9a",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "203010a90f344683942c6cb63200f60e",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "FamilyInstance",
+      "Id": "d489952407294a53851753522da99f32",
+      "Inputs": [
+        {
+          "Id": "6bae4a4c1bbe47afa4fea5831d809237",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "7115afff5aff4bb0ad0d735d26ad139a",
+      "End": "df54bbcb89174c23982051174988143f",
+      "Id": "bc318939b0ed449e81d977549ee437b9",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "7c50aef3616647a6bd543732bcd9eb2b",
+      "End": "6bae4a4c1bbe47afa4fea5831d809237",
+      "Id": "a08051992f9249e8b3d11ad493779337",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "6606fb7605884d1290a2497744d5ff74",
+      "End": "cc9b993aa5374a51bd5d131405e5114a",
+      "Id": "6a584e9717fc45e0bb1a288c04a975c9",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "203010a90f344683942c6cb63200f60e",
+      "End": "a1fb303f71f3495681c1596f0b6a7188",
+      "Id": "c61e7567f55742e4b7c2bd0c0db82ce5",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.16.2.5624",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Id": "4ea74089230a4a8c87822a73663145da",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 1409.00774412013,
+        "Y": 210.512016027149
+      },
+      {
+        "Id": "5b9444d48bee49c9a808560f2b329f27",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Code Block",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 1217.80774412013,
+        "Y": 247.938682693816
+      },
+      {
+        "Id": "6bceaf465c2647f5a15f8688c333a0d9",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Python Script",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 993.40774412013,
+        "Y": 243.725349360483
+      },
+      {
+        "Id": "865ae937519545678815cce9a058df9a",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 359.80774412013,
+        "Y": 243.725349360483
+      },
+      {
+        "Id": "d489952407294a53851753522da99f32",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 1409.00774412013,
+        "Y": 294.512016027149
+      }
+    ],
+    "Annotations": [],
+    "X": -159.008999098145,
+    "Y": 126.963976098422,
+    "Zoom": 0.48391633011669
+  }
+}

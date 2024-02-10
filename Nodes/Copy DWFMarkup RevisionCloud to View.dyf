@@ -1,147 +1,272 @@
-<Workspace Version="1.3.4.6666" X="-201.905568857423" Y="160.094118871667" zoom="0.538046297688571" ScaleFactor="1" Name="Copy DWFMarkup RevisionCloud to View" Description="Copies the revision cloud from the Markup objects for the given or active sheet.&#xD;&#xA;Also copies the markup notes to the comments of the created revision cloud.&#xD;&#xA;Please note that markups are found by name (label) and therefore depend on the Revit localization (language)." ID="12adfdc5-4194-4b38-8799-795ee363cfd4" Category="GeniusLoci.DWF">
-  <NamespaceResolutionMap>
-    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-  </NamespaceResolutionMap>
-  <Elements>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="e9a3431d-a0e4-4399-98b6-a6ce1e306d9a" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="1007.40774412013" y="215.338682693816" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
-      <PortInfo index="0" default="False" />
-    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <PythonNodeModels.PythonNode guid="9f77133a-cf74-4a2d-bd4a-482c42ebb3a4" type="PythonNodeModels.PythonNode" nickname="Python Script" x="783.00774412013" y="211.125349360483" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
-      <PortInfo index="0" default="False" />
-      <Script>#Alban de Chasteigner 2020
-#twitter : @geniusloci_bim
-#geniusloci.bim@gmail.com
-
-import clr
-# Import RevitAPI Classes
-clr.AddReference('RevitAPI')
-import Autodesk
-from Autodesk.Revit.DB import *
-
-# Import DocumentManager
-clr.AddReference("RevitServices")
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-from RevitServices.Transactions import TransactionManager
-
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.GeometryConversion)
-#Import Collections
-from System.Collections.Generic import List
-import System
-
-doc = DocumentManager.Instance.CurrentDBDocument
-activeView = UnwrapElement(IN[0])
-
-filters = List[ElementFilter]()
-pvp = ParameterValueProvider(ElementId(BuiltInParameter.IMPORT_SYMBOL_NAME))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"nuage",False)))
-filters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),"cloud",False)))
-orFilter = LogicalOrFilter(filters)
-
-TransactionManager.Instance.EnsureInTransaction(doc)
-viewports=[doc.GetElement(vip) for vip in activeView.GetAllViewports()]	
-for vp in viewports:
-	view=doc.GetElement(vp.ViewId)
-	if view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan or view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
-		scale=vp.get_Parameter(BuiltInParameter.VIEW_SCALE).AsInteger()
-		trans1 = SubTransaction(doc)
-		trans1.Start()
-		try:
-			view.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)
-			view.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)
-		except:pass
-		BC = vp.GetBoxCenter()
-		if view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
-			viewCenter= (view.CropBox.Min + view.CropBox.Max)/2
-			origin = view.CropBox.Transform.Origin
-			if view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):
-				VC = origin + XYZ(viewCenter.X,0,viewCenter.Y)
-			elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):
-				VC = origin + XYZ(-viewCenter.X,0,viewCenter.Y)
-			elif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):
-				VC = origin + XYZ(0,-viewCenter.X, viewCenter.Y)
-			elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):
-				VC = origin + XYZ(0,viewCenter.X,viewCenter.Y)
-		else:
-			VC = (view.CropBox.Min + view.CropBox.Max)/2
-		trans1.RollBack()
-
-dwfMarkups = FilteredElementCollector(doc, activeView.Id).OfClass(ImportInstance).WhereElementIsNotElementType().WherePasses(orFilter).ToElements()
-
-revisionId = FilteredElementCollector(doc).OfClass(Revision).FirstElementId()
-
-revisions=[]
-for dwf in dwfMarkups:
-	comment=dwf.get_Parameter(BuiltInParameter.MARKUPS_HISTORY).AsString()
-	curves = List[Curve]()
-	bbox=dwf.BoundingBox[activeView]
-	if view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan:
-		pt1 = VC + XYZ((bbox.Min-BC).X * scale, (bbox.Min-BC).Y * scale, 0)
-		pt2 = VC + XYZ((bbox.Min-BC).X * scale, (bbox.Max-BC).Y * scale, 0)
-		pt3 = VC + XYZ((bbox.Max-BC).X * scale, (bbox.Max-BC).Y * scale, 0)
-		pt4 = VC + XYZ((bbox.Max-BC).X * scale, (bbox.Min-BC).Y * scale, 0)
-	elif view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :
-		if view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):
-			pt1 = VC + XYZ((bbox.Min-BC).X * scale,0, (bbox.Min-BC).Y * scale)
-			pt2 = VC + XYZ((bbox.Min-BC).X * scale,0, (bbox.Max-BC).Y * scale)
-			pt3 = VC + XYZ((bbox.Max-BC).X * scale,0, (bbox.Max-BC).Y * scale)
-			pt4 = VC + XYZ((bbox.Max-BC).X * scale,0, (bbox.Min-BC).Y * scale)
-		elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):
-			pt1 = VC + XYZ((-bbox.Min+BC).X * scale,0, (bbox.Min-BC).Y * scale)
-			pt2 = VC + XYZ((-bbox.Min+BC).X * scale,0, (bbox.Max-BC).Y * scale)
-			pt3 = VC + XYZ((-bbox.Max+BC).X * scale,0, (bbox.Max-BC).Y * scale)
-			pt4 = VC + XYZ((-bbox.Max+BC).X * scale,0, (bbox.Min-BC).Y * scale)
-		elif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):
-			pt1 = VC + XYZ(0,(BC-bbox.Min).X * scale, (bbox.Min-BC).Y * scale)
-			pt2 = VC + XYZ(0,(BC-bbox.Min).X * scale, (bbox.Max-BC).Y * scale)
-			pt3 = VC + XYZ(0,(BC-bbox.Max).X * scale, (bbox.Max-BC).Y * scale)
-			pt4 = VC + XYZ(0,(BC-bbox.Max).X * scale, (bbox.Min-BC).Y * scale)
-		elif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):
-			pt1 = VC + XYZ(0,(bbox.Min-BC).X * scale, (bbox.Min-BC).Y * scale)
-			pt2 = VC + XYZ(0,(bbox.Min-BC).X * scale, (bbox.Max-BC).Y * scale)
-			pt3 = VC + XYZ(0,(bbox.Max-BC).X * scale, (bbox.Max-BC).Y * scale)
-			pt4 = VC + XYZ(0,(bbox.Max-BC).X * scale, (bbox.Min-BC).Y * scale)
-	curves.Add(Line.CreateBound(pt1, pt2))
-	curves.Add(Line.CreateBound(pt2, pt3))
-	curves.Add(Line.CreateBound(pt3, pt4))
-	curves.Add(Line.CreateBound(pt4, pt1))
-	cloud=RevisionCloud.Create(doc,view,revisionId,curves)
-	cloudComments=cloud.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(comment)
-	revisions.append(cloud)
-	
-TransactionManager.Instance.TransactionTaskDone()
-
-OUT = dwfMarkups,revisions</Script>
-    </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="d0f4065f-5066-4481-aa3a-66814b002e01" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="149.40774412013" y="211.125349360483" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="sheet:var[]..[]=Revit.Application.Document.Current.ActiveView" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="760954a1-4adb-45f2-97ce-8e8841cef929" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1198.60774412013" y="177.912016027149" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="DWFMarkup" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="9292dcbc-761a-46df-86d5-d21edeec7c98" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="1198.60774412013" y="261.912016027149" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="RevisionCloud" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="e9a3431d-a0e4-4399-98b6-a6ce1e306d9a" start_index="0" end="760954a1-4adb-45f2-97ce-8e8841cef929" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="e9a3431d-a0e4-4399-98b6-a6ce1e306d9a" start_index="1" end="9292dcbc-761a-46df-86d5-d21edeec7c98" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="9f77133a-cf74-4a2d-bd4a-482c42ebb3a4" start_index="0" end="e9a3431d-a0e4-4399-98b6-a6ce1e306d9a" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="d0f4065f-5066-4481-aa3a-66814b002e01" start_index="0" end="9f77133a-cf74-4a2d-bd4a-482c42ebb3a4" end_index="0" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "12adfdc5-4194-4b38-8799-795ee363cfd4",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.DWF",
+  "Description": "Copies the revision cloud from the Markup objects for the given or active sheet.\r\nAlso copies the markup notes to the comments of the created revision cloud.\r\nPlease note that markups are found by name (label) and therefore depend on the Revit localization (language).",
+  "Name": "Copy DWFMarkup RevisionCloud to View",
+  "ElementResolver": {
+    "ResolutionMap": {
+      "Revit.Application.Document.Current": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      },
+      "Revit.Application.Document": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      }
+    }
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CodeBlockNodeModel, DynamoCore",
+      "NodeType": "CodeBlockNode",
+      "Code": "x[0];\nx[1];",
+      "Id": "e9a3431da0e4439998b6a6ce1e306d9a",
+      "Inputs": [
+        {
+          "Id": "6827c7c646e04a63b31bec888ab2cc10",
+          "Name": "x",
+          "Description": "x",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "21623e0c86114db3849e185b8e8e7a79",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "00e1a00e3d2c40e6b2ed6d3260e44be8",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Permet de créer le code DesignScript directement"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2020\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\n# Import RevitAPI Classes\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\n# Import DocumentManager\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nfrom RevitServices.Transactions import TransactionManager\n\nclr.AddReference(\"RevitNodes\")\nimport Revit\nclr.ImportExtensions(Revit.GeometryConversion)\n#Import Collections\nfrom System.Collections.Generic import List\nimport System\n\ndoc = DocumentManager.Instance.CurrentDBDocument\nactiveView = UnwrapElement(IN[0])\n\nfilters = List[ElementFilter]()\npvp = ParameterValueProvider(ElementId(BuiltInParameter.IMPORT_SYMBOL_NAME))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"nuage\")))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringContains(),\"cloud\")))\norFilter = LogicalOrFilter(filters)\n\nTransactionManager.Instance.EnsureInTransaction(doc)\nviewports=[doc.GetElement(vip) for vip in activeView.GetAllViewports()]\t\nfor vp in viewports:\n\tview=doc.GetElement(vp.ViewId)\n\tif view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan or view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :\n\t\tscale=vp.get_Parameter(BuiltInParameter.VIEW_SCALE).AsInteger()\n\t\ttrans1 = SubTransaction(doc)\n\t\ttrans1.Start()\n\t\ttry:\n\t\t\tview.get_Parameter(BuiltInParameter.VIEWER_CROP_REGION).Set(1)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Sections),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_CLines),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Grids),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Levels),True)\n\t\t\tview.SetCategoryHidden(ElementId(BuiltInCategory.OST_Callouts),True)\n\t\texcept:pass\n\t\tBC = vp.GetBoxCenter()\n\t\tif view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :\n\t\t\tviewCenter= (view.CropBox.Min + view.CropBox.Max)/2\n\t\t\torigin = view.CropBox.Transform.Origin\n\t\t\tif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):\n\t\t\t\tVC = origin + XYZ(viewCenter.X,0,viewCenter.Y)\n\t\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):\n\t\t\t\tVC = origin + XYZ(-viewCenter.X,0,viewCenter.Y)\n\t\t\telif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):\n\t\t\t\tVC = origin + XYZ(0,-viewCenter.X, viewCenter.Y)\n\t\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):\n\t\t\t\tVC = origin + XYZ(0,viewCenter.X,viewCenter.Y)\n\t\telse:\n\t\t\tVC = (view.CropBox.Min + view.CropBox.Max)/2\n\t\ttrans1.RollBack()\n\ndwfMarkups = FilteredElementCollector(doc, activeView.Id).OfClass(ImportInstance).WhereElementIsNotElementType().WherePasses(orFilter).ToElements()\n\nrevisionId = FilteredElementCollector(doc).OfClass(Revision).FirstElementId()\n\nrevisions=[]\nfor dwf in dwfMarkups:\n\tcomment=dwf.get_Parameter(BuiltInParameter.MARKUPS_HISTORY).AsString()\n\tcurves = List[Curve]()\n\tbbox=dwf.BoundingBox[activeView]\n\tif view.ViewType == ViewType.FloorPlan or view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan:\n\t\tpt1 = VC + XYZ((bbox.Min-BC).X * scale, (bbox.Min-BC).Y * scale, 0)\n\t\tpt2 = VC + XYZ((bbox.Min-BC).X * scale, (bbox.Max-BC).Y * scale, 0)\n\t\tpt3 = VC + XYZ((bbox.Max-BC).X * scale, (bbox.Max-BC).Y * scale, 0)\n\t\tpt4 = VC + XYZ((bbox.Max-BC).X * scale, (bbox.Min-BC).Y * scale, 0)\n\telif view.ViewType == ViewType.Section or view.ViewType == ViewType.Elevation :\n\t\tif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisY):\n\t\t\tpt1 = VC + XYZ((bbox.Min-BC).X * scale,0, (bbox.Min-BC).Y * scale)\n\t\t\tpt2 = VC + XYZ((bbox.Min-BC).X * scale,0, (bbox.Max-BC).Y * scale)\n\t\t\tpt3 = VC + XYZ((bbox.Max-BC).X * scale,0, (bbox.Max-BC).Y * scale)\n\t\t\tpt4 = VC + XYZ((bbox.Max-BC).X * scale,0, (bbox.Min-BC).Y * scale)\n\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisY):\n\t\t\tpt1 = VC + XYZ((-bbox.Min+BC).X * scale,0, (bbox.Min-BC).Y * scale)\n\t\t\tpt2 = VC + XYZ((-bbox.Min+BC).X * scale,0, (bbox.Max-BC).Y * scale)\n\t\t\tpt3 = VC + XYZ((-bbox.Max+BC).X * scale,0, (bbox.Max-BC).Y * scale)\n\t\t\tpt4 = VC + XYZ((-bbox.Max+BC).X * scale,0, (bbox.Min-BC).Y * scale)\n\t\telif view.ViewDirection.IsAlmostEqualTo(-XYZ.BasisX):\n\t\t\tpt1 = VC + XYZ(0,(BC-bbox.Min).X * scale, (bbox.Min-BC).Y * scale)\n\t\t\tpt2 = VC + XYZ(0,(BC-bbox.Min).X * scale, (bbox.Max-BC).Y * scale)\n\t\t\tpt3 = VC + XYZ(0,(BC-bbox.Max).X * scale, (bbox.Max-BC).Y * scale)\n\t\t\tpt4 = VC + XYZ(0,(BC-bbox.Max).X * scale, (bbox.Min-BC).Y * scale)\n\t\telif view.ViewDirection.IsAlmostEqualTo(XYZ.BasisX):\n\t\t\tpt1 = VC + XYZ(0,(bbox.Min-BC).X * scale, (bbox.Min-BC).Y * scale)\n\t\t\tpt2 = VC + XYZ(0,(bbox.Min-BC).X * scale, (bbox.Max-BC).Y * scale)\n\t\t\tpt3 = VC + XYZ(0,(bbox.Max-BC).X * scale, (bbox.Max-BC).Y * scale)\n\t\t\tpt4 = VC + XYZ(0,(bbox.Max-BC).X * scale, (bbox.Min-BC).Y * scale)\n\tcurves.Add(Line.CreateBound(pt1, pt2))\n\tcurves.Add(Line.CreateBound(pt2, pt3))\n\tcurves.Add(Line.CreateBound(pt3, pt4))\n\tcurves.Add(Line.CreateBound(pt4, pt1))\n\tcloud=RevisionCloud.Create(doc,view,revisionId,curves)\n\tcloudComments=cloud.get_Parameter(BuiltInParameter.ALL_MODEL_INSTANCE_COMMENTS).Set(comment)\n\trevisions.append(cloud)\n\t\nTransactionManager.Instance.TransactionTaskDone()\n\nOUT = dwfMarkups,revisions",
+      "Engine": "IronPython2",
+      "EngineName": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "9f77133acf744a2dbd4a482c42ebb3a4",
+      "Inputs": [
+        {
+          "Id": "007a8b2195d3498aba13239e26e1f226",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "506240d0a1bc492d94831f2bba31b98a",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "sheet",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": "Revit.Application.Document.Current.ActiveView",
+        "Description": ""
+      },
+      "Id": "d0f4065f50664481aa3a66814b002e01",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "02357d94369543ddac4ed0fbb42fb133",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "DWFMarkup",
+      "Id": "760954a14adb45f297ce8e8841cef929",
+      "Inputs": [
+        {
+          "Id": "8405919032ed49d2aa5ba9f35dac338f",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "RevisionCloud",
+      "Id": "9292dcbc761a46df86d5d21edeec7c98",
+      "Inputs": [
+        {
+          "Id": "92c7fa3ad6174827a96c332a0bba072e",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "21623e0c86114db3849e185b8e8e7a79",
+      "End": "8405919032ed49d2aa5ba9f35dac338f",
+      "Id": "c790717af2ab4bcd91bb7991e975b27e",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "00e1a00e3d2c40e6b2ed6d3260e44be8",
+      "End": "92c7fa3ad6174827a96c332a0bba072e",
+      "Id": "fa76f069b4774e4287e94a577376ed2a",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "506240d0a1bc492d94831f2bba31b98a",
+      "End": "6827c7c646e04a63b31bec888ab2cc10",
+      "Id": "e5e14d946e2b45ceaf63c127ebb66e44",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "02357d94369543ddac4ed0fbb42fb133",
+      "End": "007a8b2195d3498aba13239e26e1f226",
+      "Id": "b197a15c8a8e474e860e8bb90424fcf7",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.16.2.5624",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Id": "e9a3431da0e4439998b6a6ce1e306d9a",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Code Block",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 1007.40774412013,
+        "Y": 215.338682693816
+      },
+      {
+        "Id": "9f77133acf744a2dbd4a482c42ebb3a4",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Python Script",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 783.00774412013,
+        "Y": 211.125349360483
+      },
+      {
+        "Id": "d0f4065f50664481aa3a66814b002e01",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 149.40774412013,
+        "Y": 211.125349360483
+      },
+      {
+        "Id": "760954a14adb45f297ce8e8841cef929",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 1198.60774412013,
+        "Y": 177.912016027149
+      },
+      {
+        "Id": "9292dcbc761a46df86d5d21edeec7c98",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Excluded": false,
+        "X": 1198.60774412013,
+        "Y": 261.912016027149
+      }
+    ],
+    "Annotations": [],
+    "X": -201.905568857423,
+    "Y": 160.094118871667,
+    "Zoom": 0.538046297688571
+  }
+}

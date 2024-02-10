@@ -1,9 +1,9 @@
 {
-  "Uuid": "93a1c4ed-8113-48aa-8e94-dcc0ed15cd6f",
+  "Uuid": "35967f2e-4a36-40c7-ac51-35651a6216c1",
   "IsCustomNode": true,
-  "Category": "GeniusLoci.DWF",
-  "Description": "Collects all DWF Markup in the document or in the active sheet view.",
-  "Name": "Collector of DWFMarkup",
+  "Category": "GeniusLoci.Sheet",
+  "Description": "Returns the ViewSheet where this view is placed.",
+  "Name": "View ToSheet",
   "ElementResolver": {
     "ResolutionMap": {}
   },
@@ -13,14 +13,14 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "#Alban de Chasteigner 2020\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\n# Import RevitAPI Classes\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\n# Import DocumentManager\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\n\n#Import Collections\nfrom System.Collections.Generic import List\nimport System\n\ndoc = DocumentManager.Instance.CurrentDBDocument\nactiveView = doc.ActiveView\n\nfilters = List[ElementFilter]()\npvp = ParameterValueProvider(ElementId(BuiltInParameter.IMPORT_SYMBOL_NAME))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringBeginsWith(),\"Markup\"))\nfilters.Add(ElementParameterFilter(FilterStringRule(pvp, FilterStringBeginsWith(),\"Objet d'annotation\")))\nfilter = LogicalOrFilter(filters)\n\nboolean =IN[0]\n\nif boolean == True:\n\tdwfMarkups = FilteredElementCollector(doc, activeView.Id).OfClass(ImportInstance).WhereElementIsNotElementType().WherePasses(filter).ToElements()\nelse:\n\tdwfMarkups = FilteredElementCollector(doc).OfClass(ImportInstance).WhereElementIsNotElementType().WherePasses(filter).ToElements()\n\t\t\nOUT = dwfMarkups",
+      "Code": "import clr\nclr.AddReference('RevitAPI')\nfrom Autodesk.Revit.DB import *\n\nclr.AddReference('RevitServices')\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\ndoc = DocumentManager.Instance.CurrentDBDocument\n\nviews = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\nsheet=[]\n\nfor view in views:\n\tsheetNumber=view.get_Parameter(BuiltInParameter.VIEWER_SHEET_NUMBER).AsString()\n\tpvp = ParameterValueProvider(ElementId(BuiltInParameter.SHEET_NUMBER))\n\tfsr = FilterStringEquals()\n\tfRule = FilterStringRule(pvp, fsr, sheetNumber)\n\tfilter = ElementParameterFilter(fRule)\n\tsheet.append(FilteredElementCollector(doc).OfCategory(BuiltInCategory.OST_Sheets).WherePasses(filter).FirstElement())\n\nif isinstance(IN[0], list): OUT = sheet\nelse: OUT = sheet[0]",
       "Engine": "IronPython2",
       "EngineName": "IronPython2",
       "VariableInputPorts": true,
-      "Id": "83119a94d85e48a2954bbf7915bee992",
+      "Id": "8d02405efb5c4f42969773c0a3bc7e91",
       "Inputs": [
         {
-          "Id": "2fbe17a9b5f34000874c1f4c47ccf92b",
+          "Id": "7028093db02e4b1886e0a5d374d49e67",
           "Name": "IN[0]",
           "Description": "Input #0",
           "UsingDefaultValue": false,
@@ -31,7 +31,7 @@
       ],
       "Outputs": [
         {
-          "Id": "5f15aec477234308aef0c71a1eca6424",
+          "Id": "d2bf9409b2c54f618e4f27fdd36bd4b8",
           "Name": "OUT",
           "Description": "Résultat du script Python",
           "UsingDefaultValue": false,
@@ -47,17 +47,17 @@
       "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
       "NodeType": "InputNode",
       "Parameter": {
-        "Name": "SheetOrDocument",
-        "TypeName": "bool",
-        "TypeRank": 0,
-        "DefaultValue": "false",
-        "Description": "True = Active sheet view\nFalse = Current document"
+        "Name": "view",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
       },
-      "Id": "bb8751bc29e047708d7044226a315c26",
+      "Id": "957c5f40154242e2aa6f9ed8604a555b",
       "Inputs": [],
       "Outputs": [
         {
-          "Id": "a6827f6ad20646f29b29b06d1915eab1",
+          "Id": "2e84a49bcbbb4c89a04ec19265df3dbe",
           "Name": "",
           "Description": "Symbole",
           "UsingDefaultValue": false,
@@ -73,11 +73,11 @@
       "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
       "NodeType": "OutputNode",
       "ElementResolver": null,
-      "Symbol": "DWFMarkup",
-      "Id": "4148d9b5e85c49ab9232d1306a1981ef",
+      "Symbol": "Sheet",
+      "Id": "51e512668ff846a0b5b6acab7eb9ccd9",
       "Inputs": [
         {
-          "Id": "72994d8c83564fb4b530b355d4d19465",
+          "Id": "9fa95b2a884e45768d7d0fcf07b739ed",
           "Name": "",
           "Description": "",
           "UsingDefaultValue": false,
@@ -93,15 +93,15 @@
   ],
   "Connectors": [
     {
-      "Start": "5f15aec477234308aef0c71a1eca6424",
-      "End": "72994d8c83564fb4b530b355d4d19465",
-      "Id": "ada938d68d394ce798a7035903d51784",
+      "Start": "d2bf9409b2c54f618e4f27fdd36bd4b8",
+      "End": "9fa95b2a884e45768d7d0fcf07b739ed",
+      "Id": "a2d955508daa4d9593136add3055cf2f",
       "IsHidden": "False"
     },
     {
-      "Start": "a6827f6ad20646f29b29b06d1915eab1",
-      "End": "2fbe17a9b5f34000874c1f4c47ccf92b",
-      "Id": "b7168ffff8974e31bc00275cc0760c42",
+      "Start": "2e84a49bcbbb4c89a04ec19265df3dbe",
+      "End": "7028093db02e4b1886e0a5d374d49e67",
+      "Id": "c23a6bd097c54eeea0a213c19e985c1c",
       "IsHidden": "False"
     }
   ],
@@ -133,39 +133,39 @@
     "ConnectorPins": [],
     "NodeViews": [
       {
-        "Id": "83119a94d85e48a2954bbf7915bee992",
+        "Id": "8d02405efb5c4f42969773c0a3bc7e91",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Name": "Python Script",
         "ShowGeometry": true,
         "Excluded": false,
-        "X": 297.6,
-        "Y": 300.0
+        "X": 466.8,
+        "Y": 280.8
       },
       {
-        "Id": "bb8751bc29e047708d7044226a315c26",
+        "Id": "957c5f40154242e2aa6f9ed8604a555b",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Name": "Input",
         "ShowGeometry": true,
         "Excluded": false,
-        "X": -96.256379821958546,
-        "Y": 302.04866468842727
+        "X": 191.79449117482079,
+        "Y": 278.37900571133514
       },
       {
-        "Id": "4148d9b5e85c49ab9232d1306a1981ef",
+        "Id": "51e512668ff846a0b5b6acab7eb9ccd9",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Name": "Output",
         "ShowGeometry": true,
         "Excluded": false,
-        "X": 509.592878338279,
-        "Y": 298.1982195845697
+        "X": 709.49207251569624,
+        "Y": 276.48434665978192
       }
     ],
     "Annotations": [],
-    "X": 65.3980000000001,
-    "Y": 58.3640000000001,
-    "Zoom": 0.8425
+    "X": 110.98281718125003,
+    "Y": 122.844816675,
+    "Zoom": 0.59376714062500013
   }
 }
