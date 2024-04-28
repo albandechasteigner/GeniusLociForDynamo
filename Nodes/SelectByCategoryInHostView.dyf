@@ -1,141 +1,370 @@
-<Workspace Version="1.3.4.6666" X="117.98980746946" Y="108.130409727904" zoom="0.541716480397306" ScaleFactor="1" Name="SelectByCategoryInHostView" Description="Collects the elements of the given document by category and host view (3D view or Plan View).&#xD;&#xA;The transform CS is returned only with a LinkInstance input." ID="45627d39-aee2-479b-8d50-29c7e20c4c35" Category="GeniusLoci.Select">
-  <NamespaceResolutionMap>
-    <ClassMap partialName="Revit.Elements.Views.View3D" resolvedName="Revit.Elements.Views.View3D" assemblyName="RevitNodes.dll" />
-    <ClassMap partialName="Revit.Application.Document.Current" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-    <ClassMap partialName="Revit.Application.Document" resolvedName="Revit.Application.Document" assemblyName="RevitNodes.dll" />
-  </NamespaceResolutionMap>
-  <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="21e0513d-21c2-497a-8d31-8f7072034275" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-205.212209779996" y="203.955405184073" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//View Plan or ThreeDView of the active document&#xD;&#xA;view: var[]..[] = Revit.Application.Document.Current.ActiveView" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="baaf42c0-c9a1-4592-89cd-18ea5c4fa65d" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="239.681985596318" y="293.071550114653" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="category" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="473a671d-61ed-4250-977d-c9165397ddf1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="-63.3244329984166" y="371.893503494916" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="// Use only if you want to query a linked model&#xD;&#xA;docOrRevitLinkInstance : var[] = null" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CodeBlockNodeModel guid="cd8c4e7c-bb21-4048-b526-5df7c11b9ffe" type="Dynamo.Graph.Nodes.CodeBlockNodeModel" nickname="Code Block" x="613.679727807558" y="244.580068048111" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" CodeText="x[0];&#xA;x[1];" ShouldFocus="false">
-      <PortInfo index="0" default="False" />
-    </Dynamo.Graph.Nodes.CodeBlockNodeModel>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="aa97dc3a-3425-4dbc-ac48-4c1b11387ec1" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="750.628578431806" y="231.98315072029" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Elements" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="942d47bf-09ae-480a-be5f-38526384f021" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="749.505920838221" y="297.097291148235" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Transform" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <PythonNodeModels.PythonNode guid="46b4fa76-c07f-45bc-bf14-509d40395001" type="PythonNodeModels.PythonNode" nickname="ByCategoryInHostView" x="424.365167779055" y="242.927468357507" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="3">
-      <PortInfo index="0" default="False" />
-      <PortInfo index="1" default="False" />
-      <PortInfo index="2" default="False" />
-      <Script>#Alban de Chasteigner 2018
-#twitter : @geniusloci_bim
-#geniusloci.bim@gmail.com
-#Code snippet for plan view by Cyril Poupin on Dynamo Forum
-
-import clr
-clr.AddReference('RevitAPI')
-import Autodesk
-from Autodesk.Revit.DB import *
-
-clr.AddReference('RevitServices')
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-doc = DocumentManager.Instance.CurrentDBDocument
-
-clr.AddReference('RevitNodes')
-import Revit
-clr.ImportExtensions(Revit.GeometryConversion)
-
-clr.AddReference('System')
-from System.Collections.Generic import List
-
-def tolist(x):
-    if hasattr(x,'__iter__'): return x
-    else : return [x]
-
-views = tolist(UnwrapElement(IN[0]))
-cats = tolist(UnwrapElement(IN[1]))
-inputdocs = tolist(UnwrapElement(IN[2]))
-transforms,transf = [], []
-
-for inputdoc in inputdocs :
-	if inputdoc == None:
-		doclnk = DocumentManager.Instance.CurrentDBDocument
-	elif isinstance(inputdoc,Document):
-		doclnk = inputdoc
-	elif isinstance(inputdoc,RevitLinkInstance):
-		doclnk = inputdoc.GetLinkDocument()
-		try:
-			transf = inputdoc.GetTotalTransform()
-			transforms.append(transf.ToCoordinateSystem(1))
-		except: 
-			transforms.append(None)
-	else: doclnk = DocumentManager.Instance.CurrentDBDocument
-
-for view in views:
-	if view.ViewType == ViewType.ThreeD:
-		sectionbox = view.GetSectionBox()
-		transform = sectionbox.Transform
-		sboxoriginx = transform.Origin.X
-		sboxoriginy = transform.Origin.Y
-		sboxoriginz = transform.Origin.Z
-		minx = sectionbox.Min.X + sboxoriginx
-		maxx = sectionbox.Max.X + sboxoriginx
-		miny = sectionbox.Min.Y + sboxoriginy
-		maxy = sectionbox.Max.Y + sboxoriginy
-		minz = sectionbox.Min.Z + sboxoriginz
-		maxz = sectionbox.Max.Z + sboxoriginz
-		outLine = Outline(XYZ(minx, miny, minz), XYZ(maxx, maxy, maxz))
-		
-	elif view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan or view.ViewType == ViewType.FloorPlan :
-		bbxView = view.CropBox
-		if transf :
-			bbxView.Transform = transf
-		viewRange = view.GetViewRange() 
-		topLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.TopClipPlane))
-		topOffset = viewRange.GetOffset(PlanViewPlane.TopClipPlane)
-	
-		bttmLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.BottomClipPlane))
-		bttmOffset = viewRange.GetOffset(PlanViewPlane.BottomClipPlane)
-
-		cutLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.CutPlane))
-		cutOffset = viewRange.GetOffset(PlanViewPlane.CutPlane)
-		
-		if bttmLevel : bbxView.Min = XYZ(bbxView.Min.X, bbxView.Min.Y, bttmLevel.Elevation + bttmOffset)
-		else:  bbxView.Min = XYZ(bbxView.Min.X, bbxView.Min.Y, cutLevel.Elevation + bttmOffset)
-		if topLevel :  bbxView.Max = XYZ(bbxView.Max.X, bbxView.Max.Y, topLevel.Elevation + topOffset)
-		else: bbxView.Max = XYZ(bbxView.Max.X, bbxView.Max.Y, cutLevel.Elevation + cutOffset)
-		
-		outLine = Outline(bbxView.Min, bbxView.Max) 		
-		
-catlist = [cat.Id for cat in cats]
-filtercats = List[ElementId](catlist)
-catfilter = ElementMulticategoryFilter(filtercats)
-	
-filterBbxInside = BoundingBoxIsInsideFilter(outLine)
-filterBbxInters = BoundingBoxIntersectsFilter(outLine)
-filterBbx = LogicalOrFilter(filterBbxInside, filterBbxInters)
-andfilter = LogicalAndFilter(catfilter,filterBbx)
-
-collector = FilteredElementCollector(doclnk).WherePasses(andfilter).ToElements()
-
-OUT = collector, transforms</Script>
-    </PythonNodeModels.PythonNode>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="21e0513d-21c2-497a-8d31-8f7072034275" start_index="0" end="46b4fa76-c07f-45bc-bf14-509d40395001" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="baaf42c0-c9a1-4592-89cd-18ea5c4fa65d" start_index="0" end="46b4fa76-c07f-45bc-bf14-509d40395001" end_index="1" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="473a671d-61ed-4250-977d-c9165397ddf1" start_index="0" end="46b4fa76-c07f-45bc-bf14-509d40395001" end_index="2" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="cd8c4e7c-bb21-4048-b526-5df7c11b9ffe" start_index="0" end="aa97dc3a-3425-4dbc-ac48-4c1b11387ec1" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="cd8c4e7c-bb21-4048-b526-5df7c11b9ffe" start_index="1" end="942d47bf-09ae-480a-be5f-38526384f021" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="46b4fa76-c07f-45bc-bf14-509d40395001" start_index="0" end="cd8c4e7c-bb21-4048-b526-5df7c11b9ffe" end_index="0" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "45627d39-aee2-479b-8d50-29c7e20c4c35",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Select",
+  "Description": "Collects the elements of the given document by category and host view (3D view, Plan View or Section View).\r\nThe transform CS is returned only with a LinkInstance input.",
+  "Name": "SelectByCategoryInHostView",
+  "ElementResolver": {
+    "ResolutionMap": {
+      "Revit.Elements.Views.View3D": {
+        "Key": "Revit.Elements.Views.View3D",
+        "Value": "RevitNodes.dll"
+      },
+      "Revit.Application.Document.Current": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      },
+      "Revit.Application.Document": {
+        "Key": "Revit.Application.Document",
+        "Value": "RevitNodes.dll"
+      }
+    }
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "view",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": "Revit.Application.Document.Current.ActiveView",
+        "Description": "View Plan, ThreeDView or Section View of the active document"
+      },
+      "Id": "21e0513d21c2497a8d318f7072034275",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "720d09f67e25435da023752b0ca0e04d",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "category",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "baaf42c0c9a1459289cd18ea5c4fa65d",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "9ad3ef41beb0435dafb4af1105fc644a",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "docOrRevitLinkInstance",
+        "TypeName": "var",
+        "TypeRank": 1,
+        "DefaultValue": "null",
+        "Description": " Use only if you want to query a linked model"
+      },
+      "Id": "473a671d61ed4250977dc9165397ddf1",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "10f3185d1feb4ebf93130afdcb96158c",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CodeBlockNodeModel, DynamoCore",
+      "NodeType": "CodeBlockNode",
+      "Code": "x[0];\nx[1];",
+      "Id": "cd8c4e7cbb214048b5265df7c11b9ffe",
+      "Inputs": [
+        {
+          "Id": "ce9421e15f61445b8f4decd3225963c7",
+          "Name": "x",
+          "Description": "x",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "f6eba19ca3074defbd7b6b5f1d49bf73",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "a61e5d6b9d7144079a7034642eb8eadf",
+          "Name": "",
+          "Description": "Valeur de l'expression à la ligne 2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Permet de créer le code DesignScript directement"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Elements",
+      "Id": "aa97dc3a34254dbcac484c1b11387ec1",
+      "Inputs": [
+        {
+          "Id": "babb2b716fd149879b7e57e33da218e8",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "Transform",
+      "Id": "942d47bf09ae480abe5f38526384f021",
+      "Inputs": [
+        {
+          "Id": "cef39df884804104a2391064668bf199",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2018\r\n#twitter : @geniusloci_bim\r\n#geniusloci.bim@gmail.com\r\n#Plan view code snippet by Cyril Poupin on Dynamo Forum\r\n\r\nimport clr\r\nclr.AddReference('RevitAPI')\r\nimport Autodesk\r\nfrom Autodesk.Revit.DB import *\r\n\r\nclr.AddReference('RevitServices')\r\nimport RevitServices\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\ndoc = DocumentManager.Instance.CurrentDBDocument\r\n\r\nclr.AddReference('RevitNodes')\r\nimport Revit\r\nclr.ImportExtensions(Revit.GeometryConversion)\r\n\r\nclr.AddReference('System')\r\nfrom System.Collections.Generic import List\r\n\r\ndef tolist(x):\r\n    if hasattr(x,'__iter__'): return x\r\n    else : return [x]\r\n\r\nviews = tolist(UnwrapElement(IN[0]))\r\ncats = tolist(UnwrapElement(IN[1]))\r\ninputdocs = tolist(UnwrapElement(IN[2]))\r\ntransforms,transf = [], []\r\n\r\nfor inputdoc in inputdocs :\r\n\tif inputdoc == None:\r\n\t\tdoclnk = DocumentManager.Instance.CurrentDBDocument\r\n\telif isinstance(inputdoc,Document):\r\n\t\tdoclnk = inputdoc\r\n\telif isinstance(inputdoc,RevitLinkInstance):\r\n\t\tdoclnk = inputdoc.GetLinkDocument()\r\n\t\ttry:\r\n\t\t\ttransf = inputdoc.GetTotalTransform()\r\n\t\t\ttransforms.append(transf.ToCoordinateSystem(1))\r\n\t\texcept: \r\n\t\t\ttransforms.append(None)\r\n\telse: doclnk = DocumentManager.Instance.CurrentDBDocument\r\n\r\nfor view in views:\r\n\tif view.ViewType == ViewType.ThreeD:\r\n\t\tsectionbox = view.GetSectionBox()\r\n\t\ttransform = sectionbox.Transform\r\n\t\tsboxoriginx = transform.Origin.X\r\n\t\tsboxoriginy = transform.Origin.Y\r\n\t\tsboxoriginz = transform.Origin.Z\r\n\t\tminx = sectionbox.Min.X + sboxoriginx\r\n\t\tmaxx = sectionbox.Max.X + sboxoriginx\r\n\t\tminy = sectionbox.Min.Y + sboxoriginy\r\n\t\tmaxy = sectionbox.Max.Y + sboxoriginy\r\n\t\tminz = sectionbox.Min.Z + sboxoriginz\r\n\t\tmaxz = sectionbox.Max.Z + sboxoriginz\r\n\t\toutLine = Outline(XYZ(minx, miny, minz), XYZ(maxx, maxy, maxz))\r\n\t\t\r\n\telif view.ViewType == ViewType.CeilingPlan or view.ViewType == ViewType.EngineeringPlan or view.ViewType == ViewType.FloorPlan :\r\n\t\tbbxView = view.CropBox\r\n\t\tif transf :\r\n\t\t\tbbxView.Transform = transf\r\n\t\tviewRange = view.GetViewRange() \r\n\t\ttopLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.TopClipPlane))\r\n\t\ttopOffset = viewRange.GetOffset(PlanViewPlane.TopClipPlane)\r\n\t\r\n\t\tbttmLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.BottomClipPlane))\r\n\t\tbttmOffset = viewRange.GetOffset(PlanViewPlane.BottomClipPlane)\r\n\r\n\t\tcutLevel = doc.GetElement(viewRange.GetLevelId(PlanViewPlane.CutPlane))\r\n\t\tcutOffset = viewRange.GetOffset(PlanViewPlane.CutPlane)\r\n\t\t\r\n\t\tif bttmLevel : bbxView.Min = XYZ(bbxView.Min.X, bbxView.Min.Y, bttmLevel.ProjectElevation + bttmOffset)\r\n\t\telse:  bbxView.Min = XYZ(bbxView.Min.X, bbxView.Min.Y, cutLevel.ProjectElevation + bttmOffset)\r\n\t\tif topLevel :  bbxView.Max = XYZ(bbxView.Max.X, bbxView.Max.Y, topLevel.ProjectElevation + topOffset)\r\n\t\telse: bbxView.Max = XYZ(bbxView.Max.X, bbxView.Max.Y, cutLevel.ProjectElevation + cutOffset)\r\n\t\t\r\n\t\toutLine = Outline(bbxView.Min, bbxView.Max) \t\t\r\n\t\t\r\n\telif view.ViewType == ViewType.Section :\r\n\t\trightDir = view.RightDirection;\r\n\t\tangleSec = XYZ.BasisX.AngleOnPlaneTo(rightDir, XYZ.BasisZ);\r\n\t\tsecOrigin = view.Origin;\r\n\t\tsecMarkId = ElementId(view.Id.IntegerValue - 1);\r\n\t\tlineSec = Line.CreateBound(secOrigin, XYZ(secOrigin.X, secOrigin.Y, secOrigin.Z + 1));\r\n\t\tTransactionManager.Instance.EnsureInTransaction(doc)\r\n\t\tsubTransaction = SubTransaction(doc);\r\n\t\tsubTransaction.Start();\r\n\t\tElementTransformUtils.RotateElement(doc, secMarkId, lineSec, -angleSec);\r\n\t\trotatedView = doc.GetElement(ElementId(secMarkId.IntegerValue + 1))\r\n\t\tBBox = rotatedView.CropBox;\r\n\t\tif transf :\r\n\t\t\tsecTransform = transf.Inverse.Multiply(BBox.Transform)\r\n\t\telse: secTransform = BBox.Transform\r\n\t\tsecMin = secTransform.OfPoint(BBox.Min);\r\n\t\tsecMax = secTransform.OfPoint(BBox.Max);\r\n\t\toutLine = Outline(XYZ(secMin.X, secMax.Y,secMin.Z),XYZ(secMax.X, secMin.Y,secMax.Z))\r\n\t\tsubTransaction.RollBack();\r\n\t\tTransactionManager.Instance.TransactionTaskDone()\t\t\r\n\t\t\t\r\ncatlist = [cat.Id for cat in cats]\r\nfiltercats = List[ElementId](catlist)\r\ncatfilter = ElementMulticategoryFilter(filtercats)\r\n\t\r\nfilterBbxInside = BoundingBoxIsInsideFilter(outLine)\r\nfilterBbxInters = BoundingBoxIntersectsFilter(outLine)\r\nfilterBbx = LogicalOrFilter(filterBbxInside, filterBbxInters)\r\nandfilter = LogicalAndFilter(catfilter,filterBbx)\r\n\r\ncollector = FilteredElementCollector(doclnk).WherePasses(andfilter).ToElements()\r\n\r\nOUT = collector, transforms",
+      "Engine": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "46b4fa76c07f45bcbf14509d40395001",
+      "Inputs": [
+        {
+          "Id": "69b6796fa3bf445f94efd6f55ef2c165",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "82c3a1e4c9004791afab9bceda1f9255",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "20071eb4273749b4a08a708ab887b1c6",
+          "Name": "IN[2]",
+          "Description": "Input #2",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "ecf1002d5aa24b658ff1d394f6960816",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "720d09f67e25435da023752b0ca0e04d",
+      "End": "69b6796fa3bf445f94efd6f55ef2c165",
+      "Id": "c74a6ad84eb94bfe9095601b0ae3ceb0"
+    },
+    {
+      "Start": "9ad3ef41beb0435dafb4af1105fc644a",
+      "End": "82c3a1e4c9004791afab9bceda1f9255",
+      "Id": "7c02d4494e4048d8bf4a3a1426d62b58"
+    },
+    {
+      "Start": "10f3185d1feb4ebf93130afdcb96158c",
+      "End": "20071eb4273749b4a08a708ab887b1c6",
+      "Id": "e2ccf6ef21df45d5bc22d2fc74d328d7"
+    },
+    {
+      "Start": "f6eba19ca3074defbd7b6b5f1d49bf73",
+      "End": "babb2b716fd149879b7e57e33da218e8",
+      "Id": "00092d5c8b564c8caa3d5ec924cabcf6"
+    },
+    {
+      "Start": "a61e5d6b9d7144079a7034642eb8eadf",
+      "End": "cef39df884804104a2391064668bf199",
+      "Id": "14e42251bf3648b3814f9a9c81cdb17c"
+    },
+    {
+      "Start": "ecf1002d5aa24b658ff1d394f6960816",
+      "End": "ce9421e15f61445b8f4decd3225963c7",
+      "Id": "c436e0172a584422a9ec478ab99a2b6d"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.12.0.5650",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": 78.505119323730469,
+      "EyeY": 42.145095825195313,
+      "EyeZ": 121.08203125,
+      "LookX": 6.4139404296875,
+      "LookY": -43.424312591552734,
+      "LookZ": -33.340202331542969,
+      "UpX": 0.12041771411895752,
+      "UpY": 0.77051317691802979,
+      "UpZ": -0.62594640254974365
+    },
+    "NodeViews": [
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "21e0513d21c2497a8d318f7072034275",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": -50.670164758080887,
+        "Y": 73.308091694698589
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "baaf42c0c9a1459289cd18ea5c4fa65d",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 308.01816358912026,
+        "Y": 147.88951563053791
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Input",
+        "Id": "473a671d61ed4250977dc9165397ddf1",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 62.215589334226252,
+        "Y": 205.00546649474569
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Code Block",
+        "Id": "cd8c4e7cbb214048b5265df7c11b9ffe",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 931.82738360983353,
+        "Y": 78.231776609034512
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Output",
+        "Id": "aa97dc3a34254dbcac484c1b11387ec1",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1120.333232546925,
+        "Y": 77.13581237102818
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "Output",
+        "Id": "942d47bf09ae480abe5f38526384f021",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1115.0027331885187,
+        "Y": 148.41807176347379
+      },
+      {
+        "ShowGeometry": true,
+        "Name": "ByCategoryInHostView",
+        "Id": "46b4fa76c07f45bcbf14509d40395001",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 686.41133806449682,
+        "Y": 76.494577050278167
+      }
+    ],
+    "Annotations": [],
+    "X": 49.552097922801167,
+    "Y": 108.68497740849737,
+    "Zoom": 0.91556228528122641
+  }
+}
