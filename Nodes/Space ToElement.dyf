@@ -1,0 +1,222 @@
+{
+  "Uuid": "10e0e643-2984-4d69-9a69-f20c2036b826",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Room",
+  "Description": "Reports the elements of the current or linked model that are inside the given space of the current document.",
+  "Name": "Space ToElement",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2021\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n#https://github.com/albandechasteigner/GeniusLociForDynamo\n \nimport clr\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\n\nspaces = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\ninputdoc = UnwrapElement(IN[1])\nresult=[]\n\nif inputdoc is None:\n\tdoc = DocumentManager.Instance.CurrentDBDocument\n\ttransform = Transform.Identity\nelif isinstance (inputdoc, RevitLinkInstance):\n\tdoc = inputdoc.GetLinkDocument()\n\ttransform = inputdoc.GetTotalTransform()\nfor space in spaces:\n\telem=[]\n\tfec = FilteredElementCollector(doc).WhereElementIsNotElementType().WhereElementIsViewIndependent().ToElements().FindAll(lambda x :  type(x.Location) == LocationPoint and x.Category.Id != ElementId(BuiltInCategory.OST_MEPSpaces) or type(x.Location) == LocationCurve or isinstance(x, CeilingAndFloor) or isinstance(x,RoofBase))\n\tfor e in fec:\n\t\tloc = e.Location\n\t\tif type(loc) == LocationPoint:\n\t\t\tpt=loc.Point\n\t\telif type(loc) == LocationCurve:\n\t\t\tpt=loc.Curve.Evaluate(0.5, False)\n\t\t# sketch-based elements (ceiling, floor and roof)\n\t\telif isinstance(e, CeilingAndFloor) or isinstance(e,RoofBase) :\n\t\t\ttry:\n\t\t\t\tfor ref in HostObjectUtils.GetTopFaces(e):\n\t\t\t\t\tgeomFace=e.GetGeometryObjectFromReference(ref)\n\t\t\t\t\t#Get UV BoundingBox\n\t\t\t\t\tbbox = geomFace.GetBoundingBox()\n\t\t\t\t\tuv=(bbox.Min+bbox.Max)/2\n\t\t\t\t\tpt=geomFace.Evaluate(uv)\n\t\t\texcept:\n\t\t\t\tbox = e.get_BoundingBox(None)\n\t\t\t\tpt = (box.Min+box.Max)/2\n\t\t\t\t\n\t\tlocationPoint = transform.OfPoint(pt)\n\t\tif space.IsPointInSpace(locationPoint):\n\t\t\telem.append(e)\n\tresult.append(elem)\n\t\nif isinstance(IN[0], list): OUT = result\nelse: OUT = result[0]",
+      "Engine": "IronPython2",
+      "EngineName": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "71a08588abd741cf9d33230489ad96a8",
+      "Inputs": [
+        {
+          "Id": "f44e1aba40fa46b995ebea62c3321a72",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "454045d9e07d47e4bba32f10632c207a",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "3c165c8a6f07446ea27635a87dd85ddc",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "//Elements of current document or linked model\r\nElement",
+      "Id": "08765980dc0b45c9884e26c01428af75",
+      "Inputs": [
+        {
+          "Id": "fb4b7e9703164a929acd7073eb57700f",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "space",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": "Space of current document"
+      },
+      "Id": "71eaddee8bb5437893869f5ed4be10cf",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "7f725714a7214db59e7d7db16a3a0b87",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "RevitLinksInstance",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": "null",
+        "Description": "Optional input to retrieve linked elements"
+      },
+      "Id": "1900ea67e520460e9bfe7c048a1b5d3c",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "b9f3eb42c4264b67bd952548ba7e162a",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "3c165c8a6f07446ea27635a87dd85ddc",
+      "End": "fb4b7e9703164a929acd7073eb57700f",
+      "Id": "13cd7d8d56b74e8fade2b24c486e9f9c",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "7f725714a7214db59e7d7db16a3a0b87",
+      "End": "f44e1aba40fa46b995ebea62c3321a72",
+      "Id": "3d0d1ce8d69e486e906a646e2149f1e5",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "b9f3eb42c4264b67bd952548ba7e162a",
+      "End": "454045d9e07d47e4bba32f10632c207a",
+      "Id": "a6733205f477435e8f75f04f33f92204",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.16.2.5624",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Name": "Python Script",
+        "ShowGeometry": true,
+        "Id": "71a08588abd741cf9d33230489ad96a8",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 816.20408985969436,
+        "Y": 336.675242246554
+      },
+      {
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Id": "08765980dc0b45c9884e26c01428af75",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 1078.5118444227796,
+        "Y": 336.51421972467267
+      },
+      {
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Id": "71eaddee8bb5437893869f5ed4be10cf",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 442.032283679146,
+        "Y": 317.172457554638
+      },
+      {
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Id": "1900ea67e520460e9bfe7c048a1b5d3c",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 306.90391087102881,
+        "Y": 479.34810715073604
+      }
+    ],
+    "Annotations": [],
+    "X": -255.065749864052,
+    "Y": 83.8726636657523,
+    "Zoom": 0.568853839275299
+  }
+}

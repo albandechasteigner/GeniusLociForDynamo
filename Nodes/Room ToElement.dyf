@@ -34,7 +34,9 @@
     {
       "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
       "NodeType": "PythonScriptNode",
-      "Code": "#Alban de Chasteigner 2021\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n#https://github.com/albandechasteigner/GeniusLociForDynamo\n \nimport clr\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\n\nrooms = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\ninputdoc = UnwrapElement(IN[1])\nresult=[]\n\nif inputdoc is None:\n\tdoc = DocumentManager.Instance.CurrentDBDocument\n\ttransform = Transform.Identity\nelif isinstance (inputdoc, RevitLinkInstance):\n\tdoc = inputdoc.GetLinkDocument()\n\ttransform = inputdoc.GetTotalTransform()\nfor room in rooms:\n\telem=[]\n\tfec = FilteredElementCollector(doc).WhereElementIsNotElementType().WhereElementIsViewIndependent().ToElements().FindAll(lambda x :  type(x.Location) == LocationPoint and x.Category.Id != ElementId(BuiltInCategory.OST_Rooms) or type(x.Location) == LocationCurve or isinstance(x, CeilingAndFloor) or isinstance(x,RoofBase))\n\tfor e in fec:\n\t\tloc = e.Location\n\t\tif type(loc) == LocationPoint:\n\t\t\tpt=loc.Point\n\t\telif type(loc) == LocationCurve:\n\t\t\tpt=loc.Curve.Evaluate(0.5, False)\n\t\t# sketch-based elements (ceiling, floor and roof)\n\t\telif isinstance(e, CeilingAndFloor) or isinstance(e,RoofBase) :\n\t\t\tfor ref in HostObjectUtils.GetTopFaces(e):\n\t\t\t\tgeomFace=e.GetGeometryObjectFromReference(ref)\n\t\t\t\t#Get UV BoundingBox\n\t\t\t\tbbox = geomFace.GetBoundingBox()\n\t\t\t\tuv=(bbox.Min+bbox.Max)/2\n\t\t\t\tpt=geomFace.Evaluate(uv)\n\t\tlocationPoint = transform.OfPoint(pt)\n\t\tif room.IsPointInRoom(locationPoint):\n\t\t\telem.append(e)\n\tresult.append(elem)\n\t\nif isinstance(IN[0], list): OUT = result\nelse: OUT = result[0]",
+      "Code": "#Alban de Chasteigner 2021\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n#https://github.com/albandechasteigner/GeniusLociForDynamo\n \nimport clr\nclr.AddReference('RevitAPI')\nimport Autodesk\nfrom Autodesk.Revit.DB import *\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\n\nrooms = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\ninputdoc = UnwrapElement(IN[1])\nresult=[]\n\nif inputdoc is None:\n\tdoc = DocumentManager.Instance.CurrentDBDocument\n\ttransform = Transform.Identity\nelif isinstance (inputdoc, RevitLinkInstance):\n\tdoc = inputdoc.GetLinkDocument()\n\ttransform = inputdoc.GetTotalTransform()\nfor room in rooms:\n\telem=[]\n\tfec = FilteredElementCollector(doc).WhereElementIsNotElementType().WhereElementIsViewIndependent().ToElements().FindAll(lambda x :  type(x.Location) == LocationPoint and x.Category.Id != ElementId(BuiltInCategory.OST_Rooms) or type(x.Location) == LocationCurve or isinstance(x, CeilingAndFloor) or isinstance(x,RoofBase))\n\tfor e in fec:\n\t\tloc = e.Location\n\t\tif type(loc) == LocationPoint:\n\t\t\tpt=loc.Point\n\t\telif type(loc) == LocationCurve:\n\t\t\tpt=loc.Curve.Evaluate(0.5, False)\n\t\t# sketch-based elements (ceiling, floor and roof)\n\t\telif isinstance(e, CeilingAndFloor) or isinstance(e,RoofBase) :\n\t\t\ttry:\n\t\t\t\tfor ref in HostObjectUtils.GetTopFaces(e):\n\t\t\t\t\tgeomFace=e.GetGeometryObjectFromReference(ref)\n\t\t\t\t\t#Get UV BoundingBox\n\t\t\t\t\tbbox = geomFace.GetBoundingBox()\n\t\t\t\t\tuv=(bbox.Min+bbox.Max)/2\n\t\t\t\t\tpt=geomFace.Evaluate(uv)\n\t\t\texcept:\n\t\t\t\tbox = e.get_BoundingBox(None)\n\t\t\t\tpt = (box.Min+box.Max)/2\n\t\t\t\t\n\t\tlocationPoint = transform.OfPoint(pt)\n\t\tif room.IsPointInRoom(locationPoint):\n\t\t\telem.append(e)\n\tresult.append(elem)\n\t\nif isinstance(IN[0], list): OUT = result\nelse: OUT = result[0]",
+      "Engine": "IronPython2",
+      "EngineName": "IronPython2",
       "VariableInputPorts": true,
       "Id": "72275071b68c4567919796410543dfd4",
       "Inputs": [
@@ -69,7 +71,7 @@
         }
       ],
       "Replication": "Disabled",
-      "Description": "Exécute un script IronPython intégré."
+      "Description": "Exécute un script Python intégré."
     },
     {
       "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
@@ -128,28 +130,32 @@
     {
       "Start": "f96b2c6186a04f9fbff4be8f456048af",
       "End": "ca9eaa72420a45c9a68dc9a27738a928",
-      "Id": "df2be8036de14ca1aaffdb5b00ef34e0"
+      "Id": "df2be8036de14ca1aaffdb5b00ef34e0",
+      "IsHidden": "False"
     },
     {
       "Start": "9dd75ab84771477193321fce9dccea90",
       "End": "8a8d2b758de341bc9239d24d23564aaf",
-      "Id": "143cd11fca7d4cb98e15c12e5d84ed8c"
+      "Id": "143cd11fca7d4cb98e15c12e5d84ed8c",
+      "IsHidden": "False"
     },
     {
       "Start": "ee2aef422ff24e7f85556074fcc63473",
       "End": "2f4cf38486024c3f984603595d8820e9",
-      "Id": "d81eaebcdf254e63b1cf9be069527062"
+      "Id": "d81eaebcdf254e63b1cf9be069527062",
+      "IsHidden": "False"
     }
   ],
   "Dependencies": [],
   "NodeLibraryDependencies": [],
+  "Author": "None provided",
   "Bindings": [],
   "View": {
     "Dynamo": {
       "ScaleFactor": 1.0,
       "HasRunWithoutCrash": false,
       "IsVisibleInDynamoLibrary": true,
-      "Version": "2.6.1.8786",
+      "Version": "2.16.2.5624",
       "RunType": "Manual",
       "RunPeriod": "1000"
     },
@@ -165,10 +171,11 @@
       "UpY": 1.0,
       "UpZ": 0.0
     },
+    "ConnectorPins": [],
     "NodeViews": [
       {
-        "ShowGeometry": true,
         "Name": "Output",
+        "ShowGeometry": true,
         "Id": "e94d13fefdf24ca3978bf5ccc71571da",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -177,8 +184,8 @@
         "Y": 300.211051402016
       },
       {
-        "ShowGeometry": true,
         "Name": "Python Script",
+        "ShowGeometry": true,
         "Id": "72275071b68c4567919796410543dfd4",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
@@ -187,24 +194,24 @@
         "Y": 298.965737278584
       },
       {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "be4dc2845b954d5d9a990bc2d76c790f",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 335.486934387111,
-        "Y": 286.814559805006
+        "X": 261.531883387657,
+        "Y": 293.82753877909221
       },
       {
-        "ShowGeometry": true,
         "Name": "Input",
+        "ShowGeometry": true,
         "Id": "5a451f676b4347328b6394a449899df4",
         "IsSetAsInput": false,
         "IsSetAsOutput": false,
         "Excluded": false,
-        "X": 195.053108930184,
-        "Y": 374.593725363994
+        "X": 122.37314501692771,
+        "Y": 447.27368927725058
       }
     ],
     "Annotations": [],
