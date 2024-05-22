@@ -27,6 +27,7 @@ ids = [elem.Id for elem in elements]
 IDS = List[ElementId](ids)
 
 try: checkedout_elem = [doc.GetElement(checkedout_el) for checkedout_el in WorksharingUtils.CheckoutElements(doc,IDS)]
+	checkedout_elem = List[Element](checkedout_elem)
 except Exception,er: checkedout_elem.append(str(er))
 
 OUT = checkedout_elem</Script>
