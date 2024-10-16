@@ -1,130 +1,171 @@
-<Workspace Version="1.3.4.6666" X="0" Y="0" zoom="1" ScaleFactor="1" Name="Element LocationCurve" Description="Gets the curve geometry from the element." ID="d2b0540c-a53c-4f36-a813-45dc77c6be37" Category="GeniusLoci.Geometry">
-  <NamespaceResolutionMap />
-  <Elements>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="1a13a8ea-0f2b-4af9-9c00-0be1d33acdec" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="122" y="218" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="element" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="2dcf4f79-cd44-4b58-bf71-24ee1d0e81dd" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="534.8" y="218" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="Curve" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <PythonNodeModels.PythonNode guid="8efed4d7-4cdf-4394-8746-41756d7659ed" type="PythonNodeModels.PythonNode" nickname="Python Script" x="310.8" y="218.8" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="1">
-      <PortInfo index="0" default="False" />
-      <Script>#Alban de Chasteigner 2020
-#twitter : @geniusloci_bim
-#geniusloci.bim@gmail.com
-
-import clr
-clr.AddReference('RevitAPI')
-import Autodesk
-from Autodesk.Revit.DB import *
-
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.GeometryConversion)
-
-clr.AddReference("RevitServices")
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-from RevitServices.Transactions import TransactionManager
-uiapp = DocumentManager.Instance.CurrentUIApplication
-app = uiapp.Application
-version=int(app.VersionNumber)
-
-items = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]
-curves = []
-
-def Curve(dimension):
-	curve = []
-	if dimension.DimensionShape == DimensionShape.Linear:
-		direction = dimension.Curve.Direction
-		if dimension.NumberOfSegments ==0:
-			start = dimension.Origin.Subtract(direction.Multiply(dimension.Value/2))
-			end = dimension.Origin.Subtract(direction.Multiply(-dimension.Value/2))
-			curve=Line.CreateBound(start,end).ToProtoType()
-		else:
-			for segment in dimension.Segments:
-				start = segment.Origin.Subtract(direction.Multiply(segment.Value/2))
-				end = segment.Origin.Subtract(direction.Multiply(-segment.Value/2))
-				curve.append(Line.CreateBound(start,end).ToProtoType())
-	return curve
-	
-def getCurve(section):
-	#Get the section view from the Section Marker
-	if ElementId(BuiltInCategory.OST_Viewers) == section.Category.Id :
-		viewSection = doc.GetElement(ElementId(section.Id.IntegerValue + 1))
-	elif isinstance(section,Autodesk.Revit.DB.ViewSection):
-		viewSection=section
-	shape=viewSection.GetCropRegionShapeManager().GetCropShape()
-	#Last line of the rectangle
-	l=[s for s in shape[0]][3]
-	#Replace the Z value by 0
-	curve=Line.CreateBound(XYZ(l.GetEndPoint(0).X,l.GetEndPoint(0).Y,0),XYZ(l.GetEndPoint(1).X,l.GetEndPoint(1).Y,0)).ToProtoType()
-	return curve
-
-#Columns not slanted
-def colCurve(col):	
-	loc= col.Location.Point
-	bb = col.get_BoundingBox(None).Min
-	height=col.get_Parameter(BuiltInParameter.INSTANCE_LENGTH_PARAM).AsDouble()
-	start=XYZ(loc.X,loc.Y,bb.Z)
-	end=XYZ(start.X,start.Y,start.Z+height)
-	curve=Line.CreateBound(start,end).ToProtoType()
-	return curve
-
-for item in items:
-	doc=item.Document
-	view = doc.ActiveView
-	#Railing
-	if hasattr(item, "GetPath"):
-		curves.append([railpath.ToProtoType() for railpath in item.GetPath()])
-	#Revision Cloud
-	elif hasattr(item, "GetSketchCurves"): 
-		curves.append([sk.ToProtoType() for sk in item.GetSketchCurves()])
-	elif hasattr(item, "LocationCurve"): 
-		curves.append(item.LocationCurve.ToProtoType())
-	elif hasattr(item, "FullCurve"): 
-		curves.append(item.FullCurve.ToProtoType())
-	elif hasattr(item, "ValueOverride"):
-		curves.append(Curve(item))
-	elif hasattr(item, "Curve"): 
-		curves.append(item.Curve.ToProtoType())
-	elif hasattr(item, "GeometryCurve"): 		
-		curves.append(item.GeometryCurve.ToProtoType())
-	elif hasattr(item, "GetEndpoint"): 
-		curves.append(item.ToProtoType())
-	elif version &gt; 2019 and isinstance(item,Autodesk.Revit.DB.Analysis.PathOfTravel):
-		curves.append([i.ToProtoType() for i in item.GetCurves()])
-	elif ElementId(BuiltInCategory.OST_StructuralColumns) == item.Category.Id and not item.IsSlantedColumn :
-		curves.append(colCurve(item))
-	elif hasattr(item, "GetCurvesInView"):
-		for crv in item.GetCurvesInView(DatumExtentType.ViewSpecific,view):
-			curves.append(crv.ToProtoType())
-	#Get ViewSection or section marker curve
-	elif ElementId(BuiltInCategory.OST_Viewers) == item.Category.Id or isinstance(item,Autodesk.Revit.DB.ViewSection):
-		curves.append(getCurve(item))
-	elif hasattr(item, "Location"):
-		loc = item.Location
-		if isinstance(loc,Autodesk.Revit.DB.LocationCurve):
-			curves.append(loc.Curve.ToProtoType())
-		else:
-			curves.append(None)
-	else: curves.append(None)
-
-if isinstance(IN[0], (list)): OUT = curves
-elif hasattr(item, "GetPath"): OUT = curves
-elif hasattr(item, "ValueOverride"): OUT = curves
-else: OUT = curves[0]</Script>
-    </PythonNodeModels.PythonNode>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="1a13a8ea-0f2b-4af9-9c00-0be1d33acdec" start_index="0" end="8efed4d7-4cdf-4394-8746-41756d7659ed" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="8efed4d7-4cdf-4394-8746-41756d7659ed" start_index="0" end="2dcf4f79-cd44-4b58-bf71-24ee1d0e81dd" end_index="0" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Aperçu en arrière-plan" eyeX="-45.8223731738723" eyeY="6.61527615198784" eyeZ="43.1349236840919" lookX="4.83717801396015" lookY="-5.24027618179016" lookZ="-23.3796937341407" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "d2b0540c-a53c-4f36-a813-45dc77c6be37",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Geometry",
+  "Description": "Gets the curve geometry from the element.",
+  "Name": "Element LocationCurve",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "Parameter": {
+        "Name": "element",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "1a13a8ea0f2b4af99c000be1d33acdec",
+      "NodeType": "InputNode",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "819025739c294af39ec4aa2a7af3dced",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "ElementResolver": null,
+      "Symbol": "Curve",
+      "Id": "2dcf4f79cd444b58bf7124ee1d0e81dd",
+      "NodeType": "OutputNode",
+      "Inputs": [
+        {
+          "Id": "b3d7011fa2104db8b7f7bd7ca9bc8895",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "Code": "#Alban de Chasteigner 2020\r\n#twitter : @geniusloci_bim\r\n#geniusloci.bim@gmail.com\r\n\r\nimport clr\r\nclr.AddReference('RevitAPI')\r\nimport Autodesk\r\nfrom Autodesk.Revit.DB import *\r\n\r\nclr.AddReference(\"RevitNodes\")\r\nimport Revit\r\nclr.ImportExtensions(Revit.GeometryConversion)\r\n\r\nclr.AddReference(\"RevitServices\")\r\nimport RevitServices\r\nfrom RevitServices.Persistence import DocumentManager\r\nfrom RevitServices.Transactions import TransactionManager\r\nuiapp = DocumentManager.Instance.CurrentUIApplication\r\napp = uiapp.Application\r\nversion=int(app.VersionNumber)\r\n\r\nitems = UnwrapElement(IN[0]) if isinstance(IN[0],list) else [UnwrapElement(IN[0])]\r\ncurves = []\r\n\r\ndef Curve(dimension):\r\n\tcurve = []\r\n\tif dimension.DimensionShape == DimensionShape.Linear:\r\n\t\tdirection = dimension.Curve.Direction\r\n\t\tif dimension.NumberOfSegments ==0:\r\n\t\t\tstart = dimension.Origin.Subtract(direction.Multiply(dimension.Value/2))\r\n\t\t\tend = dimension.Origin.Subtract(direction.Multiply(-dimension.Value/2))\r\n\t\t\tcurve=Line.CreateBound(start,end).ToProtoType()\r\n\t\telse:\r\n\t\t\tfor segment in dimension.Segments:\r\n\t\t\t\tstart = segment.Origin.Subtract(direction.Multiply(segment.Value/2))\r\n\t\t\t\tend = segment.Origin.Subtract(direction.Multiply(-segment.Value/2))\r\n\t\t\t\tcurve.append(Line.CreateBound(start,end).ToProtoType())\r\n\treturn curve\r\n\t\r\ndef getCurve(section):\r\n\t#Get the section view from the Section Marker\r\n\tif ElementId(BuiltInCategory.OST_Viewers) == section.Category.Id :\r\n\t\tviewSection = doc.GetElement(ElementId(section.Id.IntegerValue + 1))\r\n\telif isinstance(section,Autodesk.Revit.DB.ViewSection):\r\n\t\tviewSection=section\r\n\tshape=viewSection.GetCropRegionShapeManager().GetCropShape()\r\n\t#Last line of the rectangle\r\n\tl=[s for s in shape[0]][3]\r\n\t#Replace the Z value by 0\r\n\tcurve=Line.CreateBound(XYZ(l.GetEndPoint(0).X,l.GetEndPoint(0).Y,0),XYZ(l.GetEndPoint(1).X,l.GetEndPoint(1).Y,0)).ToProtoType()\r\n\treturn curve\r\n\r\n#Columns not slanted\r\ndef colCurve(col):\t\r\n\tloc= col.Location.Point\r\n\tbb = col.get_BoundingBox(None).Min\r\n\theight=col.get_Parameter(BuiltInParameter.INSTANCE_LENGTH_PARAM).AsDouble()\r\n\tstart=XYZ(loc.X,loc.Y,bb.Z)\r\n\tend=XYZ(start.X,start.Y,start.Z+height)\r\n\tcurve=Line.CreateBound(start,end).ToProtoType()\r\n\treturn curve\r\n\r\nfor item in items:\r\n\tdoc=item.Document\r\n\tview = doc.ActiveView\r\n\t#Railing\r\n\tif hasattr(item, \"GetPath\"):\r\n\t\tcurves.append([railpath.ToProtoType() for railpath in item.GetPath()])\r\n\t#Revision Cloud\r\n\telif hasattr(item, \"GetSketchCurves\"): \r\n\t\tcurves.append([sk.ToProtoType() for sk in item.GetSketchCurves()])\r\n\telif hasattr(item, \"LocationCurve\"): \r\n\t\tcurves.append(item.LocationCurve.ToProtoType())\r\n\telif hasattr(item, \"FullCurve\"): \r\n\t\tcurves.append(item.FullCurve.ToProtoType())\r\n\telif hasattr(item, \"ValueOverride\"):\r\n\t\tcurves.append(Curve(item))\r\n\telif hasattr(item, \"Curve\"): \r\n\t\tcurves.append(item.Curve.ToProtoType())\r\n\telif hasattr(item, \"GeometryCurve\"): \t\t\r\n\t\tcurves.append(item.GeometryCurve.ToProtoType())\r\n\telif hasattr(item, \"GetEndpoint\"): \r\n\t\tcurves.append(item.ToProtoType())\r\n\telif isinstance(item,Autodesk.Revit.DB.MultiSegmentGrid):\r\n\t\tcurves.append([doc.GetElement(i).Curve.ToProtoType() for i in item.GetGridIds()])\r\n\telif version > 2019 and isinstance(item,Autodesk.Revit.DB.Analysis.PathOfTravel):\r\n\t\tcurves.append([i.ToProtoType() for i in item.GetCurves()])\r\n\telif ElementId(BuiltInCategory.OST_StructuralColumns) == item.Category.Id and not item.IsSlantedColumn :\r\n\t\tcurves.append(colCurve(item))\r\n\telif isinstance(item, Autodesk.Revit.DB.FamilyInstance) :\r\n\t\topt = Options()\r\n\t\topt.DetailLevel = ViewDetailLevel.Fine\r\n\t\tgeoEle = item.get_Geometry(opt)\r\n\t\tif geoEle != None :\r\n\t\t\tfor geoInstance in geoEle :\r\n\t\t\t\tif isinstance(geoInstance, GeometryInstance) :\r\n\t\t\t\t\tfor symbIns in geoInstance.GetInstanceGeometry() :\r\n\t\t\t\t\t\tif isinstance(symbIns, Autodesk.Revit.DB.Curve) :\r\n\t\t\t\t\t\t\tcurves.append(symbIns.ToProtoType())\r\n\telif isinstance(item, Autodesk.Revit.DB.Structure.Rebar) :\r\n\t\tclr.AddReference('ProtoGeometry')\r\n\t\tfrom Autodesk.DesignScript.Geometry import *\r\n\t\timport Autodesk.DesignScript.Geometry as DS\r\n\t\t\r\n\t\tsketch = item.GetCenterlineCurves(False,True,True,Structure.MultiplanarOption.IncludeAllMultiplanarCurves,0)\r\n\t\tindice = round(item.NumberOfBarPositions/2)\r\n\t\taccessor = item.GetShapeDrivenAccessor();\r\n\t\ttrf = accessor.GetBarPositionTransform(indice);\r\n\t\tif version >= 2023:\r\n\t\t\tcurves.append(DS.PolyCurve.ByJoinedCurves([x.CreateTransformed(trf).ToProtoType() for x in sketch], 0.001, False, 0))\r\n\t\telse:\r\n\t\t\tcurves.append(DS.PolyCurve.ByJoinedCurves(x.CreateTransformed(trf).ToProtoType() for x in sketch))\r\n\telif hasattr(item, \"GetCurvesInView\"):\r\n\t\tfor crv in item.GetCurvesInView(DatumExtentType.ViewSpecific,view):\r\n\t\t\tcurves.append(crv.ToProtoType())\r\n\t#Get ViewSection or section marker curve\r\n\telif ElementId(BuiltInCategory.OST_Viewers) == item.Category.Id or isinstance(item,Autodesk.Revit.DB.ViewSection):\r\n\t\tcurves.append(getCurve(item))\r\n\telif hasattr(item, \"Location\"):\r\n\t\tloc = item.Location\r\n\t\tif isinstance(loc,Autodesk.Revit.DB.LocationCurve):\r\n\t\t\tcurves.append(loc.Curve.ToProtoType())\r\n\t\telse:\r\n\t\t\tcurves.append(None)\r\n\telse: curves.append(None)\r\n\r\nif isinstance(IN[0], (list)): OUT = curves\r\nelif hasattr(item, \"GetPath\"): OUT = curves\r\nelif hasattr(item, \"ValueOverride\"): OUT = curves\r\nelse: OUT = curves[0]",
+      "Engine": "IronPython2",
+      "EngineName": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "8efed4d74cdf4394874641756d7659ed",
+      "NodeType": "PythonScriptNode",
+      "Inputs": [
+        {
+          "Id": "39060abe5e5645408386df82994fc3a5",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "a97736fac1f341e1a0501fdf764c67a1",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "819025739c294af39ec4aa2a7af3dced",
+      "End": "39060abe5e5645408386df82994fc3a5",
+      "Id": "6d665fb6b7094b3db7d83928209decbd",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "a97736fac1f341e1a0501fdf764c67a1",
+      "End": "b3d7011fa2104db8b7f7bd7ca9bc8895",
+      "Id": "3cbe32d1fdf44969bea42479dd1bfa4f",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.19.3.6394",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "_Aperçu en arrière-plan",
+      "EyeX": -56.390941619873047,
+      "EyeY": 61.090179443359375,
+      "EyeZ": 272.55621337890625,
+      "LookX": 56.390941619873047,
+      "LookY": -61.090179443359375,
+      "LookZ": -272.55621337890625,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Id": "1a13a8ea0f2b4af99c000be1d33acdec",
+        "Name": "Input",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 40.399999999999977,
+        "Y": 212.39999999999998
+      },
+      {
+        "Id": "2dcf4f79cd444b58bf7124ee1d0e81dd",
+        "Name": "Output",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 602.0,
+        "Y": 214.8
+      },
+      {
+        "Id": "8efed4d74cdf4394874641756d7659ed",
+        "Name": "Python Script",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "ShowGeometry": true,
+        "X": 355.59999999999997,
+        "Y": 217.60000000000002
+      }
+    ],
+    "Annotations": [],
+    "X": 0.0,
+    "Y": 0.0,
+    "Zoom": 1.0
+  }
+}
