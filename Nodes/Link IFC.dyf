@@ -1,90 +1,221 @@
-<Workspace Version="1.3.4.6666" X="-2.96774046340624" Y="109.130100102187" zoom="0.691347793867188" ScaleFactor="1" Name="Link IFC" Description="Converts the IFC to a Revit document and link it to the active document." ID="08469e90-1d20-49f6-abba-8d1b4d05629f" Category="GeniusLoci.Import">
-  <NamespaceResolutionMap />
-  <Elements>
-    <PythonNodeModels.PythonNode guid="e47f9d58-9952-4996-8691-71aaa927522b" type="PythonNodeModels.PythonNode" nickname="LinkIFC" x="425.028764087131" y="263.191719310131" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false" inputcount="2">
-      <PortInfo index="0" default="False" />
-      <PortInfo index="1" default="False" />
-      <Script>#Alban de Chasteigner 2019
-#twitter : @geniusloci_bim
-#geniusloci.bim@gmail.com
-
-import clr
-clr.AddReference("RevitAPI")
-import Autodesk
-from Autodesk.Revit.DB import *
-
-clr.AddReference('RevitAPIIFC')
-from Autodesk.Revit.DB.IFC import *
-
-clr.AddReference("RevitNodes")
-import Revit
-clr.ImportExtensions(Revit.GeometryConversion)
-clr.ImportExtensions(Revit.Elements)
-
-clr.AddReference("RevitServices")
-import RevitServices
-from RevitServices.Persistence import DocumentManager
-from RevitServices.Transactions import TransactionManager
-
-import sys
-sys.path.append(r"C:\Program Files (x86)\IronPython 2.7\Lib")
-import System
-
-doc = DocumentManager.Instance.CurrentDBDocument
-uiapp = DocumentManager.Instance.CurrentUIApplication
-app = uiapp.Application
-
-if isinstance(IN[0], list) : IFCfilepaths = IN[0] 
-else : IFCfilepaths = [IN[0]]
-
-placement=System.Enum.Parse(ImportPlacement, IN[1])
-linkInstances =[]
-
-IFCoptions = Autodesk.Revit.DB.IFC.IFCImportOptions()
-#IFCoptions.Action = IFCImportAction.Open
-IFCoptions.Intent = IFCImportIntent.Reference
-#IFCoptions.AutoJoin=True
-#IFCoptions.AutocorrectOffAxisLines = True
-#IFCoptions.ForceImport=True
-
-RVToptions = RevitLinkOptions(True)
-
-TransactionManager.Instance.EnsureInTransaction(doc)
-#Open the IFC document using the default options :
-for IFCfilepath in IFCfilepaths :
-	IFCdoc = app.OpenIFCDocument(IFCfilepath,IFCoptions)
-	#IFCdoc = app.OpenIFCDocument(IFCfilepath)
-	#Save the Revit file in the same folder:
-	RVTfilepath=IFCfilepath.replace(".ifc", ".rvt", 1)
-	IFCdoc.SaveAs(RVTfilepath)
-	IFCdoc.Close(False)
-	loadResult=RevitLinkType.CreateFromIFC(doc,IFCfilepath,RVTfilepath,False,RVToptions)
-	linkInstances.append(RevitLinkInstance.Create(doc, loadResult.ElementId, placement))
-TransactionManager.Instance.TransactionTaskDone()
-
-if isinstance(IN[0], list): OUT = linkInstances
-else: OUT = linkInstances[0]</Script>
-    </PythonNodeModels.PythonNode>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="ed5428c1-e0b8-4092-9ccb-bcdf6c82dda1" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="232.4" y="205.6" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="FilePath" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-    <Dynamo.Graph.Nodes.CustomNodes.Output guid="76950803-1430-4530-a4bc-1c5c3dc8afe7" type="Dynamo.Graph.Nodes.CustomNodes.Output" nickname="Output" x="607.228400190228" y="265.585560171205" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="False" IsFrozen="false" isPinned="false">
-      <PortInfo index="0" default="False" />
-      <Symbol value="RevitLinkInstance" />
-    </Dynamo.Graph.Nodes.CustomNodes.Output>
-    <Dynamo.Graph.Nodes.CustomNodes.Symbol guid="69b6550f-9e58-4906-8e50-83cc55a5551b" type="Dynamo.Graph.Nodes.CustomNodes.Symbol" nickname="Input" x="53.853683842601" y="323.555242111528" isVisible="true" isUpstreamVisible="true" lacing="Disabled" isSelectedInput="True" IsFrozen="false" isPinned="false">
-      <Symbol value="//Origin or Shared&#xD;&#xA;LinkPlacement:string=&quot;Origin&quot;" />
-    </Dynamo.Graph.Nodes.CustomNodes.Symbol>
-  </Elements>
-  <Connectors>
-    <Dynamo.Graph.Connectors.ConnectorModel start="e47f9d58-9952-4996-8691-71aaa927522b" start_index="0" end="76950803-1430-4530-a4bc-1c5c3dc8afe7" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="ed5428c1-e0b8-4092-9ccb-bcdf6c82dda1" start_index="0" end="e47f9d58-9952-4996-8691-71aaa927522b" end_index="0" portType="0" />
-    <Dynamo.Graph.Connectors.ConnectorModel start="69b6550f-9e58-4906-8e50-83cc55a5551b" start_index="0" end="e47f9d58-9952-4996-8691-71aaa927522b" end_index="1" portType="0" />
-  </Connectors>
-  <Notes />
-  <Annotations />
-  <Presets />
-  <Cameras>
-    <Camera Name="Background Preview" eyeX="-17" eyeY="24" eyeZ="50" lookX="12" lookY="-13" lookZ="-58" upX="0" upY="1" upZ="0" />
-  </Cameras>
-</Workspace>
+{
+  "Uuid": "08469e90-1d20-49f6-abba-8d1b4d05629f",
+  "IsCustomNode": true,
+  "Category": "GeniusLoci.Import",
+  "Description": "Converts the IFC to a Revit document and link it to the active document.",
+  "Name": "Link IFC",
+  "ElementResolver": {
+    "ResolutionMap": {}
+  },
+  "Inputs": [],
+  "Outputs": [],
+  "Nodes": [
+    {
+      "ConcreteType": "PythonNodeModels.PythonNode, PythonNodeModels",
+      "NodeType": "PythonScriptNode",
+      "Code": "#Alban de Chasteigner 2019\n#twitter : @geniusloci_bim\n#geniusloci.bim@gmail.com\n\nimport clr\nclr.AddReference(\"RevitAPI\")\nimport Autodesk\nfrom Autodesk.Revit.DB import *\n\nclr.AddReference('RevitAPIIFC')\nfrom Autodesk.Revit.DB.IFC import *\n\nclr.AddReference(\"RevitNodes\")\nimport Revit\nclr.ImportExtensions(Revit.GeometryConversion)\nclr.ImportExtensions(Revit.Elements)\n\nclr.AddReference(\"RevitServices\")\nimport RevitServices\nfrom RevitServices.Persistence import DocumentManager\nfrom RevitServices.Transactions import TransactionManager\n\nimport sys\nsys.path.append(r\"C:\\Program Files (x86)\\IronPython 2.7\\Lib\")\nimport System\n\ndoc = DocumentManager.Instance.CurrentDBDocument\nuiapp = DocumentManager.Instance.CurrentUIApplication\napp = uiapp.Application\n\nif isinstance(IN[0], list) : IFCfilepaths = IN[0] \nelse : IFCfilepaths = [IN[0]]\n\nplacement = System.Enum.Parse(ImportPlacement, IN[1])\nlinkInstances = []\n\nIFCoptions = Autodesk.Revit.DB.IFC.IFCImportOptions()\n#IFCoptions.Action = IFCImportAction.Open\nIFCoptions.Intent = IFCImportIntent.Reference\n#IFCoptions.AutoJoin=True\n#IFCoptions.AutocorrectOffAxisLines = True\n#IFCoptions.ForceImport=True\n\nsaveAsOpt = SaveAsOptions()\nsaveAsOpt.OverwriteExistingFile = True\n\nRVToptions = RevitLinkOptions(True)\n\nTransactionManager.Instance.EnsureInTransaction(doc)\n#Open the IFC document using the default options :\nfor IFCfilepath in IFCfilepaths :\n\tIFCdoc = app.OpenIFCDocument(IFCfilepath,IFCoptions)\n\t#IFCdoc = app.OpenIFCDocument(IFCfilepath)\n\t#Save the Revit file in the same folder:\n\t#RVTfilepath = IFCfilepath.replace(\".ifc\", \".rvt\", 1)\r\n\tRVTfilepath = IFCfilepath + \".rvt\"\n\tIFCdoc.SaveAs(RVTfilepath, saveAsOpt)\n\tIFCdoc.Close(False)\n\tTransactionManager.Instance.TransactionTaskDone()\n\tTransactionManager.Instance.EnsureInTransaction(doc)\n\tloadResult = RevitLinkType.CreateFromIFC(doc,IFCfilepath,RVTfilepath,False,RVToptions)\n\tlinkInstances.append(RevitLinkInstance.Create(doc, loadResult.ElementId, placement))\nTransactionManager.Instance.TransactionTaskDone()\n\nif isinstance(IN[0], list): OUT = linkInstances\nelse: OUT = linkInstances[0]",
+      "Engine": "IronPython2",
+      "VariableInputPorts": true,
+      "Id": "e47f9d5899524996869171aaa927522b",
+      "Inputs": [
+        {
+          "Id": "857b28fc1a674f0f843224f4b82c1545",
+          "Name": "IN[0]",
+          "Description": "Input #0",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        },
+        {
+          "Id": "3f1b47730a284f53b202d532d2197732",
+          "Name": "IN[1]",
+          "Description": "Input #1",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [
+        {
+          "Id": "9bc34cf7b11b44028122af300514add3",
+          "Name": "OUT",
+          "Description": "Résultat du script Python",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Exécute un script Python intégré."
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "FilePath",
+        "TypeName": "var",
+        "TypeRank": -1,
+        "DefaultValue": null,
+        "Description": ""
+      },
+      "Id": "ed5428c1e0b840929ccbbcdf6c82dda1",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "70765058847f441b9bd73a9dc0aae5ce",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Output, DynamoCore",
+      "NodeType": "OutputNode",
+      "ElementResolver": null,
+      "Symbol": "RevitLinkInstance",
+      "Id": "7695080314304530a4bc1c5c3dc8afe7",
+      "Inputs": [
+        {
+          "Id": "f4a3fe744e034756ab2a08b03c4c1e63",
+          "Name": "",
+          "Description": "",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Outputs": [],
+      "Replication": "Disabled",
+      "Description": "Sortie de fonction, utiliser avec les noeuds personnalisés"
+    },
+    {
+      "ConcreteType": "Dynamo.Graph.Nodes.CustomNodes.Symbol, DynamoCore",
+      "NodeType": "InputNode",
+      "Parameter": {
+        "Name": "LinkPlacement",
+        "TypeName": "string",
+        "TypeRank": 0,
+        "DefaultValue": "\"Origin\"",
+        "Description": "Values : Origin or Shared"
+      },
+      "Id": "69b6550f9e5849068e5083cc55a5551b",
+      "Inputs": [],
+      "Outputs": [
+        {
+          "Id": "a1e4fa1ed32f40b5873812d40dbadfa7",
+          "Name": "",
+          "Description": "Symbole",
+          "UsingDefaultValue": false,
+          "Level": 2,
+          "UseLevels": false,
+          "KeepListStructure": false
+        }
+      ],
+      "Replication": "Disabled",
+      "Description": "Un paramètre de fonction, utiliser avec des noeuds personnalisés.\r\n\r\nVous pouvez spécifier le type et la valeur par défaut du paramètre. Par exemple,\r\n\r\nentrée: var[]..[]\r\nvaleur: bool = false"
+    }
+  ],
+  "Connectors": [
+    {
+      "Start": "9bc34cf7b11b44028122af300514add3",
+      "End": "f4a3fe744e034756ab2a08b03c4c1e63",
+      "Id": "836af4eff7344af1822e4fe11cf0bbea",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "70765058847f441b9bd73a9dc0aae5ce",
+      "End": "857b28fc1a674f0f843224f4b82c1545",
+      "Id": "2fb5020c5f5f468a9711be715e7041b2",
+      "IsHidden": "False"
+    },
+    {
+      "Start": "a1e4fa1ed32f40b5873812d40dbadfa7",
+      "End": "3f1b47730a284f53b202d532d2197732",
+      "Id": "afd655ac66ec4281adcce8fbb8d5c220",
+      "IsHidden": "False"
+    }
+  ],
+  "Dependencies": [],
+  "NodeLibraryDependencies": [],
+  "Author": "None provided",
+  "Bindings": [],
+  "View": {
+    "Dynamo": {
+      "ScaleFactor": 1.0,
+      "HasRunWithoutCrash": false,
+      "IsVisibleInDynamoLibrary": true,
+      "Version": "2.13.1.3887",
+      "RunType": "Manual",
+      "RunPeriod": "1000"
+    },
+    "Camera": {
+      "Name": "Aperçu en arrière-plan",
+      "EyeX": -17.0,
+      "EyeY": 24.0,
+      "EyeZ": 50.0,
+      "LookX": 12.0,
+      "LookY": -13.0,
+      "LookZ": -58.0,
+      "UpX": 0.0,
+      "UpY": 1.0,
+      "UpZ": 0.0
+    },
+    "ConnectorPins": [],
+    "NodeViews": [
+      {
+        "Name": "LinkIFC",
+        "ShowGeometry": true,
+        "Id": "e47f9d5899524996869171aaa927522b",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 425.028764087131,
+        "Y": 263.191719310131
+      },
+      {
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Id": "ed5428c1e0b840929ccbbcdf6c82dda1",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 68.083282701234481,
+        "Y": 163.94224068481995
+      },
+      {
+        "Name": "Output",
+        "ShowGeometry": true,
+        "Id": "7695080314304530a4bc1c5c3dc8afe7",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": 607.228400190228,
+        "Y": 265.585560171205
+      },
+      {
+        "Name": "Input",
+        "ShowGeometry": true,
+        "Id": "69b6550f9e5849068e5083cc55a5551b",
+        "IsSetAsInput": false,
+        "IsSetAsOutput": false,
+        "Excluded": false,
+        "X": -27.147514825804535,
+        "Y": 342.06980180716363
+      }
+    ],
+    "Annotations": [],
+    "X": -2.96774046340624,
+    "Y": 109.130100102187,
+    "Zoom": 0.691347793867188
+  }
+}
